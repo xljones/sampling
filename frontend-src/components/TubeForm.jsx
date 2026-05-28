@@ -18,7 +18,7 @@ export default function TubeForm({ mode }) {
   const [form, setForm] = useState({ ...EMPTY, box_id: params.get('box_id') ?? '' });
   const [boxes, setBoxes] = useState([]);
   const [saving, setSaving] = useState(false);
-  const [boxMode, setBoxMode] = useState('select');
+  const [boxMode, setBoxMode] = useState('scan');
   const [boxBarcode, setBoxBarcode] = useState('');
   const [creatingBox, setCreatingBox] = useState(false);
   const isEdit = mode === 'edit';
@@ -55,12 +55,15 @@ export default function TubeForm({ mode }) {
   useEffect(() => { api.getBoxes().then(setBoxes); }, []);
   useEffect(() => {
     if (isEdit && id) {
-      api.getTube(id).then(t => setForm({
-        barcode: t.barcode, box_id: t.box_id ?? '', collection_date: t.collection_date ?? '',
-        site_name: t.site_name ?? '', latitude: t.latitude ?? '', longitude: t.longitude ?? '',
-        sample_type: t.sample_type ?? '', description: t.description ?? '',
-        volume_ml: t.volume_ml ?? '', weight_g: t.weight_g ?? '', depth_cm: t.depth_cm ?? '',
-      }));
+      api.getTube(id).then(t => {
+        setForm({
+          barcode: t.barcode, box_id: t.box_id ?? '', collection_date: t.collection_date ?? '',
+          site_name: t.site_name ?? '', latitude: t.latitude ?? '', longitude: t.longitude ?? '',
+          sample_type: t.sample_type ?? '', description: t.description ?? '',
+          volume_ml: t.volume_ml ?? '', weight_g: t.weight_g ?? '', depth_cm: t.depth_cm ?? '',
+        });
+        if (t.box_barcode) setBoxBarcode(t.box_barcode);
+      });
     }
   }, [isEdit, id]);
 
