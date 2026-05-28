@@ -54,7 +54,16 @@ export default function TubeForm({ mode }) {
     }
   }
 
-  useEffect(() => { api.getBoxes().then(setBoxes); }, []);
+  useEffect(() => {
+    api.getBoxes().then(bs => {
+      setBoxes(bs);
+      const presetId = params.get('box_id');
+      if (presetId) {
+        const match = bs.find(b => String(b.id) === presetId);
+        if (match) setBoxBarcode(match.barcode);
+      }
+    });
+  }, []);
   useEffect(() => {
     if (isEdit && id) {
       api.getTube(id).then(t => {
