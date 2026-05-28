@@ -2,15 +2,14 @@ import os
 import sqlite3
 from pathlib import Path
 
-DB_PATH = os.environ.get(
-    "DB_PATH", str(Path(__file__).parent.parent.parent / "data" / "samples.db")
-)
+_DEFAULT_DB_PATH = str(Path(__file__).parent.parent.parent / "data" / "samples.db")
 _MIGRATIONS_DIR = Path(__file__).parent / "migrations"
 
 
 def get_db():
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    db = sqlite3.connect(DB_PATH)
+    db_path = os.environ.get("DB_PATH", _DEFAULT_DB_PATH)
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    db = sqlite3.connect(db_path)
     db.row_factory = sqlite3.Row
     db.execute("PRAGMA journal_mode=WAL")
     db.execute("PRAGMA foreign_keys=ON")
