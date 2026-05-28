@@ -32,3 +32,50 @@ list-users:
 # compile the React app into dist/ (for production / PythonAnywhere)
 build-frontend:
 	docker compose run --rm frontend npm run build
+
+# ── PythonAnywhere deployment ────────────────────────────────────────────────
+# Usage: make pa-deploy PA_USER=<your-pythonanywhere-username>
+PA_USER  ?= unset
+PA_HOST   = ssh.pythonanywhere.com
+PA_DIR    = /home/$(PA_USER)/sampling
+PA_VENV   = $(PA_DIR)/venv/bin
+
+.PHONY: _pa-check-user
+_pa-check-user:
+ifeq ($(PA_USER),unset)
+	$(error PA_USER is not set — run: make <target> PA_USER=<your-pythonanywhere-username>)
+endif
+
+.PHONY: pa-pull
+# pull latest code on PythonAnywhere
+pa-pull: _pa-check-user
+	ssh $(PA_USER)@$(PA_HOST) "cd $(PA_DIR) && git pull"
+
+.PHONY: pa-build
+# rebuild the React frontend on PythonAnywhere
+pa-build: _pa-check-user
+	ssh $(PA_USER)@$(PA_HOST) "cd $(PA_DIR) && npm run build"
+
+.PHONY: pa-install
+# install/update Python dependencies in the PythonAnywhere venv
+pa-install: _pa-check-user
+	ssh $(PA_USER)@$(PA_HOST) "$(PA_VENV)/pip install -r $(PA_DIR)/requirements.txt"
+
+.PHONY: pa-reload
+# reload the PythonAnywhere web app (triggers migration runner on next request)
+pa-reload: _pa-check-user
+	ssh $(PA_USER)@$(PA_HOST) "touch /var/www/$(PA_USER)_pythonanywhere_com_wsgi.py"
+
+.PHONY: pa-deploy
+# full deploy: pull → build → install → reload
+pa-deploy: pa-pull pa-build pa-install pa-reload
+
+.PHONY: pa-create-user
+# create a user on PythonAnywhere: make pa-create-user PA_USER=<pa-user> username=<name> password=<pass>
+pa-create-user: _pa-check-user
+	ssh $(PA_USER)@$(PA_HOST) "cd $(PA_DIR) && $(PA_VENV)/python backend-src/manage.py create-user $(username) $(password)"
+
+.PHONY: pa-list-users
+# list users on PythonAnywhere
+pa-list-users: _pa-check-user
+	ssh $(PA_USER)@$(PA_HOST) "cd $(PA_DIR) && $(PA_VENV)/python backend-src/manage.py list-users"
