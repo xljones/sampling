@@ -24,6 +24,8 @@ export default function BarcodeInput({ value, onChange, onSubmit, placeholder = 
           onKeyDown={e => { if (e.key === 'Enter' && onSubmit) { e.preventDefault(); onSubmit(value); } }}
           placeholder={placeholder}
           autoFocus={autoFocus}
+          autoComplete="off"
+          data-1p-ignore
           style={{ flex: 1, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 13 }}
         />
         <button
