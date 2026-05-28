@@ -13,7 +13,7 @@ class UserRepository:
 
     def get_by_username(self, username):
         r = self.db.execute(
-            "SELECT * FROM users WHERE username=?", (username,)
+            "SELECT * FROM users WHERE username = ? COLLATE NOCASE", (username,)
         ).fetchone()
         return dict(r) if r else None
 
