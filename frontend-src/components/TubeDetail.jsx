@@ -109,6 +109,20 @@ export default function TubeDetail() {
     }
   }
 
+  async function handleClear() {
+    if (!confirm(`Clear all details from tube ${tube.barcode}? The tube and its box assignment will be kept, but all sample data will be permanently erased.`)) return;
+    const updated = await api.updateTube(id, {
+      barcode: tube.barcode,
+      box_id: tube.box_id,
+      collection_date: null, site_name: null,
+      latitude: null, longitude: null,
+      sample_type: null, description: null,
+      volume_ml: null, weight_g: null, depth_cm: null,
+    });
+    setTube(t => ({ ...t, ...updated }));
+    toast('Tube cleared');
+  }
+
   async function handleDelete() {
     if (!confirm('Delete this tube?')) return;
     await api.deleteTube(id);
@@ -131,6 +145,7 @@ export default function TubeDetail() {
           <button className="btn btn-secondary" onClick={editing ? cancelEditing : startEditing}>
             {editing ? 'Cancel' : 'Edit'}
           </button>
+          <button className="btn btn-danger" onClick={handleClear}>Clear</button>
           <button className="btn btn-danger" onClick={handleDelete}>Delete</button>
         </div>
       </div>
@@ -274,12 +289,12 @@ export default function TubeDetail() {
 
             <div className="field">
               <label>Created</label>
-              <span>{tube.created_at?.slice(0, 10)}</span>
+              <span>{tube.created_at}</span>
             </div>
 
             <div className="field">
               <label>Updated</label>
-              <span>{tube.updated_at?.slice(0, 10)}</span>
+              <span>{tube.updated_at}</span>
             </div>
 
           </div>
