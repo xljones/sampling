@@ -117,9 +117,12 @@ export default function BoxDetail() {
             </div>
             <div className="field">
               <label>Created</label>
-              <span>{box.created_at?.slice(0, 10)}</span>
+              <span>{box.created_at}</span>
             </div>
-            <div className="field" />
+            <div className="field">
+              <label>Updated</label>
+              <span>{box.updated_at}</span>
+            </div>
           </div>
           {editing && (
             <div className="form-actions">
