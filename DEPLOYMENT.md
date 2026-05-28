@@ -13,6 +13,8 @@ cd sampling
 
 ### 2. Build the frontend
 
+Use the pre-built frontend in /dist, or:
+
 ```bash
 npm install
 npm run build
@@ -31,22 +33,30 @@ pip install -r requirements.txt
 ### 4. Create your user account
 
 ```bash
-python backend-src/manage.py create-user <username> <password>
+venv/bin/python backend-src/manage.py create-user <username> <password>
 ```
 
 To list existing users at any time:
 
 ```bash
-python backend-src/manage.py list-users
+venv/bin/python backend-src/manage.py list-users
 ```
 
-### 5. Generate a secret key
+### 5. Set the secret key
+
+Edit `pa_wsgi.py` and replace the placeholder value with a real secret:
 
 ```bash
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-Copy the output — you'll need it in the next step.
+Then open `pa_wsgi.py` and set `SECRET_KEY` to that value:
+
+```python
+os.environ.setdefault("SECRET_KEY", "paste-your-generated-key-here")
+```
+
+> **Note:** `pa_wsgi.py` is committed to the repo with a placeholder. Edit it directly on PythonAnywhere after cloning — `make deploy-pa` will overwrite it, so re-apply your key after each deploy, or keep a local copy outside the repo.
 
 ### 6. Configure the web app
 
@@ -67,13 +77,6 @@ from wsgi import application
 ```
 
 Or run `make deploy-pa` (see below) which copies `pa_wsgi.py` from the repo automatically.
-
-**Environment variables** — add:
-
-```
-SECRET_KEY   <the key you generated above>
-FLASK_DEBUG  0
-```
 
 ### 7. Reload
 
