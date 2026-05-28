@@ -1,14 +1,19 @@
 import os
 from pathlib import Path
-from flask import Flask, send_from_directory, request, jsonify, session
+from flask import Flask, send_from_directory, jsonify
 from flask_cors import CORS
+from flask_login import LoginManager
 
 _DIST_DIR = str(Path(__file__).parent.parent.parent / "dist")
 
+login_manager = LoginManager()
+
 
 def create_app():
-    from sampling.db import run_migrations
+    from sampling.db import run_migrations, get_db
     from sampling.routes import boxes, tubes, scan, export, auth
+    from sampling.repositories.user_repository import UserRepository
+    from sampling.domain.user import User
 
     run_migrations()
 
@@ -24,14 +29,22 @@ def create_app():
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
     CORS(app, supports_credentials=True)
 
+    login_manager.init_app(app)
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        with get_db() as db:
+            row = UserRepository(db).get_by_id(int(user_id))
+        if row:
+            return User(id=row["id"], username=row["username"], created_at=row.get("created_at"))
+        return None
+
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        return jsonify(error="Authentication required"), 401
+
     for bp in (auth.bp, boxes.bp, tubes.bp, scan.bp, export.bp):
         app.register_blueprint(bp)
-
-    @app.before_request
-    def require_login():
-        if request.path.startswith("/api/") and not request.path.startswith("/api/auth/"):
-            if "user_id" not in session:
-                return jsonify(error="Authentication required"), 401
 
     @app.get("/", defaults={"path": ""})
     @app.get("/<path:path>")

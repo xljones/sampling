@@ -1,5 +1,6 @@
 import sqlite3
 from flask import Blueprint, request, jsonify
+from flask_login import login_required
 from sampling.db import get_db
 from sampling.repositories.tube_repository import TubeRepository
 
@@ -22,12 +23,14 @@ def _tube_fields(d):
 
 
 @bp.get("/api/tubes")
+@login_required
 def list_tubes():
     with get_db() as db:
         return jsonify(TubeRepository(db).list_all())
 
 
 @bp.post("/api/tubes")
+@login_required
 def create_tube():
     d = request.json or {}
     if not d.get("barcode"):
@@ -41,6 +44,7 @@ def create_tube():
 
 
 @bp.get("/api/tubes/<int:tube_id>")
+@login_required
 def get_tube(tube_id):
     with get_db() as db:
         tube = TubeRepository(db).get_by_id(tube_id)
@@ -50,6 +54,7 @@ def get_tube(tube_id):
 
 
 @bp.put("/api/tubes/<int:tube_id>")
+@login_required
 def update_tube(tube_id):
     d = request.json or {}
     if not d.get("barcode"):
@@ -65,6 +70,7 @@ def update_tube(tube_id):
 
 
 @bp.delete("/api/tubes/<int:tube_id>")
+@login_required
 def delete_tube(tube_id):
     with get_db() as db:
         if not TubeRepository(db).delete(tube_id):

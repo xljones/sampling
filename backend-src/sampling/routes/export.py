@@ -1,6 +1,7 @@
 import csv
 import io
 from flask import Blueprint, Response
+from flask_login import login_required
 from sampling.db import get_db
 from sampling.repositories.box_repository import BoxRepository
 from sampling.repositories.tube_repository import TubeRepository
@@ -16,6 +17,7 @@ _BOX_FIELDS = ["barcode", "name", "location", "notes", "tube_count", "created_at
 
 
 @bp.get("/api/export/tubes")
+@login_required
 def export_tubes():
     with get_db() as db:
         data = TubeRepository(db).export_all()
@@ -23,6 +25,7 @@ def export_tubes():
 
 
 @bp.get("/api/export/boxes")
+@login_required
 def export_boxes():
     with get_db() as db:
         data = BoxRepository(db).export_all()

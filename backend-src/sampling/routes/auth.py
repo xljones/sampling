@@ -1,6 +1,8 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify
+from flask_login import login_user, logout_user, current_user, login_required
 from sampling.db import get_db
 from sampling.repositories.user_repository import UserRepository
+from sampling.domain.user import User
 
 bp = Blueprint("auth", __name__)
 
@@ -13,22 +15,20 @@ def login():
     if not username or not password:
         return jsonify(error="Username and password required"), 400
     with get_db() as db:
-        user = UserRepository(db).verify_password(username, password)
-    if not user:
+        row = UserRepository(db).verify_password(username, password)
+    if not row:
         return jsonify(error="Invalid username or password"), 401
-    session["user_id"] = user["id"]
-    session["username"] = user["username"]
-    return jsonify(user)
+    login_user(User(id=row["id"], username=row["username"]))
+    return jsonify({"id": row["id"], "username": row["username"]})
 
 
 @bp.post("/api/auth/logout")
 def logout():
-    session.clear()
+    logout_user()
     return "", 204
 
 
 @bp.get("/api/auth/me")
+@login_required
 def me():
-    if "user_id" not in session:
-        return jsonify(error="Not authenticated"), 401
-    return jsonify(id=session["user_id"], username=session["username"])
+    return jsonify(id=current_user.id, username=current_user.username)
