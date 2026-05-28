@@ -21,7 +21,7 @@ export default function TubeDetail() {
   if (!tube) return <p style={{ color: 'var(--text2)', padding: 32 }}>Loading…</p>;
 
   const fields = [
-    ['Barcode', <span className="barcode">{tube.barcode}</span>],
+    ['Barcode', <span key="barcode" className="barcode">{tube.barcode}</span>],
     ['Box', tube.box_barcode ? <Link to={`/boxes/${tube.box_id}`}><span className="barcode">{tube.box_barcode}</span>{tube.box_name ? ` — ${tube.box_name}` : ''}</Link> : '—'],
     ['Collection date', tube.collection_date || '—'],
     ['Site', tube.site_name || '—'],
