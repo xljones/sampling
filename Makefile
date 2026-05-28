@@ -21,17 +21,29 @@ logs:
 .PHONY: create-user
 # create a user: make create-user username=<name> password=<pass>
 create-user:
+ifdef PYTHONANYWHERE_SITE
+	venv/bin/python backend-src/manage.py create-user $(username) $(password)
+else
 	docker compose run --rm backend python manage.py create-user $(username) $(password)
+endif
 
 .PHONY: list-users
 # list all users
 list-users:
+ifdef PYTHONANYWHERE_SITE
+	venv/bin/python backend-src/manage.py list-users
+else
 	docker compose run --rm backend python manage.py list-users
+endif
 
 .PHONY: seed
 # populate the database with sample data (~15 boxes, ~53 tubes)
 seed:
+ifdef PYTHONANYWHERE_SITE
+	venv/bin/python backend-src/manage.py seed
+else
 	docker compose run --rm backend python manage.py seed
+endif
 
 .PHONY: build-frontend
 # compile the React app into dist/ (for production / PythonAnywhere)

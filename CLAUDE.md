@@ -52,9 +52,21 @@ make logs         # tail logs (make logs service=backend for one service)
 make build        # rebuild images (needed after requirements.txt or Dockerfile changes)
 make create-user username=x password=y
 make list-users
+make seed         # populate with sample data (~15 boxes, ~53 tubes)
 ```
 
 The database is at `data/samples.db` (bind-mounted into the backend container).
+
+## PythonAnywhere deployment
+
+```bash
+make deploy-pa    # pull latest, create venv if needed, install deps
+make create-user username=x password=y
+make list-users
+make seed
+```
+
+`make create-user`, `make list-users`, and `make seed` auto-detect the environment: on PythonAnywhere they run via `venv/bin/python backend-src/manage.py` directly; locally they use Docker. Detection relies on `PYTHONANYWHERE_SITE`, an env var PythonAnywhere injects automatically into every console and web process (set to your site's domain, e.g. `username.pythonanywhere.com`).
 
 ## Key conventions
 
