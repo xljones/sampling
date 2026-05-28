@@ -6,6 +6,7 @@ import BarcodeInput from './BarcodeInput.jsx';
 
 export default function BoxList() {
   const [boxes, setBoxes] = useState([]);
+  const [filter, setFilter] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ barcode: '', name: '', location: '', notes: '' });
   const [saving, setSaving] = useState(false);
@@ -13,6 +14,15 @@ export default function BoxList() {
   const navigate = useNavigate();
 
   useEffect(() => { api.getBoxes().then(setBoxes); }, []);
+
+  const q = filter.toLowerCase();
+  const visible = q
+    ? boxes.filter(b =>
+        b.barcode.toLowerCase().includes(q) ||
+        (b.name ?? '').toLowerCase().includes(q) ||
+        (b.location ?? '').toLowerCase().includes(q)
+      )
+    : boxes;
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -81,12 +91,22 @@ export default function BoxList() {
         </div>
       )}
 
+      <div style={{ marginBottom: 16 }}>
+        <input
+          type="search"
+          value={filter}
+          onChange={e => setFilter(e.target.value)}
+          placeholder="Filter by barcode, name, location…"
+          style={{ width: '100%', maxWidth: 360, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 13 }}
+        />
+      </div>
+
       <div className="card">
         <div className="table-wrap">
           <table>
             <thead><tr><th>Barcode</th><th>Name</th><th>Location</th><th>Tubes</th><th>Created</th><th></th></tr></thead>
             <tbody>
-              {boxes.map(b => (
+              {visible.map(b => (
                 <tr key={b.id}>
                   <td><Link to={`/boxes/${b.id}`}><span className="barcode">{b.barcode}</span></Link></td>
                   <td>{b.name || '—'}</td>
@@ -101,7 +121,7 @@ export default function BoxList() {
                   </td>
                 </tr>
               ))}
-              {boxes.length === 0 && <tr><td colSpan={6} className="empty">No boxes yet — create one above</td></tr>}
+              {visible.length === 0 && <tr><td colSpan={6} className="empty">{filter ? 'No matches' : 'No boxes yet — create one above'}</td></tr>}
             </tbody>
           </table>
         </div>
