@@ -214,7 +214,12 @@ export default function BoxDetail() {
                         <tr
                           key={t.id}
                           style={{ cursor: 'pointer', borderBottom: '1px solid var(--border)' }}
-                          onClick={() => setAssignBarcode(t.barcode)}
+                          onClick={async () => {
+                            await api.updateTube(t.id, { ...t, box_id: Number(id) });
+                            setBox(b => ({ ...b, tubes: [...(b.tubes ?? []), { ...t, box_id: Number(id) }] }));
+                            setUnassigned(us => us.filter(u => u.id !== t.id));
+                            toast(`Tube ${t.barcode} added to box`);
+                          }}
                         >
                           <td style={{ padding: '8px 12px' }}><span className="barcode">{t.barcode}</span></td>
                           <td style={{ padding: '8px 12px', color: 'var(--text2)', fontSize: 13 }}>{t.site_name || '—'}</td>

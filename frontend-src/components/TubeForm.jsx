@@ -16,7 +16,7 @@ export default function TubeForm({ mode }) {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();
-  const [form, setForm] = useState({ ...EMPTY, box_id: params.get('box_id') ?? '' });
+  const [form, setForm] = useState({ ...EMPTY, box_id: params.get('box_id') ?? '', barcode: params.get('barcode') ?? '' });
   const [boxes, setBoxes] = useState([]);
   const [saving, setSaving] = useState(false);
   const [boxMode, setBoxMode] = useState('scan');

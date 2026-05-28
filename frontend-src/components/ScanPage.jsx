@@ -56,8 +56,8 @@ export default function ScanPage() {
         <div style={{ color: 'var(--danger)', background: '#fff0f0', border: '1px solid #f5c0c0', borderRadius: 'var(--radius)', padding: '12px 16px', maxWidth: 520 }}>
           {error}
           <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
-            <Link to={`/boxes/new`} className="btn btn-secondary btn-sm">Register as box</Link>
-            <Link to={`/tubes/new`} className="btn btn-secondary btn-sm">Register as tube</Link>
+            <Link to={`/boxes?add=1&barcode=${encodeURIComponent(barcode.trim())}`} className="btn btn-secondary btn-sm">Register as box</Link>
+            <Link to={`/tubes/new?barcode=${encodeURIComponent(barcode.trim())}`} className="btn btn-secondary btn-sm">Register as tube</Link>
           </div>
         </div>
       )}

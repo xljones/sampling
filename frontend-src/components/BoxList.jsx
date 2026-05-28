@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
@@ -12,8 +12,16 @@ export default function BoxList() {
   const [saving, setSaving] = useState(false);
   const toast = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  useEffect(() => { api.getBoxes().then(setBoxes); }, []);
+  useEffect(() => {
+    api.getBoxes().then(setBoxes);
+    const barcode = searchParams.get('barcode');
+    if (searchParams.get('add') === '1') {
+      setShowAdd(true);
+      if (barcode) setForm(f => ({ ...f, barcode }));
+    }
+  }, []);
 
   const q = filter.toLowerCase();
   const visible = q
