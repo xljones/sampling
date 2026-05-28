@@ -43,3 +43,24 @@ def test_logout(auth_client):
 
     r = auth_client.get("/api/auth/me")
     assert r.status_code == 401
+
+
+def test_login_case_insensitive(client, app):
+    with app.app_context():
+        with get_db() as db:
+            UserRepository(db).create("Scarlett", "secret")
+
+    r = client.post("/api/auth/login", json={"username": "scarlett", "password": "secret"})
+    assert r.status_code == 200
+
+    r = client.post("/api/auth/login", json={"username": "SCARLETT", "password": "secret"})
+    assert r.status_code == 200
+
+
+def test_login_preserves_stored_username(client, app):
+    with app.app_context():
+        with get_db() as db:
+            UserRepository(db).create("Scarlett", "secret")
+
+    r = client.post("/api/auth/login", json={"username": "scarlett", "password": "secret"})
+    assert r.json["username"] == "Scarlett"
