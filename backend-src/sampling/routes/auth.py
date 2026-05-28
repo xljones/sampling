@@ -1,8 +1,9 @@
-from flask import Blueprint, request, jsonify
-from flask_login import login_user, logout_user, current_user, login_required
+from flask import Blueprint, jsonify, request
+from flask_login import current_user, login_required, login_user, logout_user
+
 from sampling.db import get_db
-from sampling.repositories.user_repository import UserRepository
 from sampling.domain.user import User
+from sampling.repositories.user_repository import UserRepository
 
 bp = Blueprint("auth", __name__)
 

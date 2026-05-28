@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend
+      target: base
     ports:
       - "5001:5001"
     volumes:
@@ -14,6 +15,18 @@ services:
       DB_PATH: /app/data/samples.db
       FLASK_DEBUG: "1"
 
+  # Dev tooling (lint / typecheck / test) — not started by make run
+  backend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      target: dev
+    volumes:
+      - ./backend-src:/app
+      - ./pyproject.toml:/app/pyproject.toml
+    profiles:
+      - dev
+
   frontend:
     build:
       context: .
@@ -24,6 +37,8 @@ services:
       - ./frontend-src:/app/frontend-src
       - ./frontend-src/index.html:/app/frontend-src/index.html
       - ./vite.config.js:/app/vite.config.js
+      - ./vitest.config.js:/app/vitest.config.js
+      - ./eslint.config.js:/app/eslint.config.js
     environment:
       API_URL: http://backend:5001
     depends_on:

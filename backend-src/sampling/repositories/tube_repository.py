@@ -53,7 +53,9 @@ class TubeRepository:
     def search(self, query):
         q = f"%{query}%"
         return self._rows(self.db.execute(
-            "SELECT *, 'tube' AS type FROM tubes WHERE barcode LIKE ? OR site_name LIKE ? OR sample_type LIKE ? OR description LIKE ? LIMIT 10",
+            "SELECT *, 'tube' AS type FROM tubes"
+            " WHERE barcode LIKE ? OR site_name LIKE ? OR sample_type LIKE ?"
+            " OR description LIKE ? LIMIT 10",
             (q, q, q, q),
         ).fetchall())
 

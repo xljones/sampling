@@ -1,4 +1,4 @@
-FROM python:3.14-slim
+FROM python:3.14-slim AS base
 
 WORKDIR /app
 
@@ -14,3 +14,8 @@ ENV DB_PATH=/app/data/samples.db
 EXPOSE 5001
 
 CMD ["python", "app.py"]
+
+FROM base AS dev
+
+COPY requirements-dev.txt .
+RUN pip install --no-cache-dir -r requirements-dev.txt

@@ -58,7 +58,7 @@ The database is at `data/samples.db` (bind-mounted into the backend container).
 
 ## Key conventions
 
-- Commit format: `[feat/fix/chore](component): one-line description`
+- Commit format: `feat/fix/chore(component): one-line description`
 - Small, focused commits — never bulk everything together
 - Never commit or push without explicit instruction
 - Backend changes that don't touch `requirements.txt` or `Dockerfile.backend` hot-reload via the bind mount — no rebuild needed

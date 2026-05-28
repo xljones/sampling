@@ -33,6 +33,42 @@ list-users:
 build-frontend:
 	docker compose run --rm frontend npm run build
 
+# ── Dev tooling ──────────────────────────────────────────────────────────────
+# Requires: make build (rebuilds backend-dev and frontend images with dev deps)
+
+.PHONY: lint-backend
+# lint the Python backend with ruff
+lint-backend:
+	docker compose --profile dev run --rm backend-dev ruff check sampling/
+
+.PHONY: typecheck
+# type-check the Python backend with mypy
+typecheck:
+	docker compose --profile dev run --rm backend-dev mypy sampling/
+
+.PHONY: test-backend
+# run Python backend tests with pytest
+test-backend:
+	docker compose --profile dev run --rm backend-dev pytest tests/ -v
+
+.PHONY: lint-frontend
+# lint the frontend with eslint
+lint-frontend:
+	docker compose run --rm frontend npm run lint
+
+.PHONY: test-frontend
+# run frontend tests with vitest
+test-frontend:
+	docker compose run --rm frontend npm run test
+
+.PHONY: lint
+# lint backend and frontend
+lint: lint-backend lint-frontend
+
+.PHONY: test
+# test backend and frontend
+test: test-backend test-frontend
+
 # ── PythonAnywhere deployment ────────────────────────────────────────────────
 # Usage: make pa-deploy PA_USER=<your-pythonanywhere-username>
 PA_USER  ?= unset
