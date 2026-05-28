@@ -27,13 +27,28 @@ def run_migrations():
 
         applied = {r[0] for r in db.execute("SELECT version FROM schema_migrations").fetchall()}
 
-        # Bootstrap: if tables exist from before migrations were introduced, mark 001 as applied.
-        existing = {
+        # Bootstrap: detect migrations applied before schema_migrations tracking was introduced.
+        tables = {
             r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
         }
-        if "boxes" in existing and "001_initial" not in applied:
-            db.execute("INSERT INTO schema_migrations (version) VALUES (?)", ("001_initial",))
-            applied.add("001_initial")
+        def col(table, column):
+            return any(
+                r[1] == column
+                for r in db.execute(f"PRAGMA table_info({table})").fetchall()
+            )
+
+        checks = [
+            ("001_initial",      "boxes" in tables),
+            ("002_add_users",    "users" in tables),
+            ("003_boxes_updated_at", "boxes" in tables and col("boxes", "updated_at")),
+            ("004_version_history",  "box_history" in tables),
+            ("005_locations",    "locations" in tables),
+            ("006_readonly_users", "users" in tables and col("users", "is_readonly")),
+        ]
+        for version, already_exists in checks:
+            if already_exists and version not in applied:
+                db.execute("INSERT INTO schema_migrations (version) VALUES (?)", (version,))
+                applied.add(version)
 
     for path in sorted(_MIGRATIONS_DIR.glob("*.sql")):
         version = path.stem
