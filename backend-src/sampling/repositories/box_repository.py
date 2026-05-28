@@ -49,7 +49,8 @@ class BoxRepository:
     def search(self, query):
         q = f"%{query}%"
         return self._rows(self.db.execute(
-            "SELECT *, 'box' AS type FROM boxes WHERE barcode LIKE ? OR name LIKE ? OR location LIKE ? LIMIT 10",
+            "SELECT *, 'box' AS type FROM boxes"
+            " WHERE barcode LIKE ? OR name LIKE ? OR location LIKE ? LIMIT 10",
             (q, q, q),
         ).fetchall())
 

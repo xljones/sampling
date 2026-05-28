@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
-from flask import Flask, send_from_directory, jsonify
+
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_login import LoginManager
 
@@ -10,10 +11,10 @@ login_manager = LoginManager()
 
 
 def create_app():
-    from sampling.db import run_migrations, get_db
-    from sampling.routes import boxes, tubes, scan, export, auth
-    from sampling.repositories.user_repository import UserRepository
+    from sampling.db import get_db, run_migrations
     from sampling.domain.user import User
+    from sampling.repositories.user_repository import UserRepository
+    from sampling.routes import auth, boxes, export, scan, tubes
 
     run_migrations()
 
