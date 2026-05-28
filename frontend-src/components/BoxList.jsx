@@ -107,7 +107,11 @@ export default function BoxList() {
             <thead><tr><th>Barcode</th><th>Name</th><th>Location</th><th>Tubes</th><th>Updated</th><th></th></tr></thead>
             <tbody>
               {visible.map(b => (
-                <tr key={b.id}>
+                <tr
+                  key={b.id}
+                  style={{ cursor: 'pointer' }}
+                  onClick={e => { if (!e.target.closest('a, button, input')) navigate(`/boxes/${b.id}`); }}
+                >
                   <td><Link to={`/boxes/${b.id}`}><span className="barcode">{b.barcode}</span></Link></td>
                   <td>{b.name || '—'}</td>
                   <td>{b.location || '—'}</td>

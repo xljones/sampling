@@ -30,7 +30,8 @@ export const api = {
   emptyBox:      (id)              => req('POST',   `/boxes/${id}/empty`),
 
   // Tubes
-  getTubes:       ()               => req('GET',    '/tubes'),
+  getTubes:           ()                    => req('GET',    '/tubes'),
+  bulkAssignTubes:    (tubeIds, boxId)     => req('POST',   '/tubes/bulk-assign', { tube_ids: tubeIds, box_id: boxId }),
   getTube:        (id)             => req('GET',    `/tubes/${id}`),
   createTube:     (body)           => req('POST',   '/tubes', body),
   updateTube:     (id, body)       => req('PUT',    `/tubes/${id}`, body),

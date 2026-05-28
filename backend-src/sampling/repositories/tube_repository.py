@@ -88,6 +88,20 @@ class TubeRepository:
               tube.get("sample_type"), tube.get("description"),
               tube.get("volume_ml"), tube.get("weight_g"), tube.get("depth_cm")))
 
+    def bulk_assign(self, tube_ids, box_id, changed_by=None):
+        if not tube_ids:
+            return 0
+        placeholders = ','.join('?' * len(tube_ids))
+        self.db.execute(
+            f"UPDATE tubes SET box_id=?, updated_at=CURRENT_TIMESTAMP WHERE id IN ({placeholders})",
+            [box_id] + list(tube_ids),
+        )
+        for tube_id in tube_ids:
+            tube = self.get_by_id(tube_id)
+            if tube:
+                self._record_history(tube, changed_by)
+        return len(tube_ids)
+
     def delete(self, tube_id):
         return self.db.execute("DELETE FROM tubes WHERE id=?", (tube_id,)).rowcount > 0
 

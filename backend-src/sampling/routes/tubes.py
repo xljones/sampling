@@ -71,6 +71,19 @@ def update_tube(tube_id):
         return jsonify(error="Barcode already exists"), 409
 
 
+@bp.post("/api/tubes/bulk-assign")
+@login_required
+def bulk_assign_tubes():
+    d = request.json or {}
+    tube_ids = d.get("tube_ids", [])
+    box_id = d.get("box_id")
+    if not tube_ids or box_id is None:
+        return jsonify(error="tube_ids and box_id are required"), 400
+    with get_db() as db:
+        count = TubeRepository(db).bulk_assign(tube_ids, box_id, changed_by=current_user.id)
+    return jsonify(assigned=count)
+
+
 @bp.delete("/api/tubes/<int:tube_id>")
 @login_required
 def delete_tube(tube_id):
