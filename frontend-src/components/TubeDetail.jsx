@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
+import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 import MapPicker from './MapPicker.jsx';
 import LeafletMap from './LeafletMap.jsx';
 
 export default function TubeDetail() {
+  const { user } = useAuth();
+  const ro = user?.is_readonly;
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -155,7 +158,9 @@ export default function TubeDetail() {
     <div>
       <div className="page-header">
         <div>
-          <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 4 }}><Link to="/tubes">← Tubes</Link></div>
+          <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 4 }}>
+            <Link to={searchParams.get('from') ?? '/tubes'}>← {searchParams.get('from')?.startsWith('/boxes/') ? `Box ${tube.box_barcode}` : 'Tubes'}</Link>
+          </div>
           <h1 className="page-title"><span className="barcode" style={{ fontSize: 18 }}>{tube.barcode}</span></h1>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -164,11 +169,13 @@ export default function TubeDetail() {
               {saving ? 'Saving…' : 'Save changes'}
             </button>
           )}
-          <button className="btn btn-secondary" onClick={editing ? cancelEditing : startEditing}>
-            {editing ? 'Cancel' : 'Edit'}
-          </button>
-          <button className="btn btn-danger" onClick={handleClear}>Clear</button>
-          <button className="btn btn-danger" onClick={handleDelete}>Delete</button>
+          {!ro && (
+            <button className="btn btn-secondary" onClick={editing ? cancelEditing : startEditing}>
+              {editing ? 'Cancel' : 'Edit'}
+            </button>
+          )}
+          {!ro && <button className="btn btn-danger" onClick={handleClear}>Clear</button>}
+          {!ro && <button className="btn btn-danger" onClick={handleDelete}>Delete</button>}
         </div>
       </div>
 

@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
+import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 
 export default function BoxList() {
+  const { user } = useAuth();
+  const ro = user?.is_readonly;
   const [boxes, setBoxes] = useState([]);
   const [locations, setLocations] = useState([]);
   const [filter, setFilter] = useState('');
@@ -64,11 +67,11 @@ export default function BoxList() {
         <h1 className="page-title">Boxes</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <a href="/api/export/boxes" className="btn btn-secondary" download>Export CSV</a>
-          <button className="btn btn-primary" onClick={() => setShowAdd(v => !v)}>+ New box</button>
+          {!ro && <button className="btn btn-primary" onClick={() => setShowAdd(v => !v)}>+ New box</button>}
         </div>
       </div>
 
-      {showAdd && (
+      {showAdd && !ro && (
         <div className="card card-body" style={{ marginBottom: 24 }}>
           <form onSubmit={handleAdd}>
             <div className="form-grid" style={{ marginBottom: 12 }}>
@@ -133,9 +136,8 @@ export default function BoxList() {
                   <td className="col-mobile-hide" style={{ color: 'var(--text2)' }}>{b.updated_at?.slice(0, 10)}</td>
                   <td style={{ width: '1%', whiteSpace: 'nowrap' }}>
                     <div className="row-actions">
-                      <Link to={`/boxes/${b.id}`} className="btn btn-secondary btn-sm">View</Link>
-                      <Link to={`/boxes/${b.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>
-                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(b.id)}>Delete</button>
+                      {!ro && <Link to={`/boxes/${b.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>}
+                      {!ro && <button className="btn btn-danger btn-sm" onClick={() => handleDelete(b.id)}>Delete</button>}
                     </div>
                   </td>
                 </tr>

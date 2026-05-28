@@ -12,6 +12,7 @@ import TubeForm from './components/TubeForm.jsx';
 import ScanPage from './components/ScanPage.jsx';
 import LocationList from './components/LocationList.jsx';
 import LocationDetail from './components/LocationDetail.jsx';
+import UserList from './components/UserList.jsx';
 import { api } from './api.js';
 
 function Nav() {
@@ -31,7 +32,9 @@ function Nav() {
       <div style={{ marginTop: 'auto' }}>
         <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
           <div style={{ fontSize: 12, color: 'var(--text2)' }}>{user?.username}</div>
+          {user?.is_readonly && <div style={{ fontSize: 11, color: 'var(--text2)', opacity: 0.7 }}>read-only</div>}
         </div>
+        {!user?.is_readonly && <NavLink to="/users" className="sidebar-nav-btn" style={{ display: 'flex' }}>Users</NavLink>}
         <button className="sidebar-nav-btn" onClick={logout}>Sign out</button>
         {version && (
           <div style={{ borderTop: '1px solid var(--border)', padding: '8px 16px', fontSize: 11, color: 'var(--text2)', opacity: 0.6 }}>
@@ -59,8 +62,12 @@ function BottomNav() {
           <div className="bottom-nav-backdrop" onClick={closeMore} />
           <div className="bottom-nav-more">
             <NavLink to="/locations" className="sidebar-nav-btn" style={{ display: 'flex' }} onClick={closeMore}>Locations</NavLink>
+            {!user?.is_readonly && (
+              <NavLink to="/users" className="sidebar-nav-btn" style={{ display: 'flex' }} onClick={closeMore}>Users</NavLink>
+            )}
             <div style={{ borderTop: '1px solid var(--border)', padding: '12px 16px' }}>
               <div style={{ fontSize: 13, fontWeight: 600 }}>{user?.username}</div>
+              {user?.is_readonly && <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 2 }}>read-only</div>}
               {version && <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 2 }}>v{version}</div>}
             </div>
             <button className="sidebar-nav-btn" onClick={logout}>Sign out</button>
@@ -107,6 +114,7 @@ function AppShell() {
           <Route path="/tubes/:id" element={<TubeDetail />} />
           <Route path="/locations" element={<LocationList />} />
           <Route path="/locations/:id" element={<LocationDetail />} />
+          {!user.is_readonly && <Route path="/users" element={<UserList />} />}
         </Routes>
       </main>
       <BottomNav />

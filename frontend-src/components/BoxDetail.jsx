@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
+import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 import LeafletMap from './LeafletMap.jsx';
 
 export default function BoxDetail() {
+  const { user } = useAuth();
+  const ro = user?.is_readonly;
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -112,10 +115,12 @@ export default function BoxDetail() {
           {editing && (
             <button type="submit" form="box-edit-form" className="btn btn-success" disabled={saving}>Save Changes</button>
           )}
-          <button className="btn btn-secondary" onClick={() => setEditing(v => !v)}>
-            {editing ? 'Cancel' : 'Edit'}
-          </button>
-          <button className="btn btn-danger" onClick={handleDelete}>Delete</button>
+          {!ro && (
+            <button className="btn btn-secondary" onClick={() => setEditing(v => !v)}>
+              {editing ? 'Cancel' : 'Edit'}
+            </button>
+          )}
+          {!ro && <button className="btn btn-danger" onClick={handleDelete}>Delete</button>}
         </div>
       </div>
 
@@ -166,13 +171,15 @@ export default function BoxDetail() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <h2 style={{ fontSize: 15, fontWeight: 700 }}>Tubes ({box.tubes?.length ?? 0})</h2>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-secondary btn-sm" onClick={() => setShowAssign(v => !v)}>
-            Assign existing
-          </button>
-          {box.tubes?.length > 0 && (
+          {!ro && (
+            <button className="btn btn-secondary btn-sm" onClick={() => setShowAssign(v => !v)}>
+              Assign existing
+            </button>
+          )}
+          {!ro && box.tubes?.length > 0 && (
             <button className="btn btn-danger btn-sm" onClick={handleEmpty}>Empty box</button>
           )}
-          <Link to={`/tubes/new?box_id=${id}`} className="btn btn-primary btn-sm">+ New tube</Link>
+          {!ro && <Link to={`/tubes/new?box_id=${id}`} className="btn btn-primary btn-sm">+ New tube</Link>}
         </div>
       </div>
 
@@ -251,17 +258,16 @@ export default function BoxDetail() {
             <thead><tr><th>Barcode</th><th>Site</th><th>Type</th><th>Depth (cm)</th><th>Date</th><th></th></tr></thead>
             <tbody>
               {box.tubes?.map(t => (
-                <tr key={t.id}>
-                  <td><Link to={`/tubes/${t.id}`}><span className="barcode">{t.barcode}</span></Link></td>
+                <tr key={t.id} style={{ cursor: 'pointer' }} onClick={e => { if (!e.target.closest('a, button')) navigate(`/tubes/${t.id}?from=/boxes/${id}`); }}>
+                  <td><Link to={`/tubes/${t.id}?from=/boxes/${id}`}><span className="barcode">{t.barcode}</span></Link></td>
                   <td>{t.site_name || '—'}</td>
                   <td>{t.sample_type || '—'}</td>
                   <td>{t.depth_cm ?? '—'}</td>
                   <td>{t.collection_date || '—'}</td>
                   <td>
                     <div className="row-actions">
-                      <Link to={`/tubes/${t.id}`} className="btn btn-secondary btn-sm">View</Link>
-                      <Link to={`/tubes/${t.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>
-                      <button className="btn btn-danger btn-sm" onClick={() => handleRemoveTube(t.id)}>Remove</button>
+                      {!ro && <Link to={`/tubes/${t.id}?edit=1&from=/boxes/${id}`} className="btn btn-secondary btn-sm">Edit</Link>}
+                      {!ro && <button className="btn btn-danger btn-sm" onClick={() => handleRemoveTube(t.id)}>Remove</button>}
                     </div>
                   </td>
                 </tr>

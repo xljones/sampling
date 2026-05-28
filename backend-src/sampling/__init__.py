@@ -6,11 +6,12 @@ except ModuleNotFoundError:
         import tomli as tomllib  # type: ignore[no-redef]
     except ModuleNotFoundError:
         tomllib = None  # type: ignore[assignment]
+from datetime import datetime, timezone
 from pathlib import Path
 
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user, logout_user
 
 _DIST_DIR = str(Path(__file__).parent.parent.parent / "dist")
 def _find_pyproject():
@@ -31,7 +32,7 @@ def create_app():
     from sampling.db import get_db, run_migrations
     from sampling.domain.user import User
     from sampling.repositories.user_repository import UserRepository
-    from sampling.routes import auth, boxes, export, locations, scan, tubes
+    from sampling.routes import auth, boxes, export, locations, scan, tubes, users
 
     run_migrations()
 
@@ -54,14 +55,33 @@ def create_app():
         with get_db() as db:
             row = UserRepository(db).get_by_id(int(user_id))
         if row:
-            return User(id=row["id"], username=row["username"], created_at=row.get("created_at"))
+            return User(
+                id=row["id"], username=row["username"],
+                created_at=row.get("created_at"),
+                is_readonly=bool(row.get("is_readonly")),
+                expires_at=row.get("expires_at"),
+            )
         return None
 
     @login_manager.unauthorized_handler
     def unauthorized():
         return jsonify(error="Authentication required"), 401
 
-    for bp in (auth.bp, boxes.bp, tubes.bp, scan.bp, export.bp, locations.bp):
+    @app.before_request
+    def enforce_auth():
+        if not current_user.is_authenticated:
+            return
+        if current_user.expires_at:
+            try:
+                if datetime.now(timezone.utc) >= datetime.fromisoformat(current_user.expires_at):
+                    logout_user()
+                    return jsonify(error="Account expired"), 401
+            except ValueError:
+                pass
+        if current_user.is_readonly and request.method not in ("GET", "HEAD", "OPTIONS"):
+            return jsonify(error="Read-only access"), 403
+
+    for bp in (auth.bp, boxes.bp, tubes.bp, scan.bp, export.bp, locations.bp, users.bp):
         app.register_blueprint(bp)
 
     @app.get("/api/version")

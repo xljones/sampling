@@ -25,11 +25,15 @@ def cmd_create_user(args):
 def cmd_list_users(_):
     from sampling.db import get_db
     with get_db() as db:
-        users = db.execute("SELECT id, username, created_at FROM users ORDER BY id").fetchall()
+        users = db.execute(
+            "SELECT id, username, is_readonly, expires_at, created_at FROM users ORDER BY id"
+        ).fetchall()
     if not users:
         print("No users.")
     for u in users:
-        print(f"  [{u[0]}] {u[1]}  (created {u[2]})")
+        kind = "read-only" if u[2] else "normal"
+        expiry = f"  expires {u[3]}" if u[3] else ""
+        print(f"  [{u[0]}] {u[1]}  ({kind}{expiry})  created {u[4]}")
 
 
 def cmd_seed(_):

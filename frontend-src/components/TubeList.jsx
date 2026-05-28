@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
+import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 
 export default function TubeList() {
+  const { user } = useAuth();
+  const ro = user?.is_readonly;
   const [tubes, setTubes] = useState([]);
   const [filter, setFilter] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
@@ -93,7 +96,7 @@ export default function TubeList() {
         <h1 className="page-title">{unassignedOnly ? 'Unassigned tubes' : 'Tubes'}</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <a href="/api/export/tubes" className="btn btn-secondary" download>Export CSV</a>
-          <Link to="/tubes/new" className="btn btn-primary">+ New tube</Link>
+          {!ro && <Link to="/tubes/new" className="btn btn-primary">+ New tube</Link>}
         </div>
       </div>
 
@@ -115,7 +118,7 @@ export default function TubeList() {
         )}
       </div>
 
-      {selected.size > 0 && (
+      {selected.size > 0 && !ro && (
         <div className="card card-body" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 13, fontWeight: 600 }}>{selected.size} tube{selected.size !== 1 ? 's' : ''} selected</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 260 }}>
@@ -167,9 +170,11 @@ export default function TubeList() {
           <table>
             <thead>
               <tr>
-                <th style={{ width: 32, padding: '0 8px' }}>
-                  <input type="checkbox" checked={allVisibleSelected} onChange={toggleAll} />
-                </th>
+                {!ro && (
+                  <th style={{ width: 32, padding: '0 8px' }}>
+                    <input type="checkbox" checked={allVisibleSelected} onChange={toggleAll} />
+                  </th>
+                )}
                 <th>Barcode</th><th>Box</th><th>Site</th><th>Type</th>
                 <th className="col-mobile-hide">Depth (cm)</th><th className="col-mobile-hide">Collected</th><th></th>
               </tr>
@@ -181,9 +186,11 @@ export default function TubeList() {
                   style={{ cursor: 'pointer', ...(selected.has(t.id) ? { background: 'var(--surface2)' } : {}) }}
                   onClick={e => { if (!e.target.closest('a, button, input')) navigate(`/tubes/${t.id}`); }}
                 >
-                  <td style={{ width: 32, padding: '0 8px' }} onClick={e => e.stopPropagation()}>
-                    <input type="checkbox" checked={selected.has(t.id)} onChange={() => toggleOne(t.id)} />
-                  </td>
+                  {!ro && (
+                    <td style={{ width: 32, padding: '0 8px' }} onClick={e => e.stopPropagation()}>
+                      <input type="checkbox" checked={selected.has(t.id)} onChange={() => toggleOne(t.id)} />
+                    </td>
+                  )}
                   <td><Link to={`/tubes/${t.id}`}><span className="barcode">{t.barcode}</span></Link></td>
                   <td>{t.box_barcode ? <Link to={`/boxes/${t.box_id}`}><span className="barcode">{t.box_barcode}</span></Link> : <span style={{ color: 'var(--text2)' }}>—</span>}</td>
                   <td>{t.site_name || '—'}</td>
@@ -192,14 +199,13 @@ export default function TubeList() {
                   <td className="col-mobile-hide">{t.collection_date || '—'}</td>
                   <td>
                     <div className="row-actions">
-                      <Link to={`/tubes/${t.id}`} className="btn btn-secondary btn-sm">View</Link>
-                      <Link to={`/tubes/${t.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>
-                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(t.id)}>Delete</button>
+                      {!ro && <Link to={`/tubes/${t.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>}
+                      {!ro && <button className="btn btn-danger btn-sm" onClick={() => handleDelete(t.id)}>Delete</button>}
                     </div>
                   </td>
                 </tr>
               ))}
-              {visible.length === 0 && <tr><td colSpan={8} className="empty">{filter ? 'No matches' : 'No tubes yet'}</td></tr>}
+              {visible.length === 0 && <tr><td colSpan={ro ? 7 : 8} className="empty">{filter ? 'No matches' : 'No tubes yet'}</td></tr>}
             </tbody>
           </table>
         </div>

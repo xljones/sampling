@@ -8,6 +8,24 @@ from sampling.repositories.user_repository import UserRepository
 bp = Blueprint("auth", __name__)
 
 
+def _user_dict(row):
+    return {
+        "id": row["id"],
+        "username": row["username"],
+        "is_readonly": bool(row.get("is_readonly")),
+        "expires_at": row.get("expires_at"),
+    }
+
+
+def _user_obj(row):
+    return User(
+        id=row["id"],
+        username=row["username"],
+        is_readonly=bool(row.get("is_readonly")),
+        expires_at=row.get("expires_at"),
+    )
+
+
 @bp.post("/api/auth/login")
 def login():
     d = request.json or {}
@@ -19,8 +37,11 @@ def login():
         row = UserRepository(db).verify_password(username, password)
     if not row:
         return jsonify(error="Invalid username or password"), 401
-    login_user(User(id=row["id"], username=row["username"]))
-    return jsonify({"id": row["id"], "username": row["username"]})
+    user = _user_obj(row)
+    if not user.is_active:
+        return jsonify(error="Account expired"), 401
+    login_user(user)
+    return jsonify(_user_dict(row))
 
 
 @bp.post("/api/auth/logout")
@@ -32,4 +53,9 @@ def logout():
 @bp.get("/api/auth/me")
 @login_required
 def me():
-    return jsonify(id=current_user.id, username=current_user.username)
+    return jsonify(
+        id=current_user.id,
+        username=current_user.username,
+        is_readonly=bool(current_user.is_readonly),
+        expires_at=current_user.expires_at,
+    )

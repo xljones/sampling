@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
+import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
 
 export default function LocationList() {
+  const { user } = useAuth();
+  const ro = user?.is_readonly;
   const [locations, setLocations] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState('');
@@ -68,7 +71,7 @@ export default function LocationList() {
     <div>
       <div className="page-header">
         <h1 className="page-title">Locations</h1>
-        <button className="btn btn-primary" onClick={() => setShowAdd(v => !v)}>+ New location</button>
+        {!ro && <button className="btn btn-primary" onClick={() => setShowAdd(v => !v)}>+ New location</button>}
       </div>
 
       {showAdd && (
@@ -109,7 +112,7 @@ export default function LocationList() {
                   </td>
                   <td style={{ color: 'var(--text2)' }}>{loc.box_count}</td>
                   <td style={{ width: '1%', whiteSpace: 'nowrap' }}>
-                    {editId !== loc.id && (
+                    {!ro && editId !== loc.id && (
                       <div className="row-actions">
                         <button className="btn btn-secondary btn-sm" onClick={() => startEdit(loc)}>Rename</button>
                         <button className="btn btn-danger btn-sm" onClick={() => handleDelete(loc)}>Delete</button>

@@ -7,7 +7,8 @@ class UserRepository:
 
     def get_by_id(self, user_id):
         r = self.db.execute(
-            "SELECT id, username, created_at FROM users WHERE id=?", (user_id,)
+            "SELECT id, username, is_readonly, expires_at, created_at FROM users WHERE id=?",
+            (user_id,),
         ).fetchone()
         return dict(r) if r else None
 
@@ -17,15 +18,25 @@ class UserRepository:
         ).fetchone()
         return dict(r) if r else None
 
-    def create(self, username, password):
+    def list_all(self):
+        return [
+            dict(r) for r in self.db.execute(
+                "SELECT id, username, is_readonly, expires_at, created_at FROM users ORDER BY created_at"
+            ).fetchall()
+        ]
+
+    def create(self, username, password, is_readonly=False, expires_at=None):
         cur = self.db.execute(
-            "INSERT INTO users (username, password_hash) VALUES (?,?)",
-            (username, generate_password_hash(password)),
+            "INSERT INTO users (username, password_hash, is_readonly, expires_at) VALUES (?,?,?,?)",
+            (username, generate_password_hash(password), int(is_readonly), expires_at),
         )
         return self.get_by_id(cur.lastrowid)
+
+    def delete(self, user_id):
+        return self.db.execute("DELETE FROM users WHERE id=?", (user_id,)).rowcount > 0
 
     def verify_password(self, username, password):
         user = self.get_by_username(username)
         if user and check_password_hash(user["password_hash"], password):
-            return {"id": user["id"], "username": user["username"]}
+            return user
         return None
