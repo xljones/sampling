@@ -33,6 +33,9 @@ class UserRepository:
         )
         return self.get_by_id(cur.lastrowid)
 
+    def rename(self, user_id, new_username):
+        self.db.execute("UPDATE users SET username=? WHERE id=?", (new_username, user_id))
+
     def delete(self, user_id):
         return self.db.execute("DELETE FROM users WHERE id=?", (user_id,)).rowcount > 0
 

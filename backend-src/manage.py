@@ -167,6 +167,49 @@ def cmd_seed(_):
     print(f"\nDone. {len(BOXES)} boxes, {len(TUBES)} tubes.")
 
 
+def cmd_rename_user(args):
+    if len(args) != 2:
+        print("Usage: python manage.py rename-user <username> <new-username>")
+        sys.exit(1)
+    username, new_username = args
+    from sampling.db import get_db
+    from sampling.repositories.user_repository import UserRepository
+    with get_db() as db:
+        repo = UserRepository(db)
+        user = repo.get_by_username(username)
+        if not user:
+            print(f"Error: user '{username}' not found")
+            sys.exit(1)
+        if repo.get_by_username(new_username):
+            print(f"Error: user '{new_username}' already exists")
+            sys.exit(1)
+        repo.rename(user["id"], new_username)
+    print(f"User '{username}' renamed to '{new_username}'.")
+
+
+def cmd_delete_user(args):
+    if len(args) != 1:
+        print("Usage: python manage.py delete-user <username>")
+        sys.exit(1)
+    username = args[0]
+    from sampling.db import get_db
+    from sampling.repositories.user_repository import UserRepository
+    with get_db() as db:
+        repo = UserRepository(db)
+        if not repo.get_by_username(username):
+            print(f"Error: user '{username}' not found")
+            sys.exit(1)
+    confirm = input(f"Delete user '{username}'? Type YES to confirm: ")
+    if confirm.strip() != "YES":
+        print("Aborted.")
+        sys.exit(0)
+    with get_db() as db:
+        repo = UserRepository(db)
+        user = repo.get_by_username(username)
+        repo.delete(user["id"])
+    print(f"User '{username}' deleted.")
+
+
 def cmd_reset_db(_):
     confirm = input("This will delete all boxes, tubes, locations, and history (users kept). Type YES to confirm: ")
     if confirm.strip() != "YES":
@@ -187,6 +230,8 @@ def cmd_reset_db(_):
 COMMANDS = {
     "create-user": cmd_create_user,
     "list-users":  cmd_list_users,
+    "rename-user": cmd_rename_user,
+    "delete-user": cmd_delete_user,
     "seed":        cmd_seed,
     "reset-db":    cmd_reset_db,
 }
