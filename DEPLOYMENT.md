@@ -61,10 +61,12 @@ In the **PythonAnywhere Web tab**:
 **WSGI configuration file** — replace the entire contents with:
 
 ```python
-import sys
-sys.path.insert(0, '/home/<you>/sampling/backend-src')
+import os, sys
+sys.path.insert(0, os.path.join(os.environ["HOME"], "sampling", "backend-src"))
 from wsgi import application
 ```
+
+Or run `make deploy-pa` (see below) which copies `pa_wsgi.py` from the repo automatically.
 
 **Environment variables** — add:
 
@@ -83,21 +85,12 @@ The database is created automatically at `~/sampling/data/samples.db` on first r
 
 ## Updating a deployment
 
-From your local machine (requires SSH access to PythonAnywhere):
+From a **PythonAnywhere Bash console** inside `~/sampling`:
 
 ```bash
-make pa-deploy PA_USER=<you>
+make deploy-pa
 ```
 
-This runs in sequence: `git pull` → `npm run build` → `pip install` → reload.
-
-Or run the stages individually:
-
-```bash
-make pa-pull PA_USER=<you>      # pull latest code
-make pa-build PA_USER=<you>     # rebuild frontend (if frontend-src/ changed)
-make pa-install PA_USER=<you>   # update Python dependencies
-make pa-reload PA_USER=<you>    # reload the web app
-```
+This pulls the latest `main`, installs any new Python dependencies, and copies `pa_wsgi.py` to the PythonAnywhere WSGI location — which triggers a reload.
 
 Database migrations run automatically on the next request after reload.
