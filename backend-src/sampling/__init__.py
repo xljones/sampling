@@ -1,5 +1,11 @@
 import os
-import tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:
+    try:
+        import tomli as tomllib  # type: ignore[no-redef]
+    except ModuleNotFoundError:
+        tomllib = None  # type: ignore[assignment]
 from pathlib import Path
 
 from flask import Flask, jsonify, send_from_directory
@@ -7,7 +13,16 @@ from flask_cors import CORS
 from flask_login import LoginManager
 
 _DIST_DIR = str(Path(__file__).parent.parent.parent / "dist")
-_PYPROJECT = Path(__file__).parent.parent.parent / "pyproject.toml"
+def _find_pyproject():
+    p = Path(__file__).resolve().parent
+    for _ in range(5):
+        candidate = p / "pyproject.toml"
+        if candidate.exists():
+            return candidate
+        p = p.parent
+    return None
+
+_PYPROJECT = _find_pyproject()
 
 login_manager = LoginManager()
 
@@ -52,6 +67,8 @@ def create_app():
     @app.get("/api/version")
     def version():
         try:
+            if tomllib is None:
+                raise RuntimeError("no toml parser available")
             with open(_PYPROJECT, "rb") as f:
                 v = tomllib.load(f)["project"]["version"]
         except Exception:
