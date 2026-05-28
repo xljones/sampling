@@ -40,3 +40,13 @@ class UserRepository:
         if user and check_password_hash(user["password_hash"], password):
             return user
         return None
+
+    def change_password(self, user_id, current_password, new_password):
+        row = self.db.execute("SELECT password_hash FROM users WHERE id=?", (user_id,)).fetchone()
+        if not row or not check_password_hash(row["password_hash"], current_password):
+            return False
+        self.db.execute(
+            "UPDATE users SET password_hash=? WHERE id=?",
+            (generate_password_hash(new_password), user_id),
+        )
+        return True

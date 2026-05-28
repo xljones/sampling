@@ -78,7 +78,8 @@ def create_app():
                     return jsonify(error="Account expired"), 401
             except ValueError:
                 pass
-        if current_user.is_readonly and request.method not in ("GET", "HEAD", "OPTIONS"):
+        if current_user.is_readonly and request.method not in ("GET", "HEAD", "OPTIONS") \
+                and request.path != "/api/auth/password":
             return jsonify(error="Read-only access"), 403
 
     for bp in (auth.bp, boxes.bp, tubes.bp, scan.bp, export.bp, locations.bp, users.bp):

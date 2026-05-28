@@ -59,3 +59,20 @@ def me():
         is_readonly=bool(current_user.is_readonly),
         expires_at=current_user.expires_at,
     )
+
+
+@bp.put("/api/auth/password")
+@login_required
+def change_password():
+    d = request.json or {}
+    current_pw = d.get("current_password") or ""
+    new_pw = d.get("new_password") or ""
+    if not current_pw or not new_pw:
+        return jsonify(error="current_password and new_password required"), 400
+    if len(new_pw) < 6:
+        return jsonify(error="New password must be at least 6 characters"), 400
+    with get_db() as db:
+        ok = UserRepository(db).change_password(current_user.id, current_pw, new_pw)
+    if not ok:
+        return jsonify(error="Current password is incorrect"), 403
+    return "", 204

@@ -13,6 +13,7 @@ import ScanPage from './components/ScanPage.jsx';
 import LocationList from './components/LocationList.jsx';
 import LocationDetail from './components/LocationDetail.jsx';
 import UserList from './components/UserList.jsx';
+import AccountPage from './components/AccountPage.jsx';
 import { api } from './api.js';
 
 function Nav() {
@@ -35,6 +36,7 @@ function Nav() {
           {user?.is_readonly && <div style={{ fontSize: 11, color: 'var(--text2)', opacity: 0.7 }}>read-only</div>}
         </div>
         {!user?.is_readonly && <NavLink to="/users" className="sidebar-nav-btn" style={{ display: 'flex' }}>Users</NavLink>}
+        <NavLink to="/account" className="sidebar-nav-btn" style={{ display: 'flex' }}>Change password</NavLink>
         <button className="sidebar-nav-btn" onClick={logout}>Sign out</button>
         {version && (
           <div style={{ borderTop: '1px solid var(--border)', padding: '8px 16px', fontSize: 11, color: 'var(--text2)', opacity: 0.6 }}>
@@ -65,6 +67,7 @@ function BottomNav() {
             {!user?.is_readonly && (
               <NavLink to="/users" className="sidebar-nav-btn" style={{ display: 'flex' }} onClick={closeMore}>Users</NavLink>
             )}
+            <NavLink to="/account" className="sidebar-nav-btn" style={{ display: 'flex' }} onClick={closeMore}>Change password</NavLink>
             <div style={{ borderTop: '1px solid var(--border)', padding: '12px 16px' }}>
               <div style={{ fontSize: 13, fontWeight: 600 }}>{user?.username}</div>
               {user?.is_readonly && <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 2 }}>read-only</div>}
@@ -115,6 +118,7 @@ function AppShell() {
           <Route path="/locations" element={<LocationList />} />
           <Route path="/locations/:id" element={<LocationDetail />} />
           {!user.is_readonly && <Route path="/users" element={<UserList />} />}
+          <Route path="/account" element={<AccountPage />} />
         </Routes>
       </main>
       <BottomNav />

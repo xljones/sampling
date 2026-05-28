@@ -15,9 +15,10 @@ async function req(method, path, body) {
 
 export const api = {
   // Auth
-  getMe:   ()               => req('GET',  '/auth/me'),
-  login:   (username, password) => req('POST', '/auth/login', { username, password }),
-  logout:  ()               => req('POST', '/auth/logout'),
+  getMe:            ()                         => req('GET',  '/auth/me'),
+  login:            (username, password)       => req('POST', '/auth/login', { username, password }),
+  logout:           ()                         => req('POST', '/auth/logout'),
+  changePassword:   (current_password, new_password) => req('PUT', '/auth/password', { current_password, new_password }),
 
   // Boxes
   getBoxes:      ()                => req('GET',    '/boxes'),
