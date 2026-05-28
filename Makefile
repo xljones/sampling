@@ -78,9 +78,8 @@ test: test-backend test-frontend
 # Run from a PythonAnywhere Bash console inside ~/sampling
 
 .PHONY: deploy-pa
-# pull latest main, create venv if needed, install deps, update WSGI file
+# pull latest main, create venv if needed, install deps
 deploy-pa:
 	git fetch origin && git checkout main && git pull origin main
 	[ -d venv ] || python3 -m venv venv
 	venv/bin/pip install -r requirements.txt
-	cp pa_wsgi.py /var/www/$(shell whoami)_pythonanywhere_com_wsgi.py

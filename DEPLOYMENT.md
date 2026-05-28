@@ -13,6 +13,8 @@ cd sampling
 
 ### 2. Build the frontend
 
+Use the pre-built frontend in /dist, or:
+
 ```bash
 npm install
 npm run build
@@ -31,22 +33,23 @@ pip install -r requirements.txt
 ### 4. Create your user account
 
 ```bash
-python backend-src/manage.py create-user <username> <password>
+venv/bin/python backend-src/manage.py create-user <username> <password>
 ```
 
 To list existing users at any time:
 
 ```bash
-python backend-src/manage.py list-users
+venv/bin/python backend-src/manage.py list-users
 ```
 
-### 5. Generate a secret key
+### 5. Create the `.env` file
 
 ```bash
-python -c "import secrets; print(secrets.token_hex(32))"
+echo "SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_hex(32))')" > .env
+echo "FLASK_DEBUG=0" >> .env
 ```
 
-Copy the output — you'll need it in the next step.
+This file is gitignored and will not be overwritten by `make deploy-pa`.
 
 ### 6. Configure the web app
 
@@ -58,22 +61,7 @@ In the **PythonAnywhere Web tab**:
 | Working directory | `/home/<you>/sampling` |
 | Virtualenv | `/home/<you>/sampling/venv` |
 
-**WSGI configuration file** — replace the entire contents with:
-
-```python
-import os, sys
-sys.path.insert(0, os.path.join(os.environ["HOME"], "sampling", "backend-src"))
-from wsgi import application
-```
-
-Or run `make deploy-pa` (see below) which copies `pa_wsgi.py` from the repo automatically.
-
-**Environment variables** — add:
-
-```
-SECRET_KEY   <the key you generated above>
-FLASK_DEBUG  0
-```
+**WSGI configuration file** — replace the entire contents with the contents of `pa_wsgi.py` from the repo.
 
 ### 7. Reload
 
@@ -91,6 +79,6 @@ From a **PythonAnywhere Bash console** inside `~/sampling`:
 make deploy-pa
 ```
 
-This pulls the latest `main`, installs any new Python dependencies, and copies `pa_wsgi.py` to the PythonAnywhere WSGI location — which triggers a reload.
+This pulls the latest `main` and installs any new Python dependencies. Reload the web app from the PythonAnywhere Web tab to apply the changes.
 
 Database migrations run automatically on the next request after reload.
