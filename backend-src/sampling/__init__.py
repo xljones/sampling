@@ -7,7 +7,7 @@ from flask_cors import CORS
 from flask_login import LoginManager
 
 _DIST_DIR = str(Path(__file__).parent.parent.parent / "dist")
-_PYPROJECT = Path(__file__).parent.parent / "pyproject.toml"
+_PYPROJECT = Path(__file__).parent.parent.parent / "pyproject.toml"
 
 login_manager = LoginManager()
 

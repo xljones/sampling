@@ -7,7 +7,7 @@ services:
       - "5001:5001"
     volumes:
       - ./backend-src:/app
-      - ./pyproject.toml:/app/pyproject.toml
+      - ./pyproject.toml:/pyproject.toml
       - ./data:/app/data
     environment:
       DB_PATH: /app/data/samples.db
