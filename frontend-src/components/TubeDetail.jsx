@@ -1,16 +1,113 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useToast } from './Toast.jsx';
+import BarcodeInput from './BarcodeInput.jsx';
+import MapPicker from './MapPicker.jsx';
 import LeafletMap from './LeafletMap.jsx';
 
 export default function TubeDetail() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();
   const [tube, setTube] = useState(null);
+  const [editing, setEditing] = useState(searchParams.get('edit') === '1');
+  const [form, setForm] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [boxes, setBoxes] = useState([]);
+  const [boxMode, setBoxMode] = useState('scan');
+  const [boxBarcode, setBoxBarcode] = useState('');
+  const [creatingBox, setCreatingBox] = useState(false);
+  const [showMap, setShowMap] = useState(false);
 
-  useEffect(() => { api.getTube(id).then(setTube); }, [id]);
+  useEffect(() => {
+    api.getTube(id).then(t => {
+      setTube(t);
+      if (searchParams.get('edit') === '1') {
+        setForm({
+          barcode: t.barcode, box_id: t.box_id ?? '',
+          collection_date: t.collection_date ?? '', site_name: t.site_name ?? '',
+          latitude: t.latitude ?? '', longitude: t.longitude ?? '',
+          sample_type: t.sample_type ?? '', description: t.description ?? '',
+          volume_ml: t.volume_ml ?? '', weight_g: t.weight_g ?? '', depth_cm: t.depth_cm ?? '',
+        });
+        setBoxBarcode(t.box_barcode ?? '');
+      }
+    });
+  }, [id]);
+  useEffect(() => { if (editing) api.getBoxes().then(setBoxes); }, [editing]);
+
+  const boxMatch = boxes.find(b => b.barcode.toLowerCase() === boxBarcode.toLowerCase());
+  const boxNotFound = boxBarcode.length > 0 && !boxMatch;
+
+  function startEditing() {
+    setForm({
+      barcode: tube.barcode, box_id: tube.box_id ?? '',
+      collection_date: tube.collection_date ?? '', site_name: tube.site_name ?? '',
+      latitude: tube.latitude ?? '', longitude: tube.longitude ?? '',
+      sample_type: tube.sample_type ?? '', description: tube.description ?? '',
+      volume_ml: tube.volume_ml ?? '', weight_g: tube.weight_g ?? '', depth_cm: tube.depth_cm ?? '',
+    });
+    setBoxBarcode(tube.box_barcode ?? '');
+    setBoxMode('scan');
+    setShowMap(false);
+    setEditing(true);
+  }
+
+  function cancelEditing() {
+    setEditing(false);
+    setShowMap(false);
+  }
+
+  function handleBoxBarcodeChange(v) {
+    setBoxBarcode(v);
+    const match = boxes.find(b => b.barcode.toLowerCase() === v.toLowerCase());
+    setForm(f => ({ ...f, box_id: match ? match.id : '' }));
+  }
+
+  function switchToScan() {
+    const selected = boxes.find(b => String(b.id) === String(form.box_id));
+    setBoxBarcode(selected?.barcode ?? '');
+    setBoxMode('scan');
+  }
+
+  async function handleCreateBox() {
+    setCreatingBox(true);
+    try {
+      const newBox = await api.createBox({ barcode: boxBarcode });
+      setBoxes(bs => [...bs, newBox]);
+      setForm(f => ({ ...f, box_id: newBox.id }));
+      toast(`Box ${boxBarcode} created`);
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setCreatingBox(false);
+    }
+  }
+
+  async function handleSave(e) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const num = v => v === '' ? null : Number(v);
+      const body = {
+        ...form,
+        box_id: form.box_id === '' ? null : Number(form.box_id),
+        latitude: num(form.latitude), longitude: num(form.longitude),
+        volume_ml: num(form.volume_ml), weight_g: num(form.weight_g), depth_cm: num(form.depth_cm),
+      };
+      const updated = await api.updateTube(id, body);
+      setTube(t => ({ ...t, ...updated }));
+      setEditing(false);
+      setShowMap(false);
+      toast('Tube updated');
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function handleDelete() {
     if (!confirm('Delete this tube?')) return;
@@ -21,21 +118,7 @@ export default function TubeDetail() {
 
   if (!tube) return <p style={{ color: 'var(--text2)', padding: 32 }}>Loading…</p>;
 
-  const fields = [
-    ['Barcode', <span key="barcode" className="barcode">{tube.barcode}</span>],
-    ['Box', tube.box_barcode ? <Link to={`/boxes/${tube.box_id}`}><span className="barcode">{tube.box_barcode}</span>{tube.box_name ? ` — ${tube.box_name}` : ''}</Link> : '—'],
-    ['Collection date', tube.collection_date || '—'],
-    ['Site', tube.site_name || '—'],
-    ['Sample type', tube.sample_type || '—'],
-    ['Depth in core', tube.depth_cm != null ? `${tube.depth_cm} cm` : '—'],
-    ['Volume', tube.volume_ml != null ? `${tube.volume_ml} mL` : '—'],
-    ['Weight', tube.weight_g != null ? `${tube.weight_g} g` : '—'],
-    ['Latitude', tube.latitude ?? '—'],
-    ['Longitude', tube.longitude ?? '—'],
-    ['Description', tube.description || '—'],
-    ['Created', tube.created_at?.slice(0, 10)],
-    ['Updated', tube.updated_at?.slice(0, 10)],
-  ];
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   return (
     <div>
@@ -45,20 +128,170 @@ export default function TubeDetail() {
           <h1 className="page-title"><span className="barcode" style={{ fontSize: 18 }}>{tube.barcode}</span></h1>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <Link to={`/tubes/${id}/edit`} className="btn btn-secondary">Edit</Link>
+          <button className="btn btn-secondary" onClick={editing ? cancelEditing : startEditing}>
+            {editing ? 'Cancel' : 'Edit'}
+          </button>
           <button className="btn btn-danger" onClick={handleDelete}>Delete</button>
         </div>
       </div>
 
-      <div className="card card-body">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 24px' }}>
-          {fields.map(([label, value]) => (
-            <div key={label}>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text2)', marginBottom: 2 }}>{label}</div>
-              <div>{value}</div>
+      <div className="card card-body" style={{ marginBottom: 16 }}>
+        <form onSubmit={handleSave}>
+          <div className="form-grid" style={{ marginBottom: editing ? 12 : 0 }}>
+
+            <div className="field span-2">
+              <label>Barcode *</label>
+              {editing
+                ? <BarcodeInput value={form.barcode} onChange={v => set('barcode', v)} />
+                : <span className="barcode">{tube.barcode}</span>}
             </div>
-          ))}
-        </div>
+
+            <div className="field">
+              <label style={editing ? { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } : {}}>
+                Box
+                {editing && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => boxMode === 'select' ? switchToScan() : setBoxMode('select')}
+                  >
+                    {boxMode === 'select' ? 'Scan barcode' : 'Choose from list'}
+                  </button>
+                )}
+              </label>
+              {editing ? (
+                boxMode === 'select' ? (
+                  <select value={form.box_id} onChange={e => set('box_id', e.target.value)}>
+                    <option value="">— Unassigned —</option>
+                    {boxes.map(b => <option key={b.id} value={b.id}>{b.barcode}{b.name ? ` — ${b.name}` : ''}</option>)}
+                  </select>
+                ) : (
+                  <>
+                    <BarcodeInput value={boxBarcode} onChange={handleBoxBarcodeChange} placeholder="Scan or type box barcode" />
+                    {boxMatch && (
+                      <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--accent)' }}>
+                        ✓ {boxMatch.barcode}{boxMatch.name ? ` — ${boxMatch.name}` : ''}
+                      </p>
+                    )}
+                    {boxNotFound && (
+                      <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--text2)' }}>
+                        Box not found.{' '}
+                        <button type="button" className="btn btn-secondary btn-sm" onClick={handleCreateBox} disabled={creatingBox}>
+                          {creatingBox ? 'Creating…' : `Create "${boxBarcode}"`}
+                        </button>
+                      </p>
+                    )}
+                  </>
+                )
+              ) : (
+                tube.box_id
+                  ? <Link to={`/boxes/${tube.box_id}`}><span className="barcode">{tube.box_barcode}</span>{tube.box_name ? ` — ${tube.box_name}` : ''}</Link>
+                  : <span>—</span>
+              )}
+            </div>
+
+            <div className="field">
+              <label>Collection date</label>
+              {editing
+                ? <input type="date" value={form.collection_date} onChange={e => set('collection_date', e.target.value)} />
+                : <span>{tube.collection_date || '—'}</span>}
+            </div>
+
+            <div className="field">
+              <label>Site name</label>
+              {editing
+                ? <input value={form.site_name} onChange={e => set('site_name', e.target.value)} placeholder="e.g. Lake Tahoe core 3" />
+                : <span>{tube.site_name || '—'}</span>}
+            </div>
+
+            <div className="field">
+              <label>Sample type</label>
+              {editing
+                ? <input value={form.sample_type} onChange={e => set('sample_type', e.target.value)} placeholder="e.g. surface, freeze core…" />
+                : <span>{tube.sample_type || '—'}</span>}
+            </div>
+
+            <div className="field">
+              <label style={editing ? { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } : {}}>
+                Latitude
+                {editing && (
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowMap(v => !v)}>
+                    {showMap ? 'Hide map' : '📍 Pick on map'}
+                  </button>
+                )}
+              </label>
+              {editing
+                ? <input type="number" step="any" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="e.g. 39.0968" />
+                : <span>{tube.latitude ?? '—'}</span>}
+            </div>
+
+            <div className="field">
+              <label>Longitude</label>
+              {editing
+                ? <input type="number" step="any" value={form.longitude} onChange={e => set('longitude', e.target.value)} placeholder="e.g. -120.0324" />
+                : <span>{tube.longitude ?? '—'}</span>}
+            </div>
+
+            {editing && showMap && (
+              <div className="field span-2">
+                <MapPicker
+                  lat={form.latitude !== '' ? Number(form.latitude) : null}
+                  lng={form.longitude !== '' ? Number(form.longitude) : null}
+                  onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
+                />
+              </div>
+            )}
+
+            <div className="field">
+              <label>Depth in core (cm)</label>
+              {editing
+                ? <input type="number" step="any" value={form.depth_cm} onChange={e => set('depth_cm', e.target.value)} placeholder="e.g. 12.5" />
+                : <span>{tube.depth_cm != null ? `${tube.depth_cm} cm` : '—'}</span>}
+            </div>
+
+            <div className="field">
+              <label>Volume (mL)</label>
+              {editing
+                ? <input type="number" step="any" value={form.volume_ml} onChange={e => set('volume_ml', e.target.value)} />
+                : <span>{tube.volume_ml != null ? `${tube.volume_ml} mL` : '—'}</span>}
+            </div>
+
+            <div className="field">
+              <label>Weight (g)</label>
+              {editing
+                ? <input type="number" step="any" value={form.weight_g} onChange={e => set('weight_g', e.target.value)} />
+                : <span>{tube.weight_g != null ? `${tube.weight_g} g` : '—'}</span>}
+            </div>
+
+            <div className="field" />
+
+            <div className="field span-2">
+              <label>Description / notes</label>
+              {editing
+                ? <textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Any additional notes…" />
+                : <span style={{ whiteSpace: 'pre-wrap' }}>{tube.description || '—'}</span>}
+            </div>
+
+            <div className="field">
+              <label>Created</label>
+              <span>{tube.created_at?.slice(0, 10)}</span>
+            </div>
+
+            <div className="field">
+              <label>Updated</label>
+              <span>{tube.updated_at?.slice(0, 10)}</span>
+            </div>
+
+          </div>
+          {editing && (
+            <div className="form-actions">
+              <button className="btn btn-primary" disabled={saving || !form.barcode}>
+                {saving ? 'Saving…' : 'Save changes'}
+              </button>
+              <button type="button" className="btn btn-secondary" onClick={cancelEditing}>Cancel</button>
+            </div>
+          )}
+        </form>
       </div>
 
       {tube.latitude != null && tube.longitude != null && (
