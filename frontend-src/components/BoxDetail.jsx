@@ -88,41 +88,47 @@ export default function BoxDetail() {
         </div>
       </div>
 
-      {editing ? (
-        <div className="card card-body" style={{ marginBottom: 24 }}>
-          <form onSubmit={handleSave}>
-            <div className="form-grid" style={{ marginBottom: 12 }}>
-              <div className="field">
-                <label>Barcode *</label>
-                <BarcodeInput value={form.barcode} onChange={v => set('barcode', v)} />
-              </div>
-              <div className="field">
-                <label>Name</label>
-                <input value={form.name} onChange={e => set('name', e.target.value)} />
-              </div>
-              <div className="field">
-                <label>Location</label>
-                <input value={form.location} onChange={e => set('location', e.target.value)} />
-              </div>
-              <div className="field">
-                <label>Notes</label>
-                <input value={form.notes} onChange={e => set('notes', e.target.value)} />
-              </div>
+      <div className="card card-body" style={{ marginBottom: 24 }}>
+        <form onSubmit={handleSave}>
+          <div className="form-grid" style={{ marginBottom: editing ? 12 : 0 }}>
+            <div className="field">
+              <label>Barcode *</label>
+              {editing
+                ? <BarcodeInput value={form.barcode} onChange={v => set('barcode', v)} />
+                : <span className="barcode">{box.barcode}</span>}
             </div>
+            <div className="field">
+              <label>Name</label>
+              {editing
+                ? <input value={form.name} onChange={e => set('name', e.target.value)} />
+                : <span>{box.name || '—'}</span>}
+            </div>
+            <div className="field">
+              <label>Location</label>
+              {editing
+                ? <input value={form.location} onChange={e => set('location', e.target.value)} />
+                : <span>{box.location || '—'}</span>}
+            </div>
+            <div className="field">
+              <label>Notes</label>
+              {editing
+                ? <input value={form.notes} onChange={e => set('notes', e.target.value)} />
+                : <span>{box.notes || '—'}</span>}
+            </div>
+            <div className="field">
+              <label>Created</label>
+              <span>{box.created_at?.slice(0, 10)}</span>
+            </div>
+            <div className="field" />
+          </div>
+          {editing && (
             <div className="form-actions">
               <button className="btn btn-primary" disabled={saving}>Save</button>
               <button type="button" className="btn btn-secondary" onClick={() => setEditing(false)}>Cancel</button>
             </div>
-          </form>
-        </div>
-      ) : (
-        <div className="card card-body" style={{ marginBottom: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div><span style={{ color: 'var(--text2)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Barcode</span><br /><span className="barcode">{box.barcode}</span></div>
-          <div><span style={{ color: 'var(--text2)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Location</span><br />{box.location || '—'}</div>
-          <div><span style={{ color: 'var(--text2)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Notes</span><br />{box.notes || '—'}</div>
-          <div><span style={{ color: 'var(--text2)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Created</span><br />{box.created_at?.slice(0, 10)}</div>
-        </div>
-      )}
+          )}
+        </form>
+      </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <h2 style={{ fontSize: 15, fontWeight: 700 }}>Tubes ({box.tubes?.length ?? 0})</h2>
@@ -213,7 +219,7 @@ export default function BoxDetail() {
                   <td>
                     <div className="row-actions">
                       <Link to={`/tubes/${t.id}`} className="btn btn-secondary btn-sm">View</Link>
-                      <Link to={`/tubes/${t.id}/edit`} className="btn btn-secondary btn-sm">Edit</Link>
+                      <Link to={`/tubes/${t.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>
                       <button className="btn btn-danger btn-sm" onClick={() => handleRemoveTube(t.id)}>Remove</button>
                     </div>
                   </td>
