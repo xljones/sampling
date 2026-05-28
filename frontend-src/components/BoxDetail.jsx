@@ -145,11 +145,11 @@ export default function BoxDetail() {
                 : <span>{box.notes || '—'}</span>}
             </div>
             <div className="field">
-              <label>Created</label>
+              <label>Created (UTC)</label>
               <span>{box.created_at}</span>
             </div>
             <div className="field">
-              <label>Updated</label>
+              <label>Updated (UTC)</label>
               <span>{box.updated_at}</span>
             </div>
           </div>

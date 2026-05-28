@@ -76,7 +76,7 @@ export default function ScanPage() {
               <Field label="Name" value={result.data.name} />
               <Field label="Location" value={result.data.location} />
               <Field label="Notes" value={result.data.notes} />
-              <Field label="Created" value={result.data.created_at?.slice(0,10)} />
+              <Field label="Created (UTC)" value={result.data.created_at?.slice(0,10)} />
             </div>
           )}
 

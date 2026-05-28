@@ -310,12 +310,12 @@ export default function TubeDetail() {
             </div>
 
             <div className="field">
-              <label>Created</label>
+              <label>Created (UTC)</label>
               <span>{tube.created_at}</span>
             </div>
 
             <div className="field">
-              <label>Updated</label>
+              <label>Updated (UTC)</label>
               <span>{tube.updated_at}</span>
             </div>
 

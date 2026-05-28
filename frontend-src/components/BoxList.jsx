@@ -112,7 +112,7 @@ export default function BoxList() {
       <div className="card">
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Barcode</th><th>Name</th><th>Location</th><th>Tubes</th><th>Updated</th><th></th></tr></thead>
+            <thead><tr><th>Barcode</th><th>Name</th><th>Location</th><th>Tubes</th><th>Updated (UTC)</th><th></th></tr></thead>
             <tbody>
               {visible.map(b => (
                 <tr
