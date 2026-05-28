@@ -1,4 +1,5 @@
 import os
+import tomllib
 from pathlib import Path
 
 from flask import Flask, jsonify, send_from_directory
@@ -6,7 +7,7 @@ from flask_cors import CORS
 from flask_login import LoginManager
 
 _DIST_DIR = str(Path(__file__).parent.parent.parent / "dist")
-_VERSION_FILE = Path(__file__).parent.parent.parent / "VERSION"
+_PYPROJECT = Path(__file__).parent.parent / "pyproject.toml"
 
 login_manager = LoginManager()
 
@@ -50,7 +51,11 @@ def create_app():
 
     @app.get("/api/version")
     def version():
-        v = _VERSION_FILE.read_text().strip() if _VERSION_FILE.exists() else "unknown"
+        try:
+            with open(_PYPROJECT, "rb") as f:
+                v = tomllib.load(f)["project"]["version"]
+        except Exception:
+            v = "unknown"
         return jsonify(version=v)
 
     @app.get("/", defaults={"path": ""})
