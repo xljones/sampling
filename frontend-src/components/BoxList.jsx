@@ -84,7 +84,7 @@ export default function BoxList() {
               </div>
             </div>
             <div className="form-actions">
-              <button className="btn btn-primary" disabled={saving || !form.barcode}>Save box</button>
+              <button className="btn btn-success" disabled={saving || !form.barcode}>Save box</button>
               <button type="button" className="btn btn-secondary" onClick={() => setShowAdd(false)}>Cancel</button>
             </div>
           </form>
@@ -104,7 +104,7 @@ export default function BoxList() {
       <div className="card">
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Barcode</th><th>Name</th><th>Location</th><th>Tubes</th><th>Created</th><th></th></tr></thead>
+            <thead><tr><th>Barcode</th><th>Name</th><th>Location</th><th>Tubes</th><th>Updated</th><th></th></tr></thead>
             <tbody>
               {visible.map(b => (
                 <tr key={b.id}>
@@ -112,8 +112,8 @@ export default function BoxList() {
                   <td>{b.name || '—'}</td>
                   <td>{b.location || '—'}</td>
                   <td>{b.tube_count}</td>
-                  <td style={{ color: 'var(--text2)' }}>{b.created_at?.slice(0, 10)}</td>
-                  <td>
+                  <td style={{ color: 'var(--text2)' }}>{b.updated_at?.slice(0, 10)}</td>
+                  <td style={{ width: '1%', whiteSpace: 'nowrap' }}>
                     <div className="row-actions">
                       <Link to={`/boxes/${b.id}`} className="btn btn-secondary btn-sm">View</Link>
                       <Link to={`/boxes/${b.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>

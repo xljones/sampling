@@ -238,7 +238,7 @@ export default function TubeForm({ mode }) {
           </div>
 
           <div className="form-actions">
-            <button className="btn btn-primary" disabled={saving || !form.barcode}>
+            <button className="btn btn-success" disabled={saving || !form.barcode}>
               {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Create tube'}
             </button>
             <button type="button" className="btn btn-secondary" onClick={() => navigate(-1)}>Cancel</button>

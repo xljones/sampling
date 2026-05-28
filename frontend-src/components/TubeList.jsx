@@ -64,7 +64,7 @@ export default function TubeList() {
             <thead>
               <tr>
                 <th>Barcode</th><th>Box</th><th>Site</th><th>Type</th>
-                <th>Depth (cm)</th><th>Date</th><th></th>
+                <th>Depth (cm)</th><th>Collected</th><th></th>
               </tr>
             </thead>
             <tbody>
