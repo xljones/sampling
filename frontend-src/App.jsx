@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { ToastProvider } from './components/Toast.jsx';
 import { AuthProvider, useAuth } from './AuthContext.jsx';
 import LoginPage from './components/LoginPage.jsx';
@@ -9,9 +10,14 @@ import TubeList from './components/TubeList.jsx';
 import TubeDetail from './components/TubeDetail.jsx';
 import TubeForm from './components/TubeForm.jsx';
 import ScanPage from './components/ScanPage.jsx';
+import { api } from './api.js';
 
 function Nav() {
   const { user, logout } = useAuth();
+  const [version, setVersion] = useState('');
+
+  useEffect(() => { api.version().then(d => setVersion(d.version)).catch(() => {}); }, []);
+
   return (
     <nav className="sidebar">
       <div className="sidebar-title">Sediment Samples</div>
@@ -24,6 +30,11 @@ function Nav() {
         <button className="btn btn-secondary btn-sm" onClick={logout} style={{ width: '100%' }}>
           Sign out
         </button>
+        {version && (
+          <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 8, opacity: 0.6 }}>
+            v{version}
+          </div>
+        )}
       </div>
     </nav>
   );

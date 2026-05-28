@@ -6,6 +6,7 @@ from flask_cors import CORS
 from flask_login import LoginManager
 
 _DIST_DIR = str(Path(__file__).parent.parent.parent / "dist")
+_VERSION_FILE = Path(__file__).parent.parent.parent / "VERSION"
 
 login_manager = LoginManager()
 
@@ -46,6 +47,11 @@ def create_app():
 
     for bp in (auth.bp, boxes.bp, tubes.bp, scan.bp, export.bp):
         app.register_blueprint(bp)
+
+    @app.get("/api/version")
+    def version():
+        v = _VERSION_FILE.read_text().strip() if _VERSION_FILE.exists() else "unknown"
+        return jsonify(version=v)
 
     @app.get("/", defaults={"path": ""})
     @app.get("/<path:path>")

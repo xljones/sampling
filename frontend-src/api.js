@@ -34,6 +34,7 @@ export const api = {
   deleteTube: (id)       => req('DELETE', `/tubes/${id}`),
 
   // Utilities
-  scan:   (barcode) => req('GET', `/scan/${encodeURIComponent(barcode)}`),
-  search: (q)       => req('GET', `/search?q=${encodeURIComponent(q)}`),
+  scan:    (barcode) => req('GET', `/scan/${encodeURIComponent(barcode)}`),
+  search:  (q)       => req('GET', `/search?q=${encodeURIComponent(q)}`),
+  version: ()        => req('GET', '/version'),
 };
