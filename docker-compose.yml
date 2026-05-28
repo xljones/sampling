@@ -25,6 +25,7 @@ services:
       - ./vite.config.js:/app/vite.config.js
       - ./vitest.config.js:/app/vitest.config.js
       - ./eslint.config.js:/app/eslint.config.js
+      - ./dist:/app/dist
     environment:
       API_URL: http://backend:5001
     depends_on:
