@@ -1,0 +1,30 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./backend-src/app.py:/app/app.py
+      - ./backend-src/manage.py:/app/manage.py
+      - ./backend-src/sampling:/app/sampling
+      - ./data:/app/data
+    environment:
+      DB_PATH: /app/data/samples.db
+      FLASK_DEBUG: "1"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend-src:/app/frontend-src
+      - ./frontend-src/index.html:/app/frontend-src/index.html
+      - ./vite.config.js:/app/vite.config.js
+    environment:
+      API_URL: http://backend:5001
+    depends_on:
+      - backend

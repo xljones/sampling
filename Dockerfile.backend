@@ -1,0 +1,16 @@
+FROM python:3.14-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY backend-src/ ./
+
+RUN mkdir -p /app/data
+
+ENV DB_PATH=/app/data/samples.db
+
+EXPOSE 5001
+
+CMD ["python", "app.py"]
