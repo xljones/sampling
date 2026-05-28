@@ -1,0 +1,9 @@
+data/samples.db
+data/samples.db-shm
+data/samples.db-wal
+node_modules/
+dist/
+venv/
+__pycache__/
+*.pyc
+.claude/
