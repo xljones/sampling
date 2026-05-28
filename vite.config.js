@@ -9,7 +9,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     proxy: {
-      '/api': process.env.API_URL || 'http://localhost:5001',
+      '/api/': process.env.API_URL || 'http://localhost:5001',
     },
   },
 });
