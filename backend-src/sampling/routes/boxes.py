@@ -9,6 +9,11 @@ from sampling.repositories.box_repository import BoxRepository
 bp = Blueprint("boxes", __name__)
 
 
+def _loc_id(d):
+    v = d.get("location_id")
+    return int(v) if v else None
+
+
 @bp.get("/api/boxes")
 @login_required
 def list_boxes():
@@ -25,7 +30,7 @@ def create_box():
     try:
         with get_db() as db:
             box = BoxRepository(db).create(
-                d["barcode"], d.get("name"), d.get("location"), d.get("notes"),
+                d["barcode"], d.get("name"), _loc_id(d), d.get("notes"),
                 changed_by=current_user.id,
             )
             return jsonify(box), 201
@@ -55,7 +60,7 @@ def update_box(box_id):
             if not repo.get_by_id(box_id):
                 return jsonify(error="Not found"), 404
             return jsonify(repo.update(
-                box_id, d["barcode"], d.get("name"), d.get("location"), d.get("notes"),
+                box_id, d["barcode"], d.get("name"), _loc_id(d), d.get("notes"),
                 changed_by=current_user.id,
             ))
     except sqlite3.IntegrityError:

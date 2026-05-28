@@ -10,6 +10,8 @@ import TubeList from './components/TubeList.jsx';
 import TubeDetail from './components/TubeDetail.jsx';
 import TubeForm from './components/TubeForm.jsx';
 import ScanPage from './components/ScanPage.jsx';
+import LocationList from './components/LocationList.jsx';
+import LocationDetail from './components/LocationDetail.jsx';
 import { api } from './api.js';
 
 function Nav() {
@@ -25,6 +27,7 @@ function Nav() {
       <NavLink to="/scan">Scan barcode</NavLink>
       <NavLink to="/boxes">Boxes</NavLink>
       <NavLink to="/tubes">Tubes</NavLink>
+      <NavLink to="/locations">Locations</NavLink>
       <div style={{ marginTop: 'auto' }}>
         <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
           <div style={{ fontSize: 12, color: 'var(--text2)' }}>{user?.username}</div>
@@ -65,6 +68,8 @@ function AppShell() {
           <Route path="/tubes" element={<TubeList />} />
           <Route path="/tubes/new" element={<TubeForm mode="create" />} />
           <Route path="/tubes/:id" element={<TubeDetail />} />
+          <Route path="/locations" element={<LocationList />} />
+          <Route path="/locations/:id" element={<LocationDetail />} />
         </Routes>
       </main>
     </div>

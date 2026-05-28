@@ -39,6 +39,13 @@ export const api = {
   getTubeHistory: (id)             => req('GET',    `/tubes/${id}/history`),
   revertTube:     (id, versionId)  => req('POST',   `/tubes/${id}/revert/${versionId}`),
 
+  // Locations
+  getLocations:    ()           => req('GET',    '/locations'),
+  getLocation:     (id)         => req('GET',    `/locations/${id}`),
+  createLocation:  (body)       => req('POST',   '/locations', body),
+  updateLocation:  (id, body)   => req('PUT',    `/locations/${id}`, body),
+  deleteLocation:  (id)         => req('DELETE', `/locations/${id}`),
+
   // Utilities
   scan:    (barcode) => req('GET', `/scan/${encodeURIComponent(barcode)}`),
   search:  (q)       => req('GET', `/search?q=${encodeURIComponent(q)}`),

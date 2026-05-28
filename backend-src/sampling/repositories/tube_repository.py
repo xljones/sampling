@@ -4,22 +4,31 @@ class TubeRepository:
 
     def list_all(self):
         return self._rows(self.db.execute("""
-            SELECT t.*, b.name AS box_name, b.barcode AS box_barcode
-            FROM tubes t LEFT JOIN boxes b ON b.id = t.box_id
+            SELECT t.*, b.name AS box_name, b.barcode AS box_barcode,
+                   l.name AS box_location_name
+            FROM tubes t
+            LEFT JOIN boxes b ON b.id = t.box_id
+            LEFT JOIN locations l ON l.id = b.location_id
             ORDER BY t.created_at DESC
         """).fetchall())
 
     def get_by_id(self, tube_id):
         return self._row(self.db.execute("""
-            SELECT t.*, b.name AS box_name, b.barcode AS box_barcode
-            FROM tubes t LEFT JOIN boxes b ON b.id = t.box_id
+            SELECT t.*, b.name AS box_name, b.barcode AS box_barcode,
+                   l.name AS box_location_name
+            FROM tubes t
+            LEFT JOIN boxes b ON b.id = t.box_id
+            LEFT JOIN locations l ON l.id = b.location_id
             WHERE t.id=?
         """, (tube_id,)).fetchone())
 
     def get_by_barcode(self, barcode):
         return self._row(self.db.execute("""
-            SELECT t.*, b.name AS box_name, b.barcode AS box_barcode
-            FROM tubes t LEFT JOIN boxes b ON b.id = t.box_id
+            SELECT t.*, b.name AS box_name, b.barcode AS box_barcode,
+                   l.name AS box_location_name
+            FROM tubes t
+            LEFT JOIN boxes b ON b.id = t.box_id
+            LEFT JOIN locations l ON l.id = b.location_id
             WHERE t.barcode=?
         """, (barcode,)).fetchone())
 

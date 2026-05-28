@@ -40,21 +40,22 @@ def cmd_seed(_):
     run_migrations()
 
     BOXES = [
-        ("BX-001", "North Sea Core A",    "Cold Room A / Shelf 1", "Long piston core, 2023 cruise"),
-        ("BX-002", "North Sea Core B",    "Cold Room A / Shelf 1", "Gravity core, 2023 cruise"),
-        ("BX-003", "North Sea Core C",    "Cold Room A / Shelf 2", None),
-        ("BX-004", "Thames Est. Core 1",  "Cold Room A / Shelf 3", "Intertidal flat, spring tide"),
-        ("BX-005", "Thames Est. Core 2",  "Cold Room A / Shelf 3", "Subtidal channel margin"),
-        ("BX-006", "Norfolk Broads TH-1", "Cold Room B / Shelf 1", "Hickling Broad, 4m water depth"),
-        ("BX-007", "Norfolk Broads TH-2", "Cold Room B / Shelf 1", "Barton Broad"),
-        ("BX-008", "Norfolk Broads TH-3", "Cold Room B / Shelf 2", None),
-        ("BX-009", "Severn Est. SE-01",   "Cold Room B / Shelf 3", "Goldcliff mudflat transect"),
-        ("BX-010", "Severn Est. SE-02",   "Cold Room B / Shelf 3", None),
-        ("BX-011", "Loch Etive LE-1",     "Cold Room C / Shelf 1", "Fjordic basin, 145m depth"),
-        ("BX-012", "Loch Etive LE-2",     "Cold Room C / Shelf 1", "Mid-basin"),
-        ("BX-013", "Loch Lomond LL-1",    "Cold Room C / Shelf 2", "Deep basin core"),
-        ("BX-014", "Humber Est. HE-1",    "Cold Room C / Shelf 3", "Spurn Point vicinity"),
-        ("BX-015", "Solent Core SL-1",    "Cold Room C / Shelf 3", "Western Solent, 12m depth"),
+        # (barcode, name, location_name, notes)
+        ("BX-001", "North Sea Core A",    "Southampton - Lab A", "Long piston core, 2023 cruise"),
+        ("BX-002", "North Sea Core B",    "Southampton - Lab A", "Gravity core, 2023 cruise"),
+        ("BX-003", "North Sea Core C",    "Southampton - Lab A", None),
+        ("BX-004", "Thames Est. Core 1",  "Southampton - Lab B", "Intertidal flat, spring tide"),
+        ("BX-005", "Thames Est. Core 2",  "Southampton - Lab B", "Subtidal channel margin"),
+        ("BX-006", "Norfolk Broads TH-1", "Southampton - Lab A", "Hickling Broad, 4m water depth"),
+        ("BX-007", "Norfolk Broads TH-2", "Southampton - Lab A", "Barton Broad"),
+        ("BX-008", "Norfolk Broads TH-3", "Southampton - Lab A", None),
+        ("BX-009", "Severn Est. SE-01",   "In transit",          "Goldcliff mudflat transect"),
+        ("BX-010", "Severn Est. SE-02",   "In transit",          None),
+        ("BX-011", "Loch Etive LE-1",     "Tromsø – Lab",       "Fjordic basin, 145m depth"),
+        ("BX-012", "Loch Etive LE-2",     "Tromsø – Lab",       "Mid-basin"),
+        ("BX-013", "Loch Lomond LL-1",    "Tromsø – Lab",       "Deep basin core"),
+        ("BX-014", "Humber Est. HE-1",    "Southampton - Lab B", "Spurn Point vicinity"),
+        ("BX-015", "Solent Core SL-1",    "Southampton - Lab A", "Western Solent, 12m depth"),
     ]
 
     TUBES = [
@@ -114,16 +115,31 @@ def cmd_seed(_):
         ("T-0053", "BX-015", "2023-11-08", "Western Solent, Hants",  50.76, -1.52, "Sediment",      "Grey silty clay",                 45.0,  98.1,  58.0),
     ]
 
+    DEFAULT_LOCATIONS = [
+        "Tromsø – Lab",
+        "Southampton - Lab A",
+        "Southampton - Lab B",
+        "In transit",
+    ]
+
     with get_db() as db:
         box_repo = BoxRepository(db)
         tube_repo = TubeRepository(db)
         box_ids = {}
 
-        for barcode, name, location, notes in BOXES:
+        for loc_name in DEFAULT_LOCATIONS:
+            exists = db.execute("SELECT 1 FROM locations WHERE name=?", (loc_name,)).fetchone()
+            if not exists:
+                db.execute("INSERT INTO locations (name) VALUES (?)", (loc_name,))
+                print(f"  location: {loc_name}")
+
+        locs = {r["name"]: r["id"] for r in db.execute("SELECT id, name FROM locations").fetchall()}
+
+        for barcode, name, loc_name, notes in BOXES:
             if box_repo.get_by_barcode(barcode):
                 print(f"  skip box {barcode} (already exists)")
                 continue
-            box = box_repo.create(barcode, name, location, notes)
+            box = box_repo.create(barcode, name, locs.get(loc_name), notes)
             box_ids[barcode] = box["id"]
             print(f"  box {barcode} — {name}")
 

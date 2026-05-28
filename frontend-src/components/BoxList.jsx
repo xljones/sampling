@@ -6,9 +6,10 @@ import BarcodeInput from './BarcodeInput.jsx';
 
 export default function BoxList() {
   const [boxes, setBoxes] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [filter, setFilter] = useState('');
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ barcode: '', name: '', location: '', notes: '' });
+  const [form, setForm] = useState({ barcode: '', name: '', location_id: '', notes: '' });
   const [saving, setSaving] = useState(false);
   const toast = useToast();
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ export default function BoxList() {
 
   useEffect(() => {
     api.getBoxes().then(setBoxes);
+    api.getLocations().then(setLocations);
     const barcode = searchParams.get('barcode');
     if (searchParams.get('add') === '1') {
       setShowAdd(true);
@@ -28,7 +30,8 @@ export default function BoxList() {
     ? boxes.filter(b =>
         b.barcode.toLowerCase().includes(q) ||
         (b.name ?? '').toLowerCase().includes(q) ||
-        (b.location ?? '').toLowerCase().includes(q)
+        (b.location_name ?? '').toLowerCase().includes(q) ||
+        (b.notes ?? '').toLowerCase().includes(q)
       )
     : boxes;
 
@@ -83,8 +86,11 @@ export default function BoxList() {
                 <input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Core A Box 1" />
               </div>
               <div className="field">
-                <label>Location / storage</label>
-                <input value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g. Freezer 2, shelf 3" />
+                <label>Location</label>
+                <select value={form.location_id} onChange={e => set('location_id', e.target.value)}>
+                  <option value="">— No location —</option>
+                  {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                </select>
               </div>
               <div className="field">
                 <label>Notes</label>
@@ -122,7 +128,7 @@ export default function BoxList() {
                 >
                   <td><Link to={`/boxes/${b.id}`}><span className="barcode">{b.barcode}</span></Link></td>
                   <td>{b.name || '—'}</td>
-                  <td>{b.location || '—'}</td>
+                  <td>{b.location_name || '—'}</td>
                   <td>{b.tube_count}</td>
                   <td style={{ color: 'var(--text2)' }}>{b.updated_at?.slice(0, 10)}</td>
                   <td style={{ width: '1%', whiteSpace: 'nowrap' }}>

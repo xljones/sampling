@@ -20,9 +20,9 @@ sampling/
   __init__.py        create_app() factory; registers blueprints, before_request auth guard
   db.py              get_db(), run_migrations() — migration runner reads migrations/*.sql
   migrations/        Numbered SQL files (001_initial.sql, 002_add_users.sql, …)
-  domain/            Plain dataclasses: Box, Tube, User
-  repositories/      BoxRepository, TubeRepository, UserRepository — own all SQL
-  routes/            Flask Blueprints: boxes, tubes, scan, export, auth
+  domain/            Plain dataclasses: Box, Tube, User, Location
+  repositories/      BoxRepository, TubeRepository, UserRepository, LocationRepository — own all SQL
+  routes/            Flask Blueprints: boxes, tubes, scan, export, auth, locations
 ```
 
 - **Adding a schema change:** drop a new `NNN_description.sql` in `migrations/`. It runs automatically on next startup and is recorded in `schema_migrations`.
@@ -36,7 +36,7 @@ App.jsx              Shell: checks auth state, renders LoginPage or the main lay
 AuthContext.jsx      Provides user, login(), logout() via React context
 api.js               Thin fetch wrapper; all calls use credentials: 'include'
 components/          One file per page: Dashboard, BoxList, BoxDetail, TubeList,
-                     TubeDetail, TubeForm, ScanPage, LoginPage
+                     TubeDetail, TubeForm, ScanPage, LoginPage, LocationList
                      Shared: BarcodeInput, CameraScanner, Toast
 ```
 

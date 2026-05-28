@@ -221,9 +221,16 @@ export default function TubeDetail() {
                   </>
                 )
               ) : (
-                tube.box_id
-                  ? <Link to={`/boxes/${tube.box_id}`}><span className="barcode">{tube.box_barcode}</span>{tube.box_name ? ` — ${tube.box_name}` : ''}</Link>
-                  : <span>—</span>
+                tube.box_id ? (
+                  <>
+                    <Link to={`/boxes/${tube.box_id}`}>
+                      <span className="barcode">{tube.box_barcode}</span>{tube.box_name ? ` — ${tube.box_name}` : ''}
+                    </Link>
+                    {tube.box_location_name && (
+                      <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 3 }}>{tube.box_location_name}</div>
+                    )}
+                  </>
+                ) : <span>—</span>
               )}
             </div>
 

@@ -29,7 +29,15 @@ export default function TubeList() {
       t.barcode.toLowerCase().includes(q) ||
       (t.site_name ?? '').toLowerCase().includes(q) ||
       (t.sample_type ?? '').toLowerCase().includes(q) ||
-      (t.box_barcode ?? '').toLowerCase().includes(q)
+      (t.box_barcode ?? '').toLowerCase().includes(q) ||
+      (t.box_name ?? '').toLowerCase().includes(q) ||
+      (t.description ?? '').toLowerCase().includes(q) ||
+      (t.collection_date ?? '').toLowerCase().includes(q) ||
+      (t.volume_ml != null ? String(t.volume_ml) : '').includes(q) ||
+      (t.weight_g != null ? String(t.weight_g) : '').includes(q) ||
+      (t.depth_cm != null ? String(t.depth_cm) : '').includes(q) ||
+      (t.latitude != null ? String(t.latitude) : '').includes(q) ||
+      (t.longitude != null ? String(t.longitude) : '').includes(q)
     ));
 
   const allVisibleSelected = visible.length > 0 && visible.every(t => selected.has(t.id));
@@ -65,7 +73,7 @@ export default function TubeList() {
       const ids = [...selected];
       await api.bulkAssignTubes(ids, boxMatch.id);
       setTubes(ts => ts.map(t => selected.has(t.id)
-        ? { ...t, box_id: boxMatch.id, box_barcode: boxMatch.barcode, box_name: boxMatch.name }
+        ? { ...t, box_id: boxMatch.id, box_barcode: boxMatch.barcode, box_name: boxMatch.name, box_location_name: boxMatch.location_name }
         : t
       ));
       toast(`${ids.length} tube${ids.length !== 1 ? 's' : ''} assigned to ${boxMatch.barcode}`);

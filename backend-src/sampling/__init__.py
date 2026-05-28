@@ -31,7 +31,7 @@ def create_app():
     from sampling.db import get_db, run_migrations
     from sampling.domain.user import User
     from sampling.repositories.user_repository import UserRepository
-    from sampling.routes import auth, boxes, export, scan, tubes
+    from sampling.routes import auth, boxes, export, locations, scan, tubes
 
     run_migrations()
 
@@ -61,7 +61,7 @@ def create_app():
     def unauthorized():
         return jsonify(error="Authentication required"), 401
 
-    for bp in (auth.bp, boxes.bp, tubes.bp, scan.bp, export.bp):
+    for bp in (auth.bp, boxes.bp, tubes.bp, scan.bp, export.bp, locations.bp):
         app.register_blueprint(bp)
 
     @app.get("/api/version")

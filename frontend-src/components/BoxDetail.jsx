@@ -14,6 +14,7 @@ export default function BoxDetail() {
   const [editing, setEditing] = useState(searchParams.get('edit') === '1');
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
+  const [locations, setLocations] = useState([]);
   const [showAssign, setShowAssign] = useState(false);
   const [assignBarcode, setAssignBarcode] = useState('');
   const [unassigned, setUnassigned] = useState([]);
@@ -21,7 +22,8 @@ export default function BoxDetail() {
   const [history, setHistory] = useState(null);
 
   useEffect(() => {
-    api.getBox(id).then(b => { setBox(b); setForm({ barcode: b.barcode, name: b.name ?? '', location: b.location ?? '', notes: b.notes ?? '' }); });
+    api.getBox(id).then(b => { setBox(b); setForm({ barcode: b.barcode, name: b.name ?? '', location_id: b.location_id ?? '', notes: b.notes ?? '' }); });
+    api.getLocations().then(setLocations);
   }, [id]);
   useEffect(() => { api.getBoxHistory(id).then(setHistory); }, [id]);
 
@@ -134,9 +136,14 @@ export default function BoxDetail() {
             </div>
             <div className="field">
               <label>Location</label>
-              {editing
-                ? <input value={form.location} onChange={e => set('location', e.target.value)} />
-                : <span>{box.location || '—'}</span>}
+              {editing ? (
+                <select value={form.location_id} onChange={e => set('location_id', e.target.value)}>
+                  <option value="">— No location —</option>
+                  {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                </select>
+              ) : (
+                <span>{box.location_name || '—'}</span>
+              )}
             </div>
             <div className="field">
               <label>Notes</label>
@@ -298,7 +305,7 @@ export default function BoxDetail() {
                       <div className="history-fields" style={{ fontSize: 13 }}>
                         {f('barcode', v.barcode, 'barcode')}
                         {f('name', v.name || '—', 'name')}
-                        {f('location', v.location || '—', 'location')}
+                        {f('location', v.location_name || '—', 'location_id')}
                         {f('notes', v.notes || '—', 'notes')}
                       </div>
                     </div>
