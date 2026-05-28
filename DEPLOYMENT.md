@@ -33,13 +33,13 @@ pip install -r requirements.txt
 ### 4. Create your user account
 
 ```bash
-venv/bin/python backend-src/manage.py create-user <username> <password>
+make create-user username=<username> password=<password>
 ```
 
 To list existing users at any time:
 
 ```bash
-venv/bin/python backend-src/manage.py list-users
+make list-users
 ```
 
 ### 5. Create the `.env` file
@@ -82,3 +82,16 @@ make deploy-pa
 This pulls the latest `main` and installs any new Python dependencies. Reload the web app from the PythonAnywhere Web tab to apply the changes.
 
 Database migrations run automatically on the next request after reload.
+
+---
+
+## Database management
+
+All commands below work on both PythonAnywhere and locally — they auto-detect the environment.
+
+```bash
+make seed         # populate with sample data (~15 boxes, ~53 tubes)
+make reset-db     # delete all boxes, tubes, and history (users kept)
+make create-user username=x password=y
+make list-users
+```

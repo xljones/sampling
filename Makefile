@@ -36,6 +36,15 @@ else
 	docker compose run --rm backend python manage.py list-users
 endif
 
+.PHONY: reset-db
+# delete all boxes, tubes, and history — users are preserved
+reset-db:
+ifdef PYTHONANYWHERE_SITE
+	venv/bin/python backend-src/manage.py reset-db
+else
+	docker compose run --rm -it backend python manage.py reset-db
+endif
+
 .PHONY: seed
 # populate the database with sample data (~15 boxes, ~53 tubes)
 seed:

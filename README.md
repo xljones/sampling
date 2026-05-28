@@ -4,9 +4,11 @@ A local web app for cataloguing sediment samples. Samples are stored in tubes, t
 
 ## Features
 
-- **Boxes & tubes** — create, view, edit, and delete with full metadata
+- **Boxes & tubes** — create, view, inline-edit, and delete with full metadata
+- **Version history** — every save is snapshotted; revert any box or tube to a previous version
 - **Barcode input** — USB scanner (keyboard wedge), camera scan, or manual entry
 - **Camera scanner** — auto-detects front/rear camera and corrects mirroring
+- **GPS & map** — latitude/longitude on tubes with a pick-on-map tool and Leaflet map view
 - **CSV export** — export all boxes or tubes to CSV
 - **Search** — filter by barcode, site, type, or location
 - **Authentication** — session-based login; users stored in SQLite
@@ -22,6 +24,12 @@ make run
 # Create a user account
 make create-user username=you password=yourpassword
 
+# Populate with sample data
+make seed
+
+# Reset all data except users
+make reset-db
+
 # View logs
 make logs
 
@@ -36,7 +44,7 @@ App runs at **http://localhost:5173**.
 ```
 backend-src/           Python backend
   app.py               Entry point
-  manage.py            CLI (create-user, list-users)
+  manage.py            CLI (create-user, list-users, seed, reset-db)
   wsgi.py              PythonAnywhere WSGI entry point
   sampling/
     __init__.py        App factory

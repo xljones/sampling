@@ -4,7 +4,7 @@
 
 | Layer | Tech |
 |---|---|
-| Backend | Python 3.14, Flask, SQLite (`better-sqlite3` via built-in `sqlite3`) |
+| Backend | Python 3.14, Flask, SQLite (built-in `sqlite3`) |
 | Frontend | React 18, Vite, React Router |
 | Auth | Flask sessions + `werkzeug.security` password hashing |
 | Dev environment | Docker Compose (two services: `backend`, `frontend`) |
@@ -53,6 +53,7 @@ make build        # rebuild images (needed after requirements.txt or Dockerfile 
 make create-user username=x password=y
 make list-users
 make seed         # populate with sample data (~15 boxes, ~53 tubes)
+make reset-db     # delete all boxes, tubes, and history (users kept)
 ```
 
 The database is at `data/samples.db` (bind-mounted into the backend container).
@@ -64,9 +65,10 @@ make deploy-pa    # pull latest, create venv if needed, install deps
 make create-user username=x password=y
 make list-users
 make seed
+make reset-db
 ```
 
-`make create-user`, `make list-users`, and `make seed` auto-detect the environment: on PythonAnywhere they run via `venv/bin/python backend-src/manage.py` directly; locally they use Docker. Detection relies on `PYTHONANYWHERE_SITE`, an env var PythonAnywhere injects automatically into every console and web process (set to your site's domain, e.g. `username.pythonanywhere.com`).
+`make create-user`, `make list-users`, `make seed`, and `make reset-db` auto-detect the environment: on PythonAnywhere they run via `venv/bin/python backend-src/manage.py` directly; locally they use Docker. Detection relies on `PYTHONANYWHERE_SITE`, an env var PythonAnywhere injects automatically into every console and web process (set to your site's domain, e.g. `username.pythonanywhere.com`).
 
 ## Key conventions
 
