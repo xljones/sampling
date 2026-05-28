@@ -42,21 +42,14 @@ To list existing users at any time:
 venv/bin/python backend-src/manage.py list-users
 ```
 
-### 5. Set the secret key
-
-Edit `pa_wsgi.py` and replace the placeholder value with a real secret:
+### 5. Create the `.env` file
 
 ```bash
-python -c "import secrets; print(secrets.token_hex(32))"
+echo "SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_hex(32))')" > .env
+echo "FLASK_DEBUG=0" >> .env
 ```
 
-Then open `pa_wsgi.py` and set `SECRET_KEY` to that value:
-
-```python
-os.environ.setdefault("SECRET_KEY", "paste-your-generated-key-here")
-```
-
-> **Note:** `pa_wsgi.py` is committed to the repo with a placeholder. Edit it directly on PythonAnywhere after cloning — `make deploy-pa` will overwrite it, so re-apply your key after each deploy, or keep a local copy outside the repo.
+This file is gitignored and will not be overwritten by `make deploy-pa`.
 
 ### 6. Configure the web app
 
@@ -68,15 +61,7 @@ In the **PythonAnywhere Web tab**:
 | Working directory | `/home/<you>/sampling` |
 | Virtualenv | `/home/<you>/sampling/venv` |
 
-**WSGI configuration file** — replace the entire contents with:
-
-```python
-import os, sys
-sys.path.insert(0, os.path.join(os.environ["HOME"], "sampling", "backend-src"))
-from wsgi import application
-```
-
-Or run `make deploy-pa` (see below) which copies `pa_wsgi.py` from the repo automatically.
+**WSGI configuration file** — replace the entire contents with the contents of `pa_wsgi.py` from the repo.
 
 ### 7. Reload
 
@@ -94,6 +79,6 @@ From a **PythonAnywhere Bash console** inside `~/sampling`:
 make deploy-pa
 ```
 
-This pulls the latest `main`, installs any new Python dependencies, and copies `pa_wsgi.py` to the PythonAnywhere WSGI location — which triggers a reload.
+This pulls the latest `main` and installs any new Python dependencies. Reload the web app from the PythonAnywhere Web tab to apply the changes.
 
 Database migrations run automatically on the next request after reload.
