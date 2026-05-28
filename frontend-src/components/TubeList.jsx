@@ -171,7 +171,7 @@ export default function TubeList() {
                   <input type="checkbox" checked={allVisibleSelected} onChange={toggleAll} />
                 </th>
                 <th>Barcode</th><th>Box</th><th>Site</th><th>Type</th>
-                <th>Depth (cm)</th><th>Collected</th><th></th>
+                <th className="col-mobile-hide">Depth (cm)</th><th className="col-mobile-hide">Collected</th><th></th>
               </tr>
             </thead>
             <tbody>
@@ -188,8 +188,8 @@ export default function TubeList() {
                   <td>{t.box_barcode ? <Link to={`/boxes/${t.box_id}`}><span className="barcode">{t.box_barcode}</span></Link> : <span style={{ color: 'var(--text2)' }}>—</span>}</td>
                   <td>{t.site_name || '—'}</td>
                   <td>{t.sample_type || '—'}</td>
-                  <td>{t.depth_cm ?? '—'}</td>
-                  <td>{t.collection_date || '—'}</td>
+                  <td className="col-mobile-hide">{t.depth_cm ?? '—'}</td>
+                  <td className="col-mobile-hide">{t.collection_date || '—'}</td>
                   <td>
                     <div className="row-actions">
                       <Link to={`/tubes/${t.id}`} className="btn btn-secondary btn-sm">View</Link>

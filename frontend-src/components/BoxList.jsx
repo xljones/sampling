@@ -118,7 +118,7 @@ export default function BoxList() {
       <div className="card">
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Barcode</th><th>Name</th><th>Location</th><th>Tubes</th><th>Updated (UTC)</th><th></th></tr></thead>
+            <thead><tr><th>Barcode</th><th>Name</th><th>Location</th><th>Tubes</th><th className="col-mobile-hide">Updated (UTC)</th><th></th></tr></thead>
             <tbody>
               {visible.map(b => (
                 <tr
@@ -130,7 +130,7 @@ export default function BoxList() {
                   <td>{b.name || '—'}</td>
                   <td>{b.location_name || '—'}</td>
                   <td>{b.tube_count}</td>
-                  <td style={{ color: 'var(--text2)' }}>{b.updated_at?.slice(0, 10)}</td>
+                  <td className="col-mobile-hide" style={{ color: 'var(--text2)' }}>{b.updated_at?.slice(0, 10)}</td>
                   <td style={{ width: '1%', whiteSpace: 'nowrap' }}>
                     <div className="row-actions">
                       <Link to={`/boxes/${b.id}`} className="btn btn-secondary btn-sm">View</Link>

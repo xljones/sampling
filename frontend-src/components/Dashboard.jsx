@@ -44,13 +44,13 @@ export default function Dashboard() {
       <div className="card" style={{ marginBottom: 24 }}>
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Barcode</th><th>Name</th><th>Location</th><th>Tubes</th></tr></thead>
+            <thead><tr><th>Barcode</th><th>Name</th><th className="col-mobile-hide">Location</th><th>Tubes</th></tr></thead>
             <tbody>
               {boxes.slice(0, 5).map(b => (
                 <tr key={b.id} style={{ cursor: 'pointer' }} onClick={e => { if (!e.target.closest('a, button')) navigate(`/boxes/${b.id}`); }}>
                   <td><Link to={`/boxes/${b.id}`}><span className="barcode">{b.barcode}</span></Link></td>
                   <td>{b.name || <span style={{ color: 'var(--text2)' }}>—</span>}</td>
-                  <td>{b.location || <span style={{ color: 'var(--text2)' }}>—</span>}</td>
+                  <td className="col-mobile-hide">{b.location_name || <span style={{ color: 'var(--text2)' }}>—</span>}</td>
                   <td>{b.tube_count}</td>
                 </tr>
               ))}
@@ -64,7 +64,7 @@ export default function Dashboard() {
       <div className="card">
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Barcode</th><th>Box</th><th>Site</th><th>Type</th><th>Depth (cm)</th><th>Date</th></tr></thead>
+            <thead><tr><th>Barcode</th><th>Box</th><th>Site</th><th>Type</th><th className="col-mobile-hide">Depth (cm)</th><th className="col-mobile-hide">Date</th></tr></thead>
             <tbody>
               {tubes.slice(0, 8).map(t => (
                 <tr key={t.id} style={{ cursor: 'pointer' }} onClick={e => { if (!e.target.closest('a, button')) navigate(`/tubes/${t.id}`); }}>
@@ -72,8 +72,8 @@ export default function Dashboard() {
                   <td>{t.box_barcode ? <Link to={`/boxes/${t.box_id}`}><span className="barcode">{t.box_barcode}</span></Link> : <span style={{ color: 'var(--text2)' }}>—</span>}</td>
                   <td>{t.site_name || '—'}</td>
                   <td>{t.sample_type || '—'}</td>
-                  <td>{t.depth_cm ?? '—'}</td>
-                  <td>{t.collection_date || '—'}</td>
+                  <td className="col-mobile-hide">{t.depth_cm ?? '—'}</td>
+                  <td className="col-mobile-hide">{t.collection_date || '—'}</td>
                 </tr>
               ))}
               {tubes.length === 0 && <tr><td colSpan={6} className="empty">No tubes yet</td></tr>}

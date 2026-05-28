@@ -43,6 +43,43 @@ function Nav() {
   );
 }
 
+function BottomNav() {
+  const { user, logout } = useAuth();
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [version, setVersion] = useState('');
+
+  useEffect(() => { api.version().then(d => setVersion(d.version)).catch(() => {}); }, []);
+
+  const closeMore = () => setMoreOpen(false);
+
+  return (
+    <>
+      {moreOpen && (
+        <>
+          <div className="bottom-nav-backdrop" onClick={closeMore} />
+          <div className="bottom-nav-more">
+            <NavLink to="/locations" className="sidebar-nav-btn" style={{ display: 'flex' }} onClick={closeMore}>Locations</NavLink>
+            <div style={{ borderTop: '1px solid var(--border)', padding: '12px 16px' }}>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>{user?.username}</div>
+              {version && <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 2 }}>v{version}</div>}
+            </div>
+            <button className="sidebar-nav-btn" onClick={logout}>Sign out</button>
+          </div>
+        </>
+      )}
+      <nav className="bottom-nav">
+        <NavLink to="/" end className="bottom-nav-item" onClick={closeMore}>Overview</NavLink>
+        <NavLink to="/scan" className="bottom-nav-item" onClick={closeMore}>Scan</NavLink>
+        <NavLink to="/boxes" className="bottom-nav-item" onClick={closeMore}>Boxes</NavLink>
+        <NavLink to="/tubes" className="bottom-nav-item" onClick={closeMore}>Tubes</NavLink>
+        <button className={`bottom-nav-item${moreOpen ? ' active' : ''}`} onClick={() => setMoreOpen(v => !v)}>
+          More
+        </button>
+      </nav>
+    </>
+  );
+}
+
 function AppShell() {
   const { user } = useAuth();
 
@@ -72,6 +109,7 @@ function AppShell() {
           <Route path="/locations/:id" element={<LocationDetail />} />
         </Routes>
       </main>
+      <BottomNav />
     </div>
   );
 }
