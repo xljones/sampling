@@ -116,6 +116,7 @@ export default function BoxList() {
                   <td>
                     <div className="row-actions">
                       <Link to={`/boxes/${b.id}`} className="btn btn-secondary btn-sm">View</Link>
+                      <Link to={`/boxes/${b.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>
                       <button className="btn btn-danger btn-sm" onClick={() => handleDelete(b.id)}>Delete</button>
                     </div>
                   </td>
