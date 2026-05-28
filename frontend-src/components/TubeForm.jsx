@@ -18,7 +18,39 @@ export default function TubeForm({ mode }) {
   const [form, setForm] = useState({ ...EMPTY, box_id: params.get('box_id') ?? '' });
   const [boxes, setBoxes] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [boxMode, setBoxMode] = useState('select');
+  const [boxBarcode, setBoxBarcode] = useState('');
+  const [creatingBox, setCreatingBox] = useState(false);
   const isEdit = mode === 'edit';
+
+  const boxMatch = boxes.find(b => b.barcode.toLowerCase() === boxBarcode.toLowerCase());
+  const boxNotFound = boxBarcode.length > 0 && !boxMatch;
+
+  function handleBoxBarcodeChange(v) {
+    setBoxBarcode(v);
+    const match = boxes.find(b => b.barcode.toLowerCase() === v.toLowerCase());
+    set('box_id', match ? match.id : '');
+  }
+
+  function switchToScan() {
+    const selected = boxes.find(b => String(b.id) === String(form.box_id));
+    setBoxBarcode(selected?.barcode ?? '');
+    setBoxMode('scan');
+  }
+
+  async function handleCreateBox() {
+    setCreatingBox(true);
+    try {
+      const newBox = await api.createBox({ barcode: boxBarcode });
+      setBoxes(bs => [...bs, newBox]);
+      set('box_id', newBox.id);
+      toast(`Box ${boxBarcode} created`);
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setCreatingBox(false);
+    }
+  }
 
   useEffect(() => { api.getBoxes().then(setBoxes); }, []);
   useEffect(() => {
@@ -86,11 +118,48 @@ export default function TubeForm({ mode }) {
             </div>
 
             <div className="field">
-              <label>Box</label>
-              <select value={form.box_id} onChange={e => set('box_id', e.target.value)}>
-                <option value="">— Unassigned —</option>
-                {boxes.map(b => <option key={b.id} value={b.id}>{b.barcode}{b.name ? ` — ${b.name}` : ''}</option>)}
-              </select>
+              <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                Box
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => boxMode === 'select' ? switchToScan() : setBoxMode('select')}
+                >
+                  {boxMode === 'select' ? 'Scan barcode' : 'Choose from list'}
+                </button>
+              </label>
+              {boxMode === 'select' ? (
+                <select value={form.box_id} onChange={e => set('box_id', e.target.value)}>
+                  <option value="">— Unassigned —</option>
+                  {boxes.map(b => <option key={b.id} value={b.id}>{b.barcode}{b.name ? ` — ${b.name}` : ''}</option>)}
+                </select>
+              ) : (
+                <>
+                  <BarcodeInput
+                    value={boxBarcode}
+                    onChange={handleBoxBarcodeChange}
+                    placeholder="Scan or type box barcode"
+                  />
+                  {boxMatch && (
+                    <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--accent)' }}>
+                      ✓ {boxMatch.barcode}{boxMatch.name ? ` — ${boxMatch.name}` : ''}
+                    </p>
+                  )}
+                  {boxNotFound && (
+                    <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--text2)' }}>
+                      Box not found.{' '}
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={handleCreateBox}
+                        disabled={creatingBox}
+                      >
+                        {creatingBox ? 'Creating…' : `Create "${boxBarcode}"`}
+                      </button>
+                    </p>
+                  )}
+                </>
+              )}
             </div>
 
             <div className="field">
