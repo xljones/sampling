@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api.js';
+import LeafletMap from './LeafletMap.jsx';
 
 export default function Dashboard() {
   const [boxes, setBoxes] = useState([]);
@@ -12,6 +13,9 @@ export default function Dashboard() {
   }, []);
 
   const unassigned = tubes.filter(t => !t.box_id).length;
+  const mappable = tubes
+    .filter(t => t.latitude != null && t.longitude != null)
+    .map(t => ({ lat: t.latitude, lng: t.longitude, label: t.barcode + (t.site_name ? ` — ${t.site_name}` : '') }));
 
   return (
     <div>
@@ -33,7 +37,9 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Recent boxes</h2>
+      <LeafletMap points={mappable} height={360} />
+
+      <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, marginTop: mappable.length ? 24 : 0 }}>Recent boxes</h2>
       <div className="card" style={{ marginBottom: 24 }}>
         <div className="table-wrap">
           <table>
