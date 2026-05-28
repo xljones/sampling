@@ -3,29 +3,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend
-      target: base
     ports:
       - "5001:5001"
     volumes:
-      - ./backend-src/app.py:/app/app.py
-      - ./backend-src/manage.py:/app/manage.py
-      - ./backend-src/sampling:/app/sampling
+      - ./backend-src:/app
+      - ./pyproject.toml:/app/pyproject.toml
       - ./data:/app/data
     environment:
       DB_PATH: /app/data/samples.db
       FLASK_DEBUG: "1"
-
-  # Dev tooling (lint / typecheck / test) — not started by make run
-  backend-dev:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
-      target: dev
-    volumes:
-      - ./backend-src:/app
-      - ./pyproject.toml:/app/pyproject.toml
-    profiles:
-      - dev
 
   frontend:
     build:
