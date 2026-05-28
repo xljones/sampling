@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { api } from '../api.js';
 import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
+import MapPicker from './MapPicker.jsx';
 
 const EMPTY = {
   barcode: '', box_id: '', collection_date: '', site_name: '',
@@ -19,6 +20,7 @@ export default function TubeForm({ mode }) {
   const [boxes, setBoxes] = useState([]);
   const [saving, setSaving] = useState(false);
   const [boxMode, setBoxMode] = useState('scan');
+  const [showMap, setShowMap] = useState(false);
   const [boxBarcode, setBoxBarcode] = useState('');
   const [creatingBox, setCreatingBox] = useState(false);
   const isEdit = mode === 'edit';
@@ -181,7 +183,12 @@ export default function TubeForm({ mode }) {
             </div>
 
             <div className="field">
-              <label>Latitude</label>
+              <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                Latitude
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowMap(v => !v)}>
+                  {showMap ? 'Hide map' : '📍 Pick on map'}
+                </button>
+              </label>
               <input type="number" step="any" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="e.g. 39.0968" />
             </div>
 
@@ -189,6 +196,16 @@ export default function TubeForm({ mode }) {
               <label>Longitude</label>
               <input type="number" step="any" value={form.longitude} onChange={e => set('longitude', e.target.value)} placeholder="e.g. -120.0324" />
             </div>
+
+            {showMap && (
+              <div className="field span-2">
+                <MapPicker
+                  lat={form.latitude !== '' ? Number(form.latitude) : null}
+                  lng={form.longitude !== '' ? Number(form.longitude) : null}
+                  onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
+                />
+              </div>
+            )}
 
             <div className="field">
               <label>Depth in core (cm)</label>
