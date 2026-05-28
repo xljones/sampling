@@ -46,6 +46,13 @@ a:hover { text-decoration: underline; }
 }
 .sidebar a:hover { background: var(--surface2); text-decoration: none; }
 .sidebar a.active { background: var(--surface2); font-weight: 600; color: var(--accent); }
+.sidebar-nav-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px; color: var(--text); border-radius: 0;
+  transition: background 0.1s; background: none; border: none;
+  cursor: pointer; font-size: 14px; width: 100%; text-align: left;
+}
+.sidebar-nav-btn:hover { background: var(--surface2); }
 
 .main { flex: 1; padding: 32px; overflow-y: auto; max-width: 960px; }
 .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }

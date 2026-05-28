@@ -25,13 +25,13 @@ function Nav() {
       <NavLink to="/scan">Scan barcode</NavLink>
       <NavLink to="/boxes">Boxes</NavLink>
       <NavLink to="/tubes">Tubes</NavLink>
-      <div style={{ marginTop: 'auto', padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
-        <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 6 }}>{user?.username}</div>
-        <button className="btn btn-secondary btn-sm" onClick={logout} style={{ width: '100%' }}>
-          Sign out
-        </button>
+      <div style={{ marginTop: 'auto' }}>
+        <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
+          <div style={{ fontSize: 12, color: 'var(--text2)' }}>{user?.username}</div>
+        </div>
+        <button className="sidebar-nav-btn" onClick={logout}>Sign out</button>
         {version && (
-          <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 8, opacity: 0.6 }}>
+          <div style={{ borderTop: '1px solid var(--border)', padding: '8px 16px', fontSize: 11, color: 'var(--text2)', opacity: 0.6 }}>
             v{version}
           </div>
         )}
@@ -65,7 +65,6 @@ function AppShell() {
           <Route path="/tubes" element={<TubeList />} />
           <Route path="/tubes/new" element={<TubeForm mode="create" />} />
           <Route path="/tubes/:id" element={<TubeDetail />} />
-          <Route path="/tubes/:id/edit" element={<TubeForm mode="edit" />} />
         </Routes>
       </main>
     </div>

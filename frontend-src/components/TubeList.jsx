@@ -79,7 +79,7 @@ export default function TubeList() {
                   <td>
                     <div className="row-actions">
                       <Link to={`/tubes/${t.id}`} className="btn btn-secondary btn-sm">View</Link>
-                      <Link to={`/tubes/${t.id}/edit`} className="btn btn-secondary btn-sm">Edit</Link>
+                      <Link to={`/tubes/${t.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>
                       <button className="btn btn-danger btn-sm" onClick={() => handleDelete(t.id)}>Delete</button>
                     </div>
                   </td>
