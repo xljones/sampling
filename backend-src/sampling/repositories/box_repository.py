@@ -29,19 +29,53 @@ class BoxRepository:
             "SELECT * FROM boxes WHERE barcode=?", (barcode,)
         ).fetchone())
 
-    def create(self, barcode, name=None, location=None, notes=None):
+    def create(self, barcode, name=None, location=None, notes=None, changed_by=None):
         cur = self.db.execute(
             "INSERT INTO boxes (barcode, name, location, notes) VALUES (?,?,?,?)",
             (barcode, name, location, notes),
         )
-        return self.get_by_id(cur.lastrowid)
+        box = self.get_by_id(cur.lastrowid)
+        self._record_history(box, changed_by)
+        return box
 
-    def update(self, box_id, barcode, name=None, location=None, notes=None):
+    def update(self, box_id, barcode, name=None, location=None, notes=None, changed_by=None):
         self.db.execute(
             "UPDATE boxes SET barcode=?, name=?, location=?, notes=?, updated_at=CURRENT_TIMESTAMP WHERE id=?",
             (barcode, name, location, notes, box_id),
         )
-        return self.get_by_id(box_id)
+        box = self.get_by_id(box_id)
+        self._record_history(box, changed_by)
+        return box
+
+    def get_history(self, box_id):
+        return self._rows(self.db.execute("""
+            SELECT bh.*, u.username AS changed_by_username
+            FROM box_history bh
+            LEFT JOIN users u ON u.id = bh.changed_by
+            WHERE bh.box_id = ?
+            ORDER BY bh.changed_at DESC
+        """, (box_id,)).fetchall())
+
+    def revert(self, box_id, version_id, changed_by=None):
+        h = self._row(self.db.execute(
+            "SELECT * FROM box_history WHERE id=? AND box_id=?", (version_id, box_id)
+        ).fetchone())
+        if not h:
+            return None
+        return self.update(
+            box_id, h["barcode"], name=h["name"], location=h["location"],
+            notes=h["notes"], changed_by=changed_by,
+        )
+
+    def _record_history(self, box, changed_by):
+        self.db.execute("""
+            INSERT INTO box_history (box_id, changed_by, barcode, name, location, notes)
+            VALUES (?,?,?,?,?,?)
+        """, (box["id"], changed_by, box["barcode"],
+              box.get("name"), box.get("location"), box.get("notes")))
+
+    def empty(self, box_id):
+        self.db.execute("UPDATE tubes SET box_id=NULL WHERE box_id=?", (box_id,))
 
     def delete(self, box_id):
         return self.db.execute("DELETE FROM boxes WHERE id=?", (box_id,)).rowcount > 0

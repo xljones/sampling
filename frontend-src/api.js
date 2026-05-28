@@ -20,18 +20,23 @@ export const api = {
   logout:  ()               => req('POST', '/auth/logout'),
 
   // Boxes
-  getBoxes:   ()         => req('GET',    '/boxes'),
-  getBox:     (id)       => req('GET',    `/boxes/${id}`),
-  createBox:  (body)     => req('POST',   '/boxes', body),
-  updateBox:  (id, body) => req('PUT',    `/boxes/${id}`, body),
-  deleteBox:  (id)       => req('DELETE', `/boxes/${id}`),
+  getBoxes:      ()                => req('GET',    '/boxes'),
+  getBox:        (id)              => req('GET',    `/boxes/${id}`),
+  createBox:     (body)            => req('POST',   '/boxes', body),
+  updateBox:     (id, body)        => req('PUT',    `/boxes/${id}`, body),
+  deleteBox:     (id)              => req('DELETE', `/boxes/${id}`),
+  getBoxHistory: (id)              => req('GET',    `/boxes/${id}/history`),
+  revertBox:     (id, versionId)   => req('POST',   `/boxes/${id}/revert/${versionId}`),
+  emptyBox:      (id)              => req('POST',   `/boxes/${id}/empty`),
 
   // Tubes
-  getTubes:   ()         => req('GET',    '/tubes'),
-  getTube:    (id)       => req('GET',    `/tubes/${id}`),
-  createTube: (body)     => req('POST',   '/tubes', body),
-  updateTube: (id, body) => req('PUT',    `/tubes/${id}`, body),
-  deleteTube: (id)       => req('DELETE', `/tubes/${id}`),
+  getTubes:       ()               => req('GET',    '/tubes'),
+  getTube:        (id)             => req('GET',    `/tubes/${id}`),
+  createTube:     (body)           => req('POST',   '/tubes', body),
+  updateTube:     (id, body)       => req('PUT',    `/tubes/${id}`, body),
+  deleteTube:     (id)             => req('DELETE', `/tubes/${id}`),
+  getTubeHistory: (id)             => req('GET',    `/tubes/${id}/history`),
+  revertTube:     (id, versionId)  => req('POST',   `/tubes/${id}/revert/${versionId}`),
 
   // Utilities
   scan:    (barcode) => req('GET', `/scan/${encodeURIComponent(barcode)}`),

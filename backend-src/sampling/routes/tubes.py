@@ -1,7 +1,7 @@
 import sqlite3
 
 from flask import Blueprint, jsonify, request
-from flask_login import login_required
+from flask_login import current_user, login_required
 
 from sampling.db import get_db
 from sampling.repositories.tube_repository import TubeRepository
@@ -39,7 +39,7 @@ def create_tube():
         return jsonify(error="barcode is required"), 400
     try:
         with get_db() as db:
-            tube = TubeRepository(db).create(d["barcode"], **_tube_fields(d))
+            tube = TubeRepository(db).create(d["barcode"], changed_by=current_user.id, **_tube_fields(d))
             return jsonify(tube), 201
     except sqlite3.IntegrityError:
         return jsonify(error="Barcode already exists"), 409
@@ -66,7 +66,7 @@ def update_tube(tube_id):
             repo = TubeRepository(db)
             if not repo.get_by_id(tube_id):
                 return jsonify(error="Not found"), 404
-            return jsonify(repo.update(tube_id, d["barcode"], **_tube_fields(d)))
+            return jsonify(repo.update(tube_id, d["barcode"], changed_by=current_user.id, **_tube_fields(d)))
     except sqlite3.IntegrityError:
         return jsonify(error="Barcode already exists"), 409
 
@@ -78,3 +78,20 @@ def delete_tube(tube_id):
         if not TubeRepository(db).delete(tube_id):
             return jsonify(error="Not found"), 404
     return "", 204
+
+
+@bp.get("/api/tubes/<int:tube_id>/history")
+@login_required
+def tube_history(tube_id):
+    with get_db() as db:
+        return jsonify(TubeRepository(db).get_history(tube_id))
+
+
+@bp.post("/api/tubes/<int:tube_id>/revert/<int:version_id>")
+@login_required
+def revert_tube(tube_id, version_id):
+    with get_db() as db:
+        tube = TubeRepository(db).revert(tube_id, version_id, changed_by=current_user.id)
+    if not tube:
+        return jsonify(error="Version not found"), 404
+    return jsonify(tube)

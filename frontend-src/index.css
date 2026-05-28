@@ -9,6 +9,7 @@
   --text2: #6b6560;
   --accent: #3b5a8c;
   --accent-hover: #2e4870;
+  --accent-light: #6b8fc4;
   --danger: #b94040;
   --success: #3a7a4a;
   --radius: 8px;
@@ -66,6 +67,8 @@ a:hover { text-decoration: underline; }
 }
 .btn-primary { background: var(--accent); color: #fff; }
 .btn-primary:hover { background: var(--accent-hover); }
+.btn-success { background: #2e7d32; color: #fff; }
+.btn-success:hover { background: #1b5e20; }
 .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
 .btn-secondary:hover { background: var(--border); }
 .btn-danger { background: var(--danger); color: #fff; }
@@ -136,4 +139,6 @@ a.stat-card:hover { border-color: var(--accent); }
 .stat-value { font-size: 28px; font-weight: 700; }
 .stat-label { font-size: 12px; color: var(--text2); margin-top: 2px; }
 .row-actions { display: flex; gap: 6px; }
+.history-fields { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.history-fields em { font-style: normal; font-size: 11px; font-weight: 600; padding: 1px 5px; border-radius: 3px; background: var(--surface2); border: 1px solid var(--border); }
 .span-2 { grid-column: span 2; }

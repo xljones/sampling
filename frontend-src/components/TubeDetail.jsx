@@ -20,6 +20,8 @@ export default function TubeDetail() {
   const [boxBarcode, setBoxBarcode] = useState('');
   const [creatingBox, setCreatingBox] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [showHistory, setShowHistory] = useState(true);
+  const [history, setHistory] = useState(null);
 
   useEffect(() => {
     api.getTube(id).then(t => {
@@ -36,6 +38,7 @@ export default function TubeDetail() {
       }
     });
   }, [id]);
+  useEffect(() => { api.getTubeHistory(id).then(setHistory); }, [id]);
   useEffect(() => { if (editing) api.getBoxes().then(setBoxes); }, [editing]);
 
   const boxMatch = boxes.find(b => b.barcode.toLowerCase() === boxBarcode.toLowerCase());
@@ -101,6 +104,7 @@ export default function TubeDetail() {
       setTube(t => ({ ...t, ...updated }));
       setEditing(false);
       setShowMap(false);
+      api.getTubeHistory(id).then(setHistory);
       toast('Tube updated');
     } catch (err) {
       toast(err.message, 'error');
@@ -120,6 +124,7 @@ export default function TubeDetail() {
       volume_ml: null, weight_g: null, depth_cm: null,
     });
     setTube(t => ({ ...t, ...updated }));
+    api.getTubeHistory(id).then(setHistory);
     toast('Tube cleared');
   }
 
@@ -128,6 +133,18 @@ export default function TubeDetail() {
     await api.deleteTube(id);
     toast('Tube deleted');
     navigate('/tubes');
+  }
+
+  function toggleHistory() {
+    setShowHistory(v => !v);
+  }
+
+  async function handleRevert(versionId) {
+    if (!confirm('Revert this tube to the selected version?')) return;
+    const updated = await api.revertTube(id, versionId);
+    setTube(t => ({ ...t, ...updated }));
+    api.getTubeHistory(id).then(setHistory);
+    toast('Tube reverted');
   }
 
   if (!tube) return <p style={{ color: 'var(--text2)', padding: 32 }}>Loading…</p>;
@@ -142,6 +159,11 @@ export default function TubeDetail() {
           <h1 className="page-title"><span className="barcode" style={{ fontSize: 18 }}>{tube.barcode}</span></h1>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
+          {editing && (
+            <button type="submit" form="tube-edit-form" className="btn btn-success" disabled={saving || !form.barcode}>
+              {saving ? 'Saving…' : 'Save changes'}
+            </button>
+          )}
           <button className="btn btn-secondary" onClick={editing ? cancelEditing : startEditing}>
             {editing ? 'Cancel' : 'Edit'}
           </button>
@@ -151,7 +173,7 @@ export default function TubeDetail() {
       </div>
 
       <div className="card card-body" style={{ marginBottom: 16 }}>
-        <form onSubmit={handleSave}>
+        <form id="tube-edit-form" onSubmit={handleSave}>
           <div className="form-grid" style={{ marginBottom: editing ? 12 : 0 }}>
 
             <div className="field span-2">
@@ -298,20 +320,63 @@ export default function TubeDetail() {
             </div>
 
           </div>
-          {editing && (
-            <div className="form-actions">
-              <button className="btn btn-primary" disabled={saving || !form.barcode}>
-                {saving ? 'Saving…' : 'Save changes'}
-              </button>
-              <button type="button" className="btn btn-secondary" onClick={cancelEditing}>Cancel</button>
-            </div>
-          )}
         </form>
       </div>
 
       {tube.latitude != null && tube.longitude != null && (
         <LeafletMap points={[{ lat: tube.latitude, lng: tube.longitude, label: tube.barcode }]} />
       )}
+
+      <div style={{ marginTop: 16 }}>
+        <button className="btn btn-secondary btn-sm" onClick={toggleHistory}>
+          {showHistory ? '▼' : '▶'} Version history{history ? ` (${history.length})` : ''}
+        </button>
+        {showHistory && (
+          <div className="card" style={{ marginTop: 8 }}>
+            {history === null && <p style={{ padding: 16, color: 'var(--text2)' }}>Loading…</p>}
+            {history?.length === 0 && <p style={{ padding: 16, color: 'var(--text2)' }}>No history yet.</p>}
+            {history?.map((v, i) => {
+              const prev = history[i + 1];
+              const diff = (key) => prev && String(v[key] ?? '') !== String(prev[key] ?? '');
+              const f = (label, value, key) => (
+                <span>
+                  <em style={diff(key) ? { borderColor: 'var(--accent-light)', color: 'var(--accent-light)' } : {}}>{label}</em>{' '}
+                  <span style={diff(key) ? { color: 'var(--accent-light)', fontWeight: 600 } : {}}>{value}</span>
+                </span>
+              );
+              return (
+                <div key={v.id} style={{ padding: '12px 16px', borderBottom: i < history.length - 1 ? '1px solid var(--border)' : undefined }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 4 }}>
+                        {v.changed_at} — <strong>{v.changed_by_username ?? 'unknown'}</strong>
+                      </div>
+                      <div className="history-fields" style={{ fontSize: 13 }}>
+                        {f('barcode', v.barcode, 'barcode')}
+                        {f('box', v.box_barcode || '—', 'box_id')}
+                        {f('collected', v.collection_date || '—', 'collection_date')}
+                        {f('site', v.site_name || '—', 'site_name')}
+                        {f('type', v.sample_type || '—', 'sample_type')}
+                        {f('depth', v.depth_cm != null ? `${v.depth_cm} cm` : '—', 'depth_cm')}
+                        {f('vol', v.volume_ml != null ? `${v.volume_ml} mL` : '—', 'volume_ml')}
+                        {f('weight', v.weight_g != null ? `${v.weight_g} g` : '—', 'weight_g')}
+                        {f('lat', v.latitude ?? '—', 'latitude')}
+                        {f('lng', v.longitude ?? '—', 'longitude')}
+                        {f('description', v.description || '—', 'description')}
+                      </div>
+                    </div>
+                    {i > 0 && (
+                      <button className="btn btn-secondary btn-sm" style={{ flexShrink: 0 }} onClick={() => handleRevert(v.id)}>
+                        Revert to this
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -17,10 +17,13 @@ export default function BoxDetail() {
   const [showAssign, setShowAssign] = useState(false);
   const [assignBarcode, setAssignBarcode] = useState('');
   const [unassigned, setUnassigned] = useState([]);
+  const [showHistory, setShowHistory] = useState(true);
+  const [history, setHistory] = useState(null);
 
   useEffect(() => {
     api.getBox(id).then(b => { setBox(b); setForm({ barcode: b.barcode, name: b.name ?? '', location: b.location ?? '', notes: b.notes ?? '' }); });
   }, [id]);
+  useEffect(() => { api.getBoxHistory(id).then(setHistory); }, [id]);
 
   useEffect(() => {
     if (showAssign && unassigned.length === 0) {
@@ -42,12 +45,21 @@ export default function BoxDetail() {
       const updated = await api.updateBox(id, form);
       setBox(b => ({ ...b, ...updated }));
       setEditing(false);
+      api.getBoxHistory(id).then(setHistory);
       toast('Box updated');
     } catch (err) {
       toast(err.message, 'error');
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleEmpty() {
+    if (!box.tubes?.length) return;
+    if (!confirm(`Unassign all ${box.tubes.length} tube${box.tubes.length !== 1 ? 's' : ''} from this box?`)) return;
+    await api.emptyBox(id);
+    setBox(b => ({ ...b, tubes: [] }));
+    toast('Box emptied');
   }
 
   async function handleDelete() {
@@ -73,6 +85,18 @@ export default function BoxDetail() {
     toast(`Tube ${assignMatch.barcode} added to box`);
   }
 
+  function toggleHistory() {
+    setShowHistory(v => !v);
+  }
+
+  async function handleRevert(versionId) {
+    if (!confirm('Revert this box to the selected version?')) return;
+    const updated = await api.revertBox(id, versionId);
+    setBox(b => ({ ...b, ...updated }));
+    api.getBoxHistory(id).then(setHistory);
+    toast('Box reverted');
+  }
+
   if (!box) return <p style={{ color: 'var(--text2)', padding: 32 }}>Loading…</p>;
 
   return (
@@ -83,14 +107,19 @@ export default function BoxDetail() {
           <h1 className="page-title">{box.name || <span className="barcode">{box.barcode}</span>}</h1>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-secondary" onClick={() => setEditing(v => !v)}>Edit</button>
+          {editing && (
+            <button type="submit" form="box-edit-form" className="btn btn-success" disabled={saving}>Save Changes</button>
+          )}
+          <button className="btn btn-secondary" onClick={() => setEditing(v => !v)}>
+            {editing ? 'Cancel' : 'Edit'}
+          </button>
           <button className="btn btn-danger" onClick={handleDelete}>Delete</button>
         </div>
       </div>
 
       <div className="card card-body" style={{ marginBottom: 24 }}>
-        <form onSubmit={handleSave}>
-          <div className="form-grid" style={{ marginBottom: editing ? 12 : 0 }}>
+        <form id="box-edit-form" onSubmit={handleSave}>
+          <div className="form-grid" style={{ marginBottom: 0 }}>
             <div className="field">
               <label>Barcode *</label>
               {editing
@@ -124,12 +153,6 @@ export default function BoxDetail() {
               <span>{box.updated_at}</span>
             </div>
           </div>
-          {editing && (
-            <div className="form-actions">
-              <button className="btn btn-primary" disabled={saving}>Save</button>
-              <button type="button" className="btn btn-secondary" onClick={() => setEditing(false)}>Cancel</button>
-            </div>
-          )}
         </form>
       </div>
 
@@ -139,6 +162,9 @@ export default function BoxDetail() {
           <button className="btn btn-secondary btn-sm" onClick={() => setShowAssign(v => !v)}>
             Assign existing
           </button>
+          {box.tubes?.length > 0 && (
+            <button className="btn btn-danger btn-sm" onClick={handleEmpty}>Empty box</button>
+          )}
           <Link to={`/tubes/new?box_id=${id}`} className="btn btn-primary btn-sm">+ New tube</Link>
         </div>
       </div>
@@ -239,6 +265,50 @@ export default function BoxDetail() {
           .filter(t => t.latitude != null && t.longitude != null)
           .map(t => ({ lat: t.latitude, lng: t.longitude, label: t.barcode + (t.site_name ? ` — ${t.site_name}` : ''), url: `/tubes/${t.id}` }))}
       />
+
+      <div style={{ marginTop: 16 }}>
+        <button className="btn btn-secondary btn-sm" onClick={toggleHistory}>
+          {showHistory ? '▼' : '▶'} Version history{history ? ` (${history.length})` : ''}
+        </button>
+        {showHistory && (
+          <div className="card" style={{ marginTop: 8 }}>
+            {history === null && <p style={{ padding: 16, color: 'var(--text2)' }}>Loading…</p>}
+            {history?.length === 0 && <p style={{ padding: 16, color: 'var(--text2)' }}>No history yet.</p>}
+            {history?.map((v, i) => {
+              const prev = history[i + 1];
+              const diff = (key) => prev && String(v[key] ?? '') !== String(prev[key] ?? '');
+              const f = (label, value, key) => (
+                <span>
+                  <em style={diff(key) ? { borderColor: 'var(--accent-light)', color: 'var(--accent-light)' } : {}}>{label}</em>{' '}
+                  <span style={diff(key) ? { color: 'var(--accent-light)', fontWeight: 600 } : {}}>{value}</span>
+                </span>
+              );
+              return (
+                <div key={v.id} style={{ padding: '12px 16px', borderBottom: i < history.length - 1 ? '1px solid var(--border)' : undefined }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 4 }}>
+                        {v.changed_at} — <strong>{v.changed_by_username ?? 'unknown'}</strong>
+                      </div>
+                      <div className="history-fields" style={{ fontSize: 13 }}>
+                        {f('barcode', v.barcode, 'barcode')}
+                        {f('name', v.name || '—', 'name')}
+                        {f('location', v.location || '—', 'location')}
+                        {f('notes', v.notes || '—', 'notes')}
+                      </div>
+                    </div>
+                    {i > 0 && (
+                      <button className="btn btn-secondary btn-sm" style={{ flexShrink: 0 }} onClick={() => handleRevert(v.id)}>
+                        Revert to this
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
