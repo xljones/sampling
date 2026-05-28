@@ -101,24 +101,28 @@ export default function LocationList() {
                   style={{ cursor: editId === loc.id ? 'default' : 'pointer' }}
                   onClick={e => { if (editId === loc.id || e.target.closest('a, button, input, form')) return; navigate(`/locations/${loc.id}`); }}
                 >
-                  <td>
-                    {editId === loc.id ? (
-                      <form onSubmit={handleEdit} style={{ display: 'flex', gap: 8 }}>
-                        <input value={editName} onChange={e => setEditName(e.target.value)} autoFocus style={{ flex: 1 }} />
+                  {editId === loc.id ? (
+                    <td colSpan={3}>
+                      <form onSubmit={handleEdit} style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
+                        <input value={editName} onChange={e => setEditName(e.target.value)} autoFocus style={{ flex: 1, padding: '4px 8px', fontSize: 12, lineHeight: '1', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--surface)', color: 'var(--text)', boxSizing: 'border-box' }} />
                         <button className="btn btn-success btn-sm" disabled={saving || !editName.trim()}>Save</button>
                         <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditId(null)}>Cancel</button>
                       </form>
-                    ) : loc.name}
-                  </td>
-                  <td style={{ color: 'var(--text2)' }}>{loc.box_count}</td>
-                  <td style={{ width: '1%', whiteSpace: 'nowrap' }}>
-                    {!ro && editId !== loc.id && (
-                      <div className="row-actions">
-                        <button className="btn btn-secondary btn-sm" onClick={() => startEdit(loc)}>Rename</button>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(loc)}>Delete</button>
-                      </div>
-                    )}
-                  </td>
+                    </td>
+                  ) : (
+                    <>
+                      <td>{loc.name}</td>
+                      <td style={{ color: 'var(--text2)' }}>{loc.box_count}</td>
+                      <td style={{ width: '1%', whiteSpace: 'nowrap' }}>
+                        {!ro && (
+                          <div className="row-actions">
+                            <button className="btn btn-secondary btn-sm" onClick={() => startEdit(loc)}>Rename</button>
+                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(loc)}>Delete</button>
+                          </div>
+                        )}
+                      </td>
+                    </>
+                  )}
                 </tr>
               ))}
               {locations.length === 0 && <tr><td colSpan={3} className="empty">No locations yet</td></tr>}
