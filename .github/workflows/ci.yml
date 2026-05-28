@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend — lint / typecheck / test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Lint (ruff)
+        run: ruff check backend-src/sampling/
+
+      - name: Type check (mypy)
+        run: mypy backend-src/sampling/
+
+      - name: Test (pytest)
+        run: pytest backend-src/tests/ -v
+        env:
+          PYTHONPATH: backend-src
+
+  frontend:
+    name: Frontend — lint / test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (eslint)
+        run: npm run lint
+
+      - name: Test (vitest)
+        run: npm run test
