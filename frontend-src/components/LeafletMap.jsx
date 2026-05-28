@@ -15,7 +15,7 @@ export default function LeafletMap({ points, height = 320 }) {
 const pts=${safePoints};
 const map=L.map('map');
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors'}).addTo(map);
-const markers=pts.map(p=>L.marker([p.lat,p.lng]).addTo(map).bindPopup(p.label));
+const markers=pts.map(p=>L.marker([p.lat,p.lng]).addTo(map).bindPopup(p.url?'<a href="'+p.url+'" target="_top">'+p.label+'</a>':p.label));
 if(pts.length===1){map.setView([pts[0].lat,pts[0].lng],13);}
 else{map.fitBounds(L.featureGroup(markers).getBounds().pad(0.2));}
 </script>

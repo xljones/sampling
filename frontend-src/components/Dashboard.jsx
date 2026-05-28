@@ -15,7 +15,7 @@ export default function Dashboard() {
   const unassigned = tubes.filter(t => !t.box_id).length;
   const mappable = tubes
     .filter(t => t.latitude != null && t.longitude != null)
-    .map(t => ({ lat: t.latitude, lng: t.longitude, label: t.barcode + (t.site_name ? ` — ${t.site_name}` : '') }));
+    .map(t => ({ lat: t.latitude, lng: t.longitude, label: t.barcode + (t.site_name ? ` — ${t.site_name}` : ''), url: `/tubes/${t.id}` }));
 
   return (
     <div>

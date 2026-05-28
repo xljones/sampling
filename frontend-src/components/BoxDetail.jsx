@@ -132,7 +132,7 @@ export default function BoxDetail() {
       <LeafletMap
         points={(box.tubes ?? [])
           .filter(t => t.latitude != null && t.longitude != null)
-          .map(t => ({ lat: t.latitude, lng: t.longitude, label: t.barcode + (t.site_name ? ` — ${t.site_name}` : '') }))}
+          .map(t => ({ lat: t.latitude, lng: t.longitude, label: t.barcode + (t.site_name ? ` — ${t.site_name}` : ''), url: `/tubes/${t.id}` }))}
       />
     </div>
   );
