@@ -164,17 +164,19 @@ def cmd_seed(_):
 
 
 def cmd_reset_db(_):
-    confirm = input("This will delete all boxes, tubes, and history (users kept). Type YES to confirm: ")
+    confirm = input("This will delete all boxes, tubes, locations, and history (users kept). Type YES to confirm: ")
     if confirm.strip() != "YES":
         print("Aborted.")
         sys.exit(0)
-    from sampling.db import get_db
+    from sampling.db import get_db, run_migrations
+    run_migrations()
     with get_db() as db:
         db.execute("DELETE FROM tube_history")
         db.execute("DELETE FROM box_history")
         db.execute("DELETE FROM tubes")
         db.execute("DELETE FROM boxes")
-        db.execute("DELETE FROM sqlite_sequence WHERE name IN ('tubes','boxes','tube_history','box_history')")
+        db.execute("DELETE FROM locations")
+        db.execute("DELETE FROM sqlite_sequence WHERE name IN ('tubes','boxes','tube_history','box_history','locations')")
     print("Database reset. Users preserved.")
 
 

@@ -53,7 +53,7 @@ make build        # rebuild images (needed after requirements.txt or Dockerfile 
 make create-user username=x password=y
 make list-users
 make seed         # populate with sample data (~15 boxes, ~53 tubes)
-make reset-db     # delete all boxes, tubes, and history (users kept)
+make reset-db     # delete all boxes, tubes, locations, and history (users kept)
 ```
 
 The database is at `data/samples.db` (bind-mounted into the backend container).

@@ -37,7 +37,7 @@ else
 endif
 
 .PHONY: reset-db
-# delete all boxes, tubes, and history — users are preserved
+# delete all boxes, tubes, locations, and history — users are preserved
 reset-db:
 ifdef PYTHONANYWHERE_SITE
 	venv/bin/python backend-src/manage.py reset-db
