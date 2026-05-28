@@ -12,9 +12,20 @@ from sampling.repositories.tube_repository import TubeRepository
 bp = Blueprint("export", __name__)
 
 _TUBE_FIELDS = [
-    "barcode", "box_barcode", "box_name", "collection_date", "site_name",
-    "latitude", "longitude", "sample_type", "description",
-    "volume_ml", "weight_g", "depth_cm", "created_at", "updated_at",
+    "barcode",
+    "box_barcode",
+    "box_name",
+    "collection_date",
+    "site_name",
+    "latitude",
+    "longitude",
+    "sample_type",
+    "description",
+    "volume_ml",
+    "weight_g",
+    "depth_cm",
+    "created_at",
+    "updated_at",
 ]
 _BOX_FIELDS = ["barcode", "name", "location", "notes", "tube_count", "created_at"]
 

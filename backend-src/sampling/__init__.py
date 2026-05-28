@@ -1,4 +1,5 @@
 import os
+
 try:
     import tomllib
 except ModuleNotFoundError:
@@ -14,6 +15,8 @@ from flask_cors import CORS
 from flask_login import LoginManager, current_user, logout_user
 
 _DIST_DIR = str(Path(__file__).parent.parent.parent / "dist")
+
+
 def _find_pyproject():
     p = Path(__file__).resolve().parent
     for _ in range(5):
@@ -22,6 +25,7 @@ def _find_pyproject():
             return candidate
         p = p.parent
     return None
+
 
 _PYPROJECT = _find_pyproject()
 
@@ -56,7 +60,8 @@ def create_app():
             row = UserRepository(db).get_by_id(int(user_id))
         if row:
             return User(
-                id=row["id"], username=row["username"],
+                id=row["id"],
+                username=row["username"],
                 created_at=row.get("created_at"),
                 is_readonly=bool(row.get("is_readonly")),
                 expires_at=row.get("expires_at"),
@@ -78,8 +83,11 @@ def create_app():
                     return jsonify(error="Account expired"), 401
             except ValueError:
                 pass
-        if current_user.is_readonly and request.method not in ("GET", "HEAD", "OPTIONS") \
-                and request.path != "/api/auth/password":
+        if (
+            current_user.is_readonly
+            and request.method not in ("GET", "HEAD", "OPTIONS")
+            and request.path != "/api/auth/password"
+        ):
             return jsonify(error="Read-only access"), 403
 
     for bp in (auth.bp, boxes.bp, tubes.bp, scan.bp, export.bp, locations.bp, users.bp):

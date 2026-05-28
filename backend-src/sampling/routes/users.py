@@ -32,12 +32,14 @@ def create_user():
             ttl_days = int(ttl_days)
             if ttl_days < 1:
                 raise ValueError
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return jsonify(error="ttl_days must be a positive integer"), 400
         expires_at = (datetime.now(timezone.utc) + timedelta(days=ttl_days)).isoformat()
     try:
         with get_db() as db:
-            user = UserRepository(db).create(username, password, is_readonly=True, expires_at=expires_at)
+            user = UserRepository(db).create(
+                username, password, is_readonly=True, expires_at=expires_at
+            )
         return jsonify(user), 201
     except sqlite3.IntegrityError:
         return jsonify(error="Username already exists"), 409

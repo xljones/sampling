@@ -3,11 +3,13 @@ class LocationRepository:
         self.db = db
 
     def list_all(self):
-        return self._rows(self.db.execute("""
+        return self._rows(
+            self.db.execute("""
             SELECT l.*, COUNT(b.id) AS box_count
             FROM locations l LEFT JOIN boxes b ON b.location_id = l.id
             GROUP BY l.id ORDER BY l.name
-        """).fetchall())
+        """).fetchall()
+        )
 
     def get_by_id(self, loc_id):
         r = self.db.execute("SELECT * FROM locations WHERE id=?", (loc_id,)).fetchone()
@@ -17,12 +19,17 @@ class LocationRepository:
         loc = self.get_by_id(loc_id)
         if not loc:
             return None
-        loc["boxes"] = self._rows(self.db.execute("""
+        loc["boxes"] = self._rows(
+            self.db.execute(
+                """
             SELECT b.*, COUNT(t.id) AS tube_count
             FROM boxes b LEFT JOIN tubes t ON t.box_id = b.id
             WHERE b.location_id = ?
             GROUP BY b.id ORDER BY b.name ASC, b.barcode ASC
-        """, (loc_id,)).fetchall())
+        """,
+                (loc_id,),
+            ).fetchall()
+        )
         return loc
 
     def create(self, name):
@@ -38,7 +45,10 @@ class LocationRepository:
             "SELECT COUNT(*) FROM boxes WHERE location_id=?", (loc_id,)
         ).fetchone()[0]
         if count > 0:
-            return False, f"Cannot delete: {count} box{'es' if count != 1 else ''} use this location"
+            return (
+                False,
+                f"Cannot delete: {count} box{'es' if count != 1 else ''} use this location",
+            )
         self.db.execute("UPDATE box_history SET location_id=NULL WHERE location_id=?", (loc_id,))
         self.db.execute("DELETE FROM locations WHERE id=?", (loc_id,))
         return True, None

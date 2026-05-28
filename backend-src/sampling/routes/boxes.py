@@ -30,7 +30,10 @@ def create_box():
     try:
         with get_db() as db:
             box = BoxRepository(db).create(
-                d["barcode"], d.get("name"), _loc_id(d), d.get("notes"),
+                d["barcode"],
+                d.get("name"),
+                _loc_id(d),
+                d.get("notes"),
                 changed_by=current_user.id,
             )
             return jsonify(box), 201
@@ -59,10 +62,16 @@ def update_box(box_id):
             repo = BoxRepository(db)
             if not repo.get_by_id(box_id):
                 return jsonify(error="Not found"), 404
-            return jsonify(repo.update(
-                box_id, d["barcode"], d.get("name"), _loc_id(d), d.get("notes"),
-                changed_by=current_user.id,
-            ))
+            return jsonify(
+                repo.update(
+                    box_id,
+                    d["barcode"],
+                    d.get("name"),
+                    _loc_id(d),
+                    d.get("notes"),
+                    changed_by=current_user.id,
+                )
+            )
     except sqlite3.IntegrityError:
         return jsonify(error="Barcode already exists"), 409
 

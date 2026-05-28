@@ -62,6 +62,11 @@ build-frontend:
 # ── Dev tooling ──────────────────────────────────────────────────────────────
 # Requires: make build (rebuilds backend image with dev deps)
 
+.PHONY: format
+# format the Python backend with ruff
+format:
+	docker compose run --rm backend ruff format sampling/
+
 .PHONY: lint-backend
 # lint the Python backend with ruff
 lint-backend:

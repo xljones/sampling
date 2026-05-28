@@ -39,7 +39,9 @@ def create_tube():
         return jsonify(error="barcode is required"), 400
     try:
         with get_db() as db:
-            tube = TubeRepository(db).create(d["barcode"], changed_by=current_user.id, **_tube_fields(d))
+            tube = TubeRepository(db).create(
+                d["barcode"], changed_by=current_user.id, **_tube_fields(d)
+            )
             return jsonify(tube), 201
     except sqlite3.IntegrityError:
         return jsonify(error="Barcode already exists"), 409
@@ -66,7 +68,9 @@ def update_tube(tube_id):
             repo = TubeRepository(db)
             if not repo.get_by_id(tube_id):
                 return jsonify(error="Not found"), 404
-            return jsonify(repo.update(tube_id, d["barcode"], changed_by=current_user.id, **_tube_fields(d)))
+            return jsonify(
+                repo.update(tube_id, d["barcode"], changed_by=current_user.id, **_tube_fields(d))
+            )
     except sqlite3.IntegrityError:
         return jsonify(error="Barcode already exists"), 409
 
