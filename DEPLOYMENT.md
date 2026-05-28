@@ -1,28 +1,6 @@
-# Deployment
+# Deployment — PythonAnywhere
 
-## Local development
-
-Requires Docker Desktop.
-
-```bash
-docker compose up
-```
-
-App runs at **http://localhost:5173**.
-
-Source files (`app.py`, `sampling/`, `src/`) are bind-mounted so changes hot-reload without rebuilding. The SQLite database is written to `data/samples.db`.
-
-To stop: `docker compose down`
-
-**Create a user for local dev:**
-
-```bash
-docker compose run --rm backend python manage.py create-user <username> <password>
-```
-
----
-
-## PythonAnywhere
+## First-time setup
 
 ### 1. Clone the repo
 
@@ -53,13 +31,13 @@ pip install -r requirements.txt
 ### 4. Create your user account
 
 ```bash
-python manage.py create-user <username> <password>
+python backend-src/manage.py create-user <username> <password>
 ```
 
 To list existing users at any time:
 
 ```bash
-python manage.py list-users
+python backend-src/manage.py list-users
 ```
 
 ### 5. Generate a secret key
@@ -105,15 +83,21 @@ The database is created automatically at `~/sampling/data/samples.db` on first r
 
 ## Updating a deployment
 
+From your local machine (requires SSH access to PythonAnywhere):
+
 ```bash
-# Pull latest code
-git pull
-
-# Rebuild frontend if src/ changed
-npm run build
-
-# Apply any new database migrations
-# (migrations run automatically on next app reload)
+make pa-deploy PA_USER=<you>
 ```
 
-Then hit **Reload** in the PythonAnywhere Web tab.
+This runs in sequence: `git pull` → `npm run build` → `pip install` → reload.
+
+Or run the stages individually:
+
+```bash
+make pa-pull PA_USER=<you>      # pull latest code
+make pa-build PA_USER=<you>     # rebuild frontend (if frontend-src/ changed)
+make pa-install PA_USER=<you>   # update Python dependencies
+make pa-reload PA_USER=<you>    # reload the web app
+```
+
+Database migrations run automatically on the next request after reload.
