@@ -19,18 +19,18 @@ export default function Dashboard() {
         <h1 className="page-title">Dashboard</h1>
       </div>
       <div className="stat-grid">
-        <div className="stat-card">
+        <Link to="/boxes" className="stat-card">
           <div className="stat-value">{boxes.length}</div>
           <div className="stat-label">Boxes</div>
-        </div>
-        <div className="stat-card">
+        </Link>
+        <Link to="/tubes" className="stat-card">
           <div className="stat-value">{tubes.length}</div>
           <div className="stat-label">Tubes</div>
-        </div>
-        <div className="stat-card">
+        </Link>
+        <Link to="/tubes?unassigned=true" className="stat-card">
           <div className="stat-value">{unassigned}</div>
           <div className="stat-label">Unassigned tubes</div>
-        </div>
+        </Link>
       </div>
 
       <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Recent boxes</h2>

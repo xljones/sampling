@@ -1,24 +1,27 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useToast } from './Toast.jsx';
 
 export default function TubeList() {
   const [tubes, setTubes] = useState([]);
   const [filter, setFilter] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
   const toast = useToast();
+
+  const unassignedOnly = searchParams.get('unassigned') === 'true';
 
   useEffect(() => { api.getTubes().then(setTubes); }, []);
 
   const q = filter.toLowerCase();
-  const visible = q
-    ? tubes.filter(t =>
-        t.barcode.toLowerCase().includes(q) ||
-        (t.site_name ?? '').toLowerCase().includes(q) ||
-        (t.sample_type ?? '').toLowerCase().includes(q) ||
-        (t.box_barcode ?? '').toLowerCase().includes(q)
-      )
-    : tubes;
+  const visible = tubes
+    .filter(t => !unassignedOnly || !t.box_id)
+    .filter(t => !q || (
+      t.barcode.toLowerCase().includes(q) ||
+      (t.site_name ?? '').toLowerCase().includes(q) ||
+      (t.sample_type ?? '').toLowerCase().includes(q) ||
+      (t.box_barcode ?? '').toLowerCase().includes(q)
+    ));
 
   async function handleDelete(id) {
     if (!confirm('Delete this tube?')) return;
@@ -30,14 +33,14 @@ export default function TubeList() {
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Tubes</h1>
+        <h1 className="page-title">{unassignedOnly ? 'Unassigned tubes' : 'Tubes'}</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <a href="/api/export/tubes" className="btn btn-secondary" download>Export CSV</a>
           <Link to="/tubes/new" className="btn btn-primary">+ New tube</Link>
         </div>
       </div>
 
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <input
           type="search"
           value={filter}
@@ -45,6 +48,14 @@ export default function TubeList() {
           placeholder="Filter by barcode, site, type…"
           style={{ width: '100%', maxWidth: 360, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 13 }}
         />
+        {unassignedOnly && (
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={() => setSearchParams({})}
+          >
+            Unassigned only ✕
+          </button>
+        )}
       </div>
 
       <div className="card">
