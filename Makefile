@@ -28,6 +28,11 @@ create-user:
 list-users:
 	docker compose run --rm backend python manage.py list-users
 
+.PHONY: seed
+# populate the database with sample data (~15 boxes, ~53 tubes)
+seed:
+	docker compose run --rm backend python manage.py seed
+
 .PHONY: build-frontend
 # compile the React app into dist/ (for production / PythonAnywhere)
 build-frontend:
