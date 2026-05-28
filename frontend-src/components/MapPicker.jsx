@@ -60,8 +60,7 @@ export default function MapPicker({ lat, lng, onChange }) {
     }
   }
 
-  async function handleSearch(e) {
-    e.preventDefault();
+  async function handleSearch() {
     if (!search.trim()) return;
     setSearching(true);
     setNoResults(false);
@@ -88,20 +87,21 @@ export default function MapPicker({ lat, lng, onChange }) {
 
   return (
     <div>
-      <form onSubmit={handleSearch} style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
         <input
           type="search"
           value={search}
           onChange={e => { setSearch(e.target.value); setNoResults(false); }}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } }}
           placeholder="Search for a location…"
           autoComplete="off"
           data-1p-ignore
           style={{ flex: 1, padding: '7px 10px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 13 }}
         />
-        <button type="submit" className="btn btn-secondary" disabled={searching || !search.trim()}>
+        <button type="button" className="btn btn-secondary" disabled={searching || !search.trim()} onClick={handleSearch}>
           {searching ? '…' : 'Search'}
         </button>
-      </form>
+      </div>
       {noResults && <p style={{ fontSize: 12, color: 'var(--danger)', margin: '0 0 8px' }}>No results found.</p>}
       <div style={{ borderRadius: 'var(--radius)', overflow: 'hidden', border: '1px solid var(--border)' }}>
         <iframe
