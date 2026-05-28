@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 import { useToast } from './Toast.jsx';
+import LeafletMap from './LeafletMap.jsx';
 
 export default function TubeDetail() {
   const { id } = useParams();
@@ -61,24 +62,7 @@ export default function TubeDetail() {
       </div>
 
       {tube.latitude != null && tube.longitude != null && (
-        <div className="card" style={{ marginTop: 16, overflow: 'hidden' }}>
-          <iframe
-            title="Sample location"
-            width="100%"
-            height="320"
-            style={{ display: 'block', border: 0 }}
-            src={`https://www.openstreetmap.org/export/embed.html?bbox=${tube.longitude - 0.05},${tube.latitude - 0.05},${tube.longitude + 0.05},${tube.latitude + 0.05}&layer=mapnik&marker=${tube.latitude},${tube.longitude}`}
-          />
-          <div style={{ padding: '6px 12px', fontSize: 11, color: 'var(--text2)', borderTop: '1px solid var(--border)' }}>
-            <a
-              href={`https://www.openstreetmap.org/?mlat=${tube.latitude}&mlon=${tube.longitude}#map=13/${tube.latitude}/${tube.longitude}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              View on OpenStreetMap ↗
-            </a>
-          </div>
-        </div>
+        <LeafletMap points={[{ lat: tube.latitude, lng: tube.longitude, label: tube.barcode }]} />
       )}
     </div>
   );

@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
+import LeafletMap from './LeafletMap.jsx';
 
 export default function BoxDetail() {
   const { id } = useParams();
@@ -127,6 +128,12 @@ export default function BoxDetail() {
           </table>
         </div>
       </div>
+
+      <LeafletMap
+        points={(box.tubes ?? [])
+          .filter(t => t.latitude != null && t.longitude != null)
+          .map(t => ({ lat: t.latitude, lng: t.longitude, label: t.barcode + (t.site_name ? ` — ${t.site_name}` : '') }))}
+      />
     </div>
   );
 }
