@@ -1,5 +1,8 @@
 # Sediment Sample Catalogue
 
+[![CI](https://github.com/xljones/sampling/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/xljones/sampling/actions/workflows/ci.yml)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 A local web app for cataloguing sediment samples. Samples are stored in tubes, tubes are stored in boxes, and both are identified by barcodes.
 
 ## Features
