@@ -11,7 +11,7 @@ vi.mock('../api.js', () => ({
       id: 1,
       barcode: 'BOX001',
       name: 'Shelf A',
-      location: 'Freezer 2',
+      location_name: 'Freezer 2',
       notes: '',
       created_at: '2024-01-01T00:00:00',
       tubes: [
@@ -25,10 +25,15 @@ vi.mock('../api.js', () => ({
     ]),
     updateBox: vi.fn().mockResolvedValue({ id: 1, barcode: 'BOX001', name: 'Shelf A' }),
     deleteBox: vi.fn().mockResolvedValue(null),
+    getLocations: vi.fn().mockResolvedValue([]),
+    getBoxHistory: vi.fn().mockResolvedValue([]),
+    emptyBox: vi.fn().mockResolvedValue(null),
+    revertBox: vi.fn().mockResolvedValue({ id: 1, barcode: 'BOX001', name: 'Shelf A' }),
     updateTube: mockUpdateTube,
   },
 }));
 
+vi.mock('../AuthContext.jsx', () => ({ useAuth: () => ({ user: { is_readonly: false } }) }));
 vi.mock('./Toast.jsx', () => ({ useToast: () => vi.fn() }));
 vi.mock('./LeafletMap.jsx', () => ({ default: () => null }));
 vi.mock('./BarcodeInput.jsx', () => ({
@@ -55,16 +60,16 @@ describe('BoxDetail', () => {
   it('renders box name and location', async () => {
     renderBoxDetail();
     await waitFor(() => {
-      expect(screen.getByText('Shelf A')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Shelf A' })).toBeInTheDocument();
       expect(screen.getByText('Freezer 2')).toBeInTheDocument();
     });
   });
 
-  it('renders tube row with View, Edit and Remove buttons', async () => {
+  it('renders tube row with barcode link, Edit and Remove buttons', async () => {
     renderBoxDetail();
     await waitFor(() => screen.getByText('T001'));
-    expect(screen.getByRole('link', { name: 'View' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/tubes/10/edit');
+    expect(screen.getByRole('link', { name: 'T001' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/tubes/10?edit=1&from=/boxes/1');
     expect(screen.getByRole('button', { name: 'Remove' })).toBeInTheDocument();
   });
 
@@ -87,13 +92,13 @@ describe('BoxDetail', () => {
     });
   });
 
-  it('clicking a tube in the list populates the barcode input', async () => {
+  it('clicking a tube in the list assigns it directly', async () => {
     renderBoxDetail();
     await waitFor(() => screen.getByText('T001'));
     fireEvent.click(screen.getByRole('button', { name: /assign existing/i }));
     await waitFor(() => screen.getByText('T002'));
     fireEvent.click(screen.getByText('T002').closest('tr'));
-    expect(screen.getByTestId('barcode-input')).toHaveValue('T002');
+    await waitFor(() => expect(mockUpdateTube).toHaveBeenCalledWith(20, expect.objectContaining({ box_id: 1 })));
   });
 
   it('shows "Assign to this box" button when barcode matches unassigned tube', async () => {
