@@ -115,7 +115,7 @@ export default function UserList() {
                     </td>
                     <td className="meta">{u.created_at?.slice(0, 10)}</td>
                     <td className="col-shrink">
-                      {u.is_readonly && u.id !== me?.id && (
+                      {!!u.is_readonly && u.id !== me?.id && (
                         <button className="btn btn-danger btn-sm" onClick={() => handleDelete(u)}>Delete</button>
                       )}
                     </td>
