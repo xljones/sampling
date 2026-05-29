@@ -1,4 +1,5 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, Response, jsonify, request
+from flask.typing import ResponseReturnValue
 from flask_login import login_required
 
 from sampling.db import get_db
@@ -11,7 +12,7 @@ bp = Blueprint("scan", __name__)
 
 @bp.get("/api/scan/<barcode>")
 @login_required
-def scan(barcode):
+def scan(barcode: str) -> ResponseReturnValue:
     with get_db() as db:
         box = BoxRepository(db).get_by_barcode(barcode)
         if box:
@@ -27,7 +28,7 @@ def scan(barcode):
 
 @bp.get("/api/search")
 @login_required
-def search():
+def search() -> Response:
     q = request.args.get("q", "")
     with get_db() as db:
         results = (

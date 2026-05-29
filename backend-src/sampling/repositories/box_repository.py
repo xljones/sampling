@@ -1,9 +1,11 @@
+from typing import Any
+
 from sampling.repositories.base import BaseRepository
 
 
 class BoxRepository(BaseRepository):
 
-    def list_all(self):
+    def list_all(self) -> list[dict[str, Any]]:
         return self._rows(
             self.db.execute("""
             SELECT b.*, l.name AS location_name, COUNT(t.id) AS tube_count
@@ -14,7 +16,7 @@ class BoxRepository(BaseRepository):
         """).fetchall()
         )
 
-    def get_by_id(self, box_id):
+    def get_by_id(self, box_id: int) -> dict[str, Any] | None:
         return self._row(
             self.db.execute(
                 """
@@ -26,7 +28,7 @@ class BoxRepository(BaseRepository):
             ).fetchone()
         )
 
-    def get_with_tubes(self, box_id):
+    def get_with_tubes(self, box_id: int) -> dict[str, Any] | None:
         box = self.get_by_id(box_id)
         if not box:
             return None
@@ -38,7 +40,7 @@ class BoxRepository(BaseRepository):
         )
         return box
 
-    def get_by_barcode(self, barcode):
+    def get_by_barcode(self, barcode: str) -> dict[str, Any] | None:
         return self._row(
             self.db.execute(
                 """
@@ -50,7 +52,14 @@ class BoxRepository(BaseRepository):
             ).fetchone()
         )
 
-    def create(self, barcode, name=None, location_id=None, notes=None, changed_by=None):
+    def create(
+        self,
+        barcode: str,
+        name: str | None = None,
+        location_id: int | None = None,
+        notes: str | None = None,
+        changed_by: int | None = None,
+    ) -> dict[str, Any]:
         cur = self.db.execute(
             "INSERT INTO boxes (barcode, name, location_id, notes) VALUES (?,?,?,?)",
             (barcode, name, location_id, notes),
@@ -59,7 +68,15 @@ class BoxRepository(BaseRepository):
         self._record_history(box, changed_by)
         return box
 
-    def update(self, box_id, barcode, name=None, location_id=None, notes=None, changed_by=None):
+    def update(
+        self,
+        box_id: int,
+        barcode: str,
+        name: str | None = None,
+        location_id: int | None = None,
+        notes: str | None = None,
+        changed_by: int | None = None,
+    ) -> dict[str, Any] | None:
         self.db.execute(
             "UPDATE boxes SET barcode=?, name=?, location_id=?, notes=?,"
             " updated_at=CURRENT_TIMESTAMP WHERE id=?",
@@ -69,7 +86,7 @@ class BoxRepository(BaseRepository):
         self._record_history(box, changed_by)
         return box
 
-    def get_history(self, box_id):
+    def get_history(self, box_id: int) -> list[dict[str, Any]]:
         return self._rows(
             self.db.execute(
                 """
@@ -84,7 +101,12 @@ class BoxRepository(BaseRepository):
             ).fetchall()
         )
 
-    def revert(self, box_id, version_id, changed_by=None):
+    def revert(
+        self,
+        box_id: int,
+        version_id: int,
+        changed_by: int | None = None,
+    ) -> dict[str, Any] | None:
         h = self._row(
             self.db.execute(
                 "SELECT * FROM box_history WHERE id=? AND box_id=?", (version_id, box_id)
@@ -101,7 +123,7 @@ class BoxRepository(BaseRepository):
             changed_by=changed_by,
         )
 
-    def _record_history(self, box, changed_by):
+    def _record_history(self, box: dict[str, Any], changed_by: int | None) -> None:
         self.db.execute(
             """
             INSERT INTO box_history (box_id, changed_by, barcode, name, location_id, notes)
@@ -117,13 +139,13 @@ class BoxRepository(BaseRepository):
             ),
         )
 
-    def empty(self, box_id):
+    def empty(self, box_id: int) -> None:
         self.db.execute("UPDATE tubes SET box_id=NULL WHERE box_id=?", (box_id,))
 
-    def delete(self, box_id):
+    def delete(self, box_id: int) -> bool:
         return self.db.execute("DELETE FROM boxes WHERE id=?", (box_id,)).rowcount > 0
 
-    def search(self, query):
+    def search(self, query: str) -> list[dict[str, Any]]:
         q = f"%{query}%"
         return self._rows(
             self.db.execute(
@@ -137,7 +159,7 @@ class BoxRepository(BaseRepository):
             ).fetchall()
         )
 
-    def export_all(self):
+    def export_all(self) -> list[dict[str, Any]]:
         return self._rows(
             self.db.execute("""
             SELECT b.barcode, b.name, l.name AS location, b.notes,
@@ -148,4 +170,3 @@ class BoxRepository(BaseRepository):
             GROUP BY b.id ORDER BY b.created_at DESC
         """).fetchall()
         )
-

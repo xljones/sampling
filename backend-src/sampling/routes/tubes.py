@@ -1,6 +1,8 @@
 import sqlite3
+from typing import Any
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, Response, jsonify, request
+from flask.typing import ResponseReturnValue
 from flask_login import current_user, login_required
 
 from sampling.db import get_db
@@ -9,7 +11,7 @@ from sampling.repositories.tube_repository import TubeRepository
 bp = Blueprint("tubes", __name__)
 
 
-def _tube_fields(d):
+def _tube_fields(d: dict[str, Any]) -> dict[str, Any]:
     return dict(
         box_id=d.get("box_id") or None,
         core_id=d.get("core_id") or None,
@@ -27,14 +29,14 @@ def _tube_fields(d):
 
 @bp.get("/api/tubes")
 @login_required
-def list_tubes():
+def list_tubes() -> Response:
     with get_db() as db:
         return jsonify(TubeRepository(db).list_all())
 
 
 @bp.post("/api/tubes")
 @login_required
-def create_tube():
+def create_tube() -> ResponseReturnValue:
     d = request.json or {}
     if not d.get("barcode"):
         return jsonify(error="barcode is required"), 400
@@ -50,7 +52,7 @@ def create_tube():
 
 @bp.get("/api/tubes/<int:tube_id>")
 @login_required
-def get_tube(tube_id):
+def get_tube(tube_id: int) -> ResponseReturnValue:
     with get_db() as db:
         tube = TubeRepository(db).get_by_id(tube_id)
     if not tube:
@@ -60,7 +62,7 @@ def get_tube(tube_id):
 
 @bp.put("/api/tubes/<int:tube_id>")
 @login_required
-def update_tube(tube_id):
+def update_tube(tube_id: int) -> ResponseReturnValue:
     d = request.json or {}
     if not d.get("barcode"):
         return jsonify(error="barcode is required"), 400
@@ -78,7 +80,7 @@ def update_tube(tube_id):
 
 @bp.post("/api/tubes/bulk-assign")
 @login_required
-def bulk_assign_tubes():
+def bulk_assign_tubes() -> ResponseReturnValue:
     d = request.json or {}
     tube_ids = d.get("tube_ids", [])
     box_id = d.get("box_id")
@@ -91,7 +93,7 @@ def bulk_assign_tubes():
 
 @bp.delete("/api/tubes/<int:tube_id>")
 @login_required
-def delete_tube(tube_id):
+def delete_tube(tube_id: int) -> ResponseReturnValue:
     with get_db() as db:
         if not TubeRepository(db).delete(tube_id):
             return jsonify(error="Not found"), 404
@@ -100,14 +102,14 @@ def delete_tube(tube_id):
 
 @bp.get("/api/tubes/<int:tube_id>/history")
 @login_required
-def tube_history(tube_id):
+def tube_history(tube_id: int) -> Response:
     with get_db() as db:
         return jsonify(TubeRepository(db).get_history(tube_id))
 
 
 @bp.post("/api/tubes/<int:tube_id>/revert/<int:version_id>")
 @login_required
-def revert_tube(tube_id, version_id):
+def revert_tube(tube_id: int, version_id: int) -> ResponseReturnValue:
     with get_db() as db:
         tube = TubeRepository(db).revert(tube_id, version_id, changed_by=current_user.id)
     if not tube:

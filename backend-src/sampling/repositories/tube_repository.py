@@ -1,9 +1,11 @@
+from typing import Any
+
 from sampling.repositories.base import BaseRepository
 
 
 class TubeRepository(BaseRepository):
 
-    def list_all(self):
+    def list_all(self) -> list[dict[str, Any]]:
         return self._rows(
             self.db.execute("""
             SELECT t.*, b.name AS box_name, b.barcode AS box_barcode,
@@ -21,7 +23,7 @@ class TubeRepository(BaseRepository):
         """).fetchall()
         )
 
-    def get_by_id(self, tube_id):
+    def get_by_id(self, tube_id: int) -> dict[str, Any] | None:
         return self._row(
             self.db.execute(
                 """
@@ -42,7 +44,7 @@ class TubeRepository(BaseRepository):
             ).fetchone()
         )
 
-    def get_by_barcode(self, barcode):
+    def get_by_barcode(self, barcode: str) -> dict[str, Any] | None:
         return self._row(
             self.db.execute(
                 """
@@ -65,20 +67,20 @@ class TubeRepository(BaseRepository):
 
     def create(
         self,
-        barcode,
-        box_id=None,
-        core_id=None,
-        sample_date=None,
-        site_name=None,
-        latitude=None,
-        longitude=None,
-        sample_type=None,
-        description=None,
-        volume_ml=None,
-        weight_g=None,
-        depth_cm=None,
-        changed_by=None,
-    ):
+        barcode: str,
+        box_id: int | None = None,
+        core_id: int | None = None,
+        sample_date: str | None = None,
+        site_name: str | None = None,
+        latitude: float | None = None,
+        longitude: float | None = None,
+        sample_type: str | None = None,
+        description: str | None = None,
+        volume_ml: float | None = None,
+        weight_g: float | None = None,
+        depth_cm: float | None = None,
+        changed_by: int | None = None,
+    ) -> dict[str, Any]:
         cur = self.db.execute(
             """
             INSERT INTO tubes (
@@ -107,21 +109,21 @@ class TubeRepository(BaseRepository):
 
     def update(
         self,
-        tube_id,
-        barcode,
-        box_id=None,
-        core_id=None,
-        sample_date=None,
-        site_name=None,
-        latitude=None,
-        longitude=None,
-        sample_type=None,
-        description=None,
-        volume_ml=None,
-        weight_g=None,
-        depth_cm=None,
-        changed_by=None,
-    ):
+        tube_id: int,
+        barcode: str,
+        box_id: int | None = None,
+        core_id: int | None = None,
+        sample_date: str | None = None,
+        site_name: str | None = None,
+        latitude: float | None = None,
+        longitude: float | None = None,
+        sample_type: str | None = None,
+        description: str | None = None,
+        volume_ml: float | None = None,
+        weight_g: float | None = None,
+        depth_cm: float | None = None,
+        changed_by: int | None = None,
+    ) -> dict[str, Any] | None:
         self.db.execute(
             """
             UPDATE tubes
@@ -150,7 +152,7 @@ class TubeRepository(BaseRepository):
         self._record_history(tube, changed_by)
         return tube
 
-    def get_history(self, tube_id):
+    def get_history(self, tube_id: int) -> list[dict[str, Any]]:
         return self._rows(
             self.db.execute(
                 """
@@ -167,7 +169,12 @@ class TubeRepository(BaseRepository):
             ).fetchall()
         )
 
-    def revert(self, tube_id, version_id, changed_by=None):
+    def revert(
+        self,
+        tube_id: int,
+        version_id: int,
+        changed_by: int | None = None,
+    ) -> dict[str, Any] | None:
         h = self._row(
             self.db.execute(
                 "SELECT * FROM tube_history WHERE id=? AND tube_id=?", (version_id, tube_id)
@@ -192,7 +199,7 @@ class TubeRepository(BaseRepository):
             changed_by=changed_by,
         )
 
-    def _record_history(self, tube, changed_by):
+    def _record_history(self, tube: dict[str, Any], changed_by: int | None) -> None:
         self.db.execute(
             """
             INSERT INTO tube_history
@@ -218,7 +225,12 @@ class TubeRepository(BaseRepository):
             ),
         )
 
-    def bulk_assign(self, tube_ids, box_id, changed_by=None):
+    def bulk_assign(
+        self,
+        tube_ids: list[int],
+        box_id: int,
+        changed_by: int | None = None,
+    ) -> int:
         if not tube_ids:
             return 0
         placeholders = ",".join("?" * len(tube_ids))
@@ -232,10 +244,10 @@ class TubeRepository(BaseRepository):
                 self._record_history(tube, changed_by)
         return len(tube_ids)
 
-    def delete(self, tube_id):
+    def delete(self, tube_id: int) -> bool:
         return self.db.execute("DELETE FROM tubes WHERE id=?", (tube_id,)).rowcount > 0
 
-    def search(self, query):
+    def search(self, query: str) -> list[dict[str, Any]]:
         q = f"%{query}%"
         return self._rows(
             self.db.execute(
@@ -246,7 +258,7 @@ class TubeRepository(BaseRepository):
             ).fetchall()
         )
 
-    def export_all(self):
+    def export_all(self) -> list[dict[str, Any]]:
         return self._rows(
             self.db.execute("""
             SELECT t.barcode, b.barcode AS box_barcode, b.name AS box_name,
@@ -264,4 +276,3 @@ class TubeRepository(BaseRepository):
             ORDER BY t.created_at DESC
         """).fetchall()
         )
-

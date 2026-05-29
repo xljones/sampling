@@ -1,7 +1,8 @@
 import sqlite3
 from datetime import datetime, timedelta, timezone
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, Response, jsonify, request
+from flask.typing import ResponseReturnValue
 from flask_login import current_user, login_required
 
 from sampling.db import get_db
@@ -12,14 +13,14 @@ bp = Blueprint("users", __name__)
 
 @bp.get("/api/users")
 @login_required
-def list_users():
+def list_users() -> Response:
     with get_db() as db:
         return jsonify(UserRepository(db).list_all())
 
 
 @bp.post("/api/users")
 @login_required
-def create_user():
+def create_user() -> ResponseReturnValue:
     d = request.json or {}
     username = (d.get("username") or "").strip()
     password = d.get("password") or ""
@@ -47,7 +48,7 @@ def create_user():
 
 @bp.delete("/api/users/<int:user_id>")
 @login_required
-def delete_user(user_id):
+def delete_user(user_id: int) -> ResponseReturnValue:
     if user_id == current_user.id:
         return jsonify(error="Cannot delete your own account"), 400
     with get_db() as db:

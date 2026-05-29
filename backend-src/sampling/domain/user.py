@@ -13,7 +13,7 @@ class User(UserMixin):
     expires_at: str | None = None
 
     @property
-    def is_active(self):
+    def is_active(self) -> bool:
         if self.expires_at:
             try:
                 return datetime.now(timezone.utc) < datetime.fromisoformat(self.expires_at)

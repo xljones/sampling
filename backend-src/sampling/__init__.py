@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 try:
     import tomllib
@@ -8,16 +9,18 @@ except ModuleNotFoundError:
     except ModuleNotFoundError:
         tomllib = None  # type: ignore[assignment]
 from datetime import datetime, timezone
-from pathlib import Path
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, Response, jsonify, request, send_from_directory
+from flask.typing import ResponseReturnValue
 from flask_cors import CORS
 from flask_login import LoginManager, current_user, logout_user
+
+from sampling.domain.user import User
 
 _DIST_DIR = str(Path(__file__).parent.parent.parent / "dist")
 
 
-def _find_pyproject():
+def _find_pyproject() -> Path | None:
     p = Path(__file__).resolve().parent
     for _ in range(5):
         candidate = p / "pyproject.toml"
@@ -32,9 +35,8 @@ _PYPROJECT = _find_pyproject()
 login_manager = LoginManager()
 
 
-def create_app():
+def create_app() -> Flask:
     from sampling.db import get_db, run_migrations
-    from sampling.domain.user import User
     from sampling.repositories.user_repository import UserRepository
     from sampling.routes import auth, boxes, cores, export, locations, scan, tubes, users
 
@@ -55,7 +57,7 @@ def create_app():
     login_manager.init_app(app)
 
     @login_manager.user_loader
-    def load_user(user_id):
+    def load_user(user_id: str) -> User | None:
         with get_db() as db:
             row = UserRepository(db).get_by_id(int(user_id))
         if row:
@@ -69,11 +71,11 @@ def create_app():
         return None
 
     @login_manager.unauthorized_handler
-    def unauthorized():
+    def unauthorized() -> tuple[Response, int]:
         return jsonify(error="Authentication required"), 401
 
     @app.before_request
-    def enforce_auth():
+    def enforce_auth() -> ResponseReturnValue | None:
         if not current_user.is_authenticated:
             return
         if current_user.expires_at:
@@ -94,7 +96,7 @@ def create_app():
         app.register_blueprint(bp)
 
     @app.get("/api/version")
-    def version():
+    def version() -> Response:
         try:
             if tomllib is None or _PYPROJECT is None:
                 raise RuntimeError("no toml parser or pyproject.toml not found")
@@ -106,7 +108,7 @@ def create_app():
 
     @app.get("/", defaults={"path": ""})
     @app.get("/<path:path>")
-    def serve_frontend(path):
+    def serve_frontend(path: str) -> Response:
         full = os.path.join(_DIST_DIR, path)
         if path and os.path.exists(full):
             return send_from_directory(_DIST_DIR, path)

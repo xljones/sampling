@@ -1,6 +1,7 @@
 import csv
 import io
 from datetime import datetime, timezone
+from typing import Any
 
 from flask import Blueprint, Response
 from flask_login import login_required
@@ -32,7 +33,7 @@ _BOX_FIELDS = ["barcode", "name", "location", "notes", "tube_count", "created_at
 
 @bp.get("/api/export/tubes")
 @login_required
-def export_tubes():
+def export_tubes() -> Response:
     with get_db() as db:
         data = TubeRepository(db).export_all()
     return _csv_response(data, _TUBE_FIELDS, "tubes")
@@ -40,13 +41,17 @@ def export_tubes():
 
 @bp.get("/api/export/boxes")
 @login_required
-def export_boxes():
+def export_boxes() -> Response:
     with get_db() as db:
         data = BoxRepository(db).export_all()
     return _csv_response(data, _BOX_FIELDS, "boxes")
 
 
-def _csv_response(data, fields, basename):
+def _csv_response(
+    data: list[dict[str, Any]],
+    fields: list[str],
+    basename: str,
+) -> Response:
     buf = io.StringIO()
     writer = csv.DictWriter(buf, fieldnames=fields, extrasaction="ignore", lineterminator="\r\n")
     writer.writeheader()

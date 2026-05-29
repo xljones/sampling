@@ -1,6 +1,8 @@
 import sqlite3
+from typing import Any
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, Response, jsonify, request
+from flask.typing import ResponseReturnValue
 from flask_login import current_user, login_required
 
 from sampling.db import get_db
@@ -9,7 +11,7 @@ from sampling.repositories.core_repository import CoreRepository
 bp = Blueprint("cores", __name__)
 
 
-def _core_fields(d):
+def _core_fields(d: dict[str, Any]) -> dict[str, Any]:
     return dict(
         name=d.get("name") or None,
         location_id=d.get("location_id") or None,
@@ -27,14 +29,14 @@ def _core_fields(d):
 
 @bp.get("/api/cores")
 @login_required
-def list_cores():
+def list_cores() -> Response:
     with get_db() as db:
         return jsonify(CoreRepository(db).list_all())
 
 
 @bp.post("/api/cores")
 @login_required
-def create_core():
+def create_core() -> ResponseReturnValue:
     d = request.json or {}
     if not d.get("barcode"):
         return jsonify(error="barcode is required"), 400
@@ -50,7 +52,7 @@ def create_core():
 
 @bp.get("/api/cores/<int:core_id>")
 @login_required
-def get_core(core_id):
+def get_core(core_id: int) -> ResponseReturnValue:
     with get_db() as db:
         core = CoreRepository(db).get_with_tubes(core_id)
     if not core:
@@ -60,7 +62,7 @@ def get_core(core_id):
 
 @bp.put("/api/cores/<int:core_id>")
 @login_required
-def update_core(core_id):
+def update_core(core_id: int) -> ResponseReturnValue:
     d = request.json or {}
     if not d.get("barcode"):
         return jsonify(error="barcode is required"), 400
@@ -78,7 +80,7 @@ def update_core(core_id):
 
 @bp.delete("/api/cores/<int:core_id>")
 @login_required
-def delete_core(core_id):
+def delete_core(core_id: int) -> ResponseReturnValue:
     with get_db() as db:
         if not CoreRepository(db).delete(core_id):
             return jsonify(error="Not found"), 404
@@ -87,14 +89,14 @@ def delete_core(core_id):
 
 @bp.get("/api/cores/<int:core_id>/history")
 @login_required
-def core_history(core_id):
+def core_history(core_id: int) -> Response:
     with get_db() as db:
         return jsonify(CoreRepository(db).get_history(core_id))
 
 
 @bp.post("/api/cores/<int:core_id>/revert/<int:version_id>")
 @login_required
-def revert_core(core_id, version_id):
+def revert_core(core_id: int, version_id: int) -> ResponseReturnValue:
     with get_db() as db:
         core = CoreRepository(db).revert(core_id, version_id, changed_by=current_user.id)
     if not core:

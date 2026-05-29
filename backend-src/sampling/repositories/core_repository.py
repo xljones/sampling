@@ -1,9 +1,11 @@
+from typing import Any
+
 from sampling.repositories.base import BaseRepository
 
 
 class CoreRepository(BaseRepository):
 
-    def list_all(self):
+    def list_all(self) -> list[dict[str, Any]]:
         return self._rows(
             self.db.execute("""
             SELECT c.*, l.name AS location_name, COUNT(t.id) AS tube_count
@@ -14,7 +16,7 @@ class CoreRepository(BaseRepository):
         """).fetchall()
         )
 
-    def get_by_id(self, core_id):
+    def get_by_id(self, core_id: int) -> dict[str, Any] | None:
         return self._row(
             self.db.execute(
                 """
@@ -26,7 +28,7 @@ class CoreRepository(BaseRepository):
             ).fetchone()
         )
 
-    def get_with_tubes(self, core_id):
+    def get_with_tubes(self, core_id: int) -> dict[str, Any] | None:
         core = self.get_by_id(core_id)
         if not core:
             return None
@@ -38,7 +40,7 @@ class CoreRepository(BaseRepository):
         )
         return core
 
-    def get_by_barcode(self, barcode):
+    def get_by_barcode(self, barcode: str) -> dict[str, Any] | None:
         return self._row(
             self.db.execute(
                 """
@@ -52,20 +54,20 @@ class CoreRepository(BaseRepository):
 
     def create(
         self,
-        barcode,
-        name=None,
-        location_id=None,
-        latitude=None,
-        longitude=None,
-        site_name=None,
-        collection_date=None,
-        depth_cm=None,
-        collector=None,
-        sample_type=None,
-        owner=None,
-        notes=None,
-        changed_by=None,
-    ):
+        barcode: str,
+        name: str | None = None,
+        location_id: int | None = None,
+        latitude: float | None = None,
+        longitude: float | None = None,
+        site_name: str | None = None,
+        collection_date: str | None = None,
+        depth_cm: float | None = None,
+        collector: str | None = None,
+        sample_type: str | None = None,
+        owner: str | None = None,
+        notes: str | None = None,
+        changed_by: int | None = None,
+    ) -> dict[str, Any]:
         cur = self.db.execute(
             """
             INSERT INTO cores (barcode, name, location_id, latitude, longitude,
@@ -83,21 +85,21 @@ class CoreRepository(BaseRepository):
 
     def update(
         self,
-        core_id,
-        barcode,
-        name=None,
-        location_id=None,
-        latitude=None,
-        longitude=None,
-        site_name=None,
-        collection_date=None,
-        depth_cm=None,
-        collector=None,
-        sample_type=None,
-        owner=None,
-        notes=None,
-        changed_by=None,
-    ):
+        core_id: int,
+        barcode: str,
+        name: str | None = None,
+        location_id: int | None = None,
+        latitude: float | None = None,
+        longitude: float | None = None,
+        site_name: str | None = None,
+        collection_date: str | None = None,
+        depth_cm: float | None = None,
+        collector: str | None = None,
+        sample_type: str | None = None,
+        owner: str | None = None,
+        notes: str | None = None,
+        changed_by: int | None = None,
+    ) -> dict[str, Any] | None:
         self.db.execute(
             """
             UPDATE cores
@@ -116,7 +118,7 @@ class CoreRepository(BaseRepository):
         self._record_history(core, changed_by)
         return core
 
-    def get_history(self, core_id):
+    def get_history(self, core_id: int) -> list[dict[str, Any]]:
         return self._rows(
             self.db.execute(
                 """
@@ -131,7 +133,12 @@ class CoreRepository(BaseRepository):
             ).fetchall()
         )
 
-    def revert(self, core_id, version_id, changed_by=None):
+    def revert(
+        self,
+        core_id: int,
+        version_id: int,
+        changed_by: int | None = None,
+    ) -> dict[str, Any] | None:
         h = self._row(
             self.db.execute(
                 "SELECT * FROM core_history WHERE id=? AND core_id=?", (version_id, core_id)
@@ -156,7 +163,7 @@ class CoreRepository(BaseRepository):
             changed_by=changed_by,
         )
 
-    def _record_history(self, core, changed_by):
+    def _record_history(self, core: dict[str, Any], changed_by: int | None) -> None:
         self.db.execute(
             """
             INSERT INTO core_history
@@ -182,10 +189,10 @@ class CoreRepository(BaseRepository):
             ),
         )
 
-    def delete(self, core_id):
+    def delete(self, core_id: int) -> bool:
         return self.db.execute("DELETE FROM cores WHERE id=?", (core_id,)).rowcount > 0
 
-    def search(self, query):
+    def search(self, query: str) -> list[dict[str, Any]]:
         q = f"%{query}%"
         return self._rows(
             self.db.execute(
@@ -198,4 +205,3 @@ class CoreRepository(BaseRepository):
                 (q, q, q),
             ).fetchall()
         )
-

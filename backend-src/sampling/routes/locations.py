@@ -1,6 +1,7 @@
 import sqlite3
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, Response, jsonify, request
+from flask.typing import ResponseReturnValue
 from flask_login import login_required
 
 from sampling.db import get_db
@@ -11,14 +12,14 @@ bp = Blueprint("locations", __name__)
 
 @bp.get("/api/locations")
 @login_required
-def list_locations():
+def list_locations() -> Response:
     with get_db() as db:
         return jsonify(LocationRepository(db).list_all())
 
 
 @bp.get("/api/locations/<int:loc_id>")
 @login_required
-def get_location(loc_id):
+def get_location(loc_id: int) -> ResponseReturnValue:
     with get_db() as db:
         loc = LocationRepository(db).get_with_boxes(loc_id)
     if not loc:
@@ -28,7 +29,7 @@ def get_location(loc_id):
 
 @bp.post("/api/locations")
 @login_required
-def create_location():
+def create_location() -> ResponseReturnValue:
     d = request.json or {}
     if not d.get("name", "").strip():
         return jsonify(error="name is required"), 400
@@ -42,7 +43,7 @@ def create_location():
 
 @bp.put("/api/locations/<int:loc_id>")
 @login_required
-def update_location(loc_id):
+def update_location(loc_id: int) -> ResponseReturnValue:
     d = request.json or {}
     if not d.get("name", "").strip():
         return jsonify(error="name is required"), 400
@@ -58,7 +59,7 @@ def update_location(loc_id):
 
 @bp.delete("/api/locations/<int:loc_id>")
 @login_required
-def delete_location(loc_id):
+def delete_location(loc_id: int) -> ResponseReturnValue:
     with get_db() as db:
         repo = LocationRepository(db)
         if not repo.get_by_id(loc_id):

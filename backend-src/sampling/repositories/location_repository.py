@@ -1,9 +1,11 @@
+from typing import Any
+
 from sampling.repositories.base import BaseRepository
 
 
 class LocationRepository(BaseRepository):
 
-    def list_all(self):
+    def list_all(self) -> list[dict[str, Any]]:
         return self._rows(
             self.db.execute("""
             SELECT l.*, COUNT(b.id) AS box_count
@@ -12,11 +14,11 @@ class LocationRepository(BaseRepository):
         """).fetchall()
         )
 
-    def get_by_id(self, loc_id):
+    def get_by_id(self, loc_id: int) -> dict[str, Any] | None:
         r = self.db.execute("SELECT * FROM locations WHERE id=?", (loc_id,)).fetchone()
         return dict(r) if r else None
 
-    def get_with_boxes(self, loc_id):
+    def get_with_boxes(self, loc_id: int) -> dict[str, Any] | None:
         loc = self.get_by_id(loc_id)
         if not loc:
             return None
@@ -33,15 +35,15 @@ class LocationRepository(BaseRepository):
         )
         return loc
 
-    def create(self, name):
+    def create(self, name: str) -> dict[str, Any]:
         cur = self.db.execute("INSERT INTO locations (name) VALUES (?)", (name,))
         return self.get_by_id(cur.lastrowid)
 
-    def update(self, loc_id, name):
+    def update(self, loc_id: int, name: str) -> dict[str, Any] | None:
         self.db.execute("UPDATE locations SET name=? WHERE id=?", (name, loc_id))
         return self.get_by_id(loc_id)
 
-    def delete(self, loc_id):
+    def delete(self, loc_id: int) -> tuple[bool, str | None]:
         count = self.db.execute(
             "SELECT COUNT(*) FROM boxes WHERE location_id=?", (loc_id,)
         ).fetchone()[0]
@@ -53,4 +55,3 @@ class LocationRepository(BaseRepository):
         self.db.execute("UPDATE box_history SET location_id=NULL WHERE location_id=?", (loc_id,))
         self.db.execute("DELETE FROM locations WHERE id=?", (loc_id,))
         return True, None
-

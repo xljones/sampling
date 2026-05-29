@@ -1,10 +1,14 @@
 import os
 import tempfile
+from collections.abc import Generator
+
 import pytest
+from flask import Flask
+from flask.testing import FlaskClient
 
 
 @pytest.fixture
-def app():
+def app() -> Generator[Flask, None, None]:
     db_fd, db_path = tempfile.mkstemp(suffix=".db")
     os.close(db_fd)
     os.environ["DB_PATH"] = db_path
@@ -22,12 +26,12 @@ def app():
 
 
 @pytest.fixture
-def client(app):
+def client(app: Flask) -> FlaskClient:
     return app.test_client()
 
 
 @pytest.fixture
-def auth_client(client):
+def auth_client(client: FlaskClient) -> FlaskClient:
     from sampling.db import get_db
     from sampling.repositories.user_repository import UserRepository
 

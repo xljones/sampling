@@ -6,7 +6,7 @@ _DEFAULT_DB_PATH = str(Path(__file__).parent.parent.parent / "data" / "samples.d
 _MIGRATIONS_DIR = Path(__file__).parent / "migrations"
 
 
-def get_db():
+def get_db() -> sqlite3.Connection:
     db_path = os.environ.get("DB_PATH", _DEFAULT_DB_PATH)
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
     db = sqlite3.connect(db_path)
@@ -16,7 +16,7 @@ def get_db():
     return db
 
 
-def run_migrations():
+def run_migrations() -> None:
     with get_db() as db:
         db.execute("""
             CREATE TABLE IF NOT EXISTS schema_migrations (

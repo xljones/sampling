@@ -1,24 +1,27 @@
+import sqlite3
+from typing import Any
+
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
 class UserRepository:
-    def __init__(self, db):
+    def __init__(self, db: sqlite3.Connection) -> None:
         self.db = db
 
-    def get_by_id(self, user_id):
+    def get_by_id(self, user_id: int) -> dict[str, Any] | None:
         r = self.db.execute(
             "SELECT id, username, is_readonly, expires_at, created_at FROM users WHERE id=?",
             (user_id,),
         ).fetchone()
         return dict(r) if r else None
 
-    def get_by_username(self, username):
+    def get_by_username(self, username: str) -> dict[str, Any] | None:
         r = self.db.execute(
             "SELECT * FROM users WHERE username = ? COLLATE NOCASE", (username,)
         ).fetchone()
         return dict(r) if r else None
 
-    def list_all(self):
+    def list_all(self) -> list[dict[str, Any]]:
         return [
             dict(r)
             for r in self.db.execute(
@@ -27,26 +30,37 @@ class UserRepository:
             ).fetchall()
         ]
 
-    def create(self, username, password, is_readonly=False, expires_at=None):
+    def create(
+        self,
+        username: str,
+        password: str,
+        is_readonly: bool = False,
+        expires_at: str | None = None,
+    ) -> dict[str, Any]:
         cur = self.db.execute(
             "INSERT INTO users (username, password_hash, is_readonly, expires_at) VALUES (?,?,?,?)",
             (username, generate_password_hash(password), int(is_readonly), expires_at),
         )
         return self.get_by_id(cur.lastrowid)
 
-    def rename(self, user_id, new_username):
+    def rename(self, user_id: int, new_username: str) -> None:
         self.db.execute("UPDATE users SET username=? WHERE id=?", (new_username, user_id))
 
-    def delete(self, user_id):
+    def delete(self, user_id: int) -> bool:
         return self.db.execute("DELETE FROM users WHERE id=?", (user_id,)).rowcount > 0
 
-    def verify_password(self, username, password):
+    def verify_password(self, username: str, password: str) -> dict[str, Any] | None:
         user = self.get_by_username(username)
         if user and check_password_hash(user["password_hash"], password):
             return user
         return None
 
-    def change_password(self, user_id, current_password, new_password):
+    def change_password(
+        self,
+        user_id: int,
+        current_password: str,
+        new_password: str,
+    ) -> bool:
         row = self.db.execute("SELECT password_hash FROM users WHERE id=?", (user_id,)).fetchone()
         if not row or not check_password_hash(row["password_hash"], current_password):
             return False

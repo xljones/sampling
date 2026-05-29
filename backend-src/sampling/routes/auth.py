@@ -1,4 +1,7 @@
-from flask import Blueprint, jsonify, request
+from typing import Any
+
+from flask import Blueprint, Response, jsonify, request
+from flask.typing import ResponseReturnValue
 from flask_login import current_user, login_required, login_user, logout_user
 
 from sampling.db import get_db
@@ -8,7 +11,7 @@ from sampling.repositories.user_repository import UserRepository
 bp = Blueprint("auth", __name__)
 
 
-def _user_dict(row):
+def _user_dict(row: dict[str, Any]) -> dict[str, Any]:
     return {
         "id": row["id"],
         "username": row["username"],
@@ -17,7 +20,7 @@ def _user_dict(row):
     }
 
 
-def _user_obj(row):
+def _user_obj(row: dict[str, Any]) -> User:
     return User(
         id=row["id"],
         username=row["username"],
@@ -27,7 +30,7 @@ def _user_obj(row):
 
 
 @bp.post("/api/auth/login")
-def login():
+def login() -> ResponseReturnValue:
     d = request.json or {}
     username = (d.get("username") or "").strip()
     password = d.get("password") or ""
@@ -45,14 +48,14 @@ def login():
 
 
 @bp.post("/api/auth/logout")
-def logout():
+def logout() -> ResponseReturnValue:
     logout_user()
     return "", 204
 
 
 @bp.get("/api/auth/me")
 @login_required
-def me():
+def me() -> Response:
     return jsonify(
         id=current_user.id,
         username=current_user.username,
@@ -63,7 +66,7 @@ def me():
 
 @bp.put("/api/auth/password")
 @login_required
-def change_password():
+def change_password() -> ResponseReturnValue:
     d = request.json or {}
     current_pw = d.get("current_password") or ""
     new_pw = d.get("new_password") or ""

@@ -1,17 +1,19 @@
 import re
 
+from flask.testing import FlaskClient
 
-def test_export_tubes_requires_auth(client):
+
+def test_export_tubes_requires_auth(client: FlaskClient) -> None:
     r = client.get("/api/export/tubes")
     assert r.status_code == 401
 
 
-def test_export_boxes_requires_auth(client):
+def test_export_boxes_requires_auth(client: FlaskClient) -> None:
     r = client.get("/api/export/boxes")
     assert r.status_code == 401
 
 
-def test_export_tubes_csv(auth_client):
+def test_export_tubes_csv(auth_client: FlaskClient) -> None:
     auth_client.post("/api/tubes", json={"barcode": "TUBE001", "site_name": "River A"})
     r = auth_client.get("/api/export/tubes")
     assert r.status_code == 200
@@ -24,7 +26,7 @@ def test_export_tubes_csv(auth_client):
     assert "River A" in text
 
 
-def test_export_tubes_includes_box_info(auth_client):
+def test_export_tubes_includes_box_info(auth_client: FlaskClient) -> None:
     box = auth_client.post("/api/boxes", json={"barcode": "BOX001", "name": "Shelf A"}).json
     auth_client.post("/api/tubes", json={"barcode": "TUBE001", "box_id": box["id"]})
     r = auth_client.get("/api/export/tubes")
@@ -33,14 +35,14 @@ def test_export_tubes_includes_box_info(auth_client):
     assert "Shelf A" in text
 
 
-def test_export_tubes_empty(auth_client):
+def test_export_tubes_empty(auth_client: FlaskClient) -> None:
     r = auth_client.get("/api/export/tubes")
     assert r.status_code == 200
     lines = r.data.decode().strip().splitlines()
     assert len(lines) == 1  # header only
 
 
-def test_export_boxes_csv(auth_client):
+def test_export_boxes_csv(auth_client: FlaskClient) -> None:
     auth_client.post("/api/boxes", json={"barcode": "BOX001", "name": "Shelf A", "location": "Freezer 2"})
     r = auth_client.get("/api/export/boxes")
     assert r.status_code == 200
@@ -53,7 +55,7 @@ def test_export_boxes_csv(auth_client):
     assert "Shelf A" in text
 
 
-def test_export_boxes_tube_count(auth_client):
+def test_export_boxes_tube_count(auth_client: FlaskClient) -> None:
     box = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
     auth_client.post("/api/tubes", json={"barcode": "TUBE001", "box_id": box["id"]})
     auth_client.post("/api/tubes", json={"barcode": "TUBE002", "box_id": box["id"]})

@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Management CLI. Usage: python manage.py <command> [args]"""
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
 
-def cmd_create_user(args):
+def cmd_create_user(args: list[str]) -> None:
     if len(args) != 2:
         print("Usage: python manage.py create-user <username> <password>")
         sys.exit(1)
@@ -22,7 +23,7 @@ def cmd_create_user(args):
     print(f"User '{username}' created.")
 
 
-def cmd_list_users(_):
+def cmd_list_users(_: list[str]) -> None:
     from sampling.db import get_db
     with get_db() as db:
         users = db.execute(
@@ -36,7 +37,7 @@ def cmd_list_users(_):
         print(f"  [{u[0]}] {u[1]}  ({kind}{expiry})  created {u[4]}")
 
 
-def cmd_seed(_):
+def cmd_seed(_: list[str]) -> None:
     from sampling.db import get_db, run_migrations
     from sampling.repositories.box_repository import BoxRepository
     from sampling.repositories.core_repository import CoreRepository
@@ -248,7 +249,7 @@ def cmd_seed(_):
     print(f"\nDone. {len(BOXES)} boxes, {len(CORES)} cores, {len(TUBES)} tubes.")
 
 
-def cmd_rename_user(args):
+def cmd_rename_user(args: list[str]) -> None:
     if len(args) != 2:
         print("Usage: python manage.py rename-user <username> <new-username>")
         sys.exit(1)
@@ -268,7 +269,7 @@ def cmd_rename_user(args):
     print(f"User '{username}' renamed to '{new_username}'.")
 
 
-def cmd_delete_user(args):
+def cmd_delete_user(args: list[str]) -> None:
     if len(args) != 1:
         print("Usage: python manage.py delete-user <username>")
         sys.exit(1)
@@ -291,7 +292,7 @@ def cmd_delete_user(args):
     print(f"User '{username}' deleted.")
 
 
-def cmd_reset_db(args):
+def cmd_reset_db(args: list[str]) -> None:
     msg = "This will drop ALL tables including users. Type YES to confirm: "
     confirm = input(msg)
     if confirm.strip() != "YES":
@@ -309,7 +310,7 @@ def cmd_reset_db(args):
     print(f"All tables dropped. Run seed to repopulate.")
 
 
-COMMANDS = {
+COMMANDS: dict[str, Callable[[list[str]], None]] = {
     "create-user": cmd_create_user,
     "list-users":  cmd_list_users,
     "rename-user": cmd_rename_user,
