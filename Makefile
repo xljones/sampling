@@ -122,8 +122,8 @@ test: test-backend test-frontend
 # Run from a PythonAnywhere Bash console inside ~/sampling
 
 .PHONY: deploy-pa
-# pull latest main, create venv if needed, install deps
+# pull latest deploy branch (includes built dist/), create venv if needed, install deps
 deploy-pa:
-	git fetch origin && git checkout main && git pull origin main
+	git fetch origin && git checkout deploy && git pull origin deploy
 	[ -d venv ] || python3 -m venv venv
 	venv/bin/pip install -r requirements.txt

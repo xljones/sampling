@@ -4,25 +4,16 @@
 
 ### 1. Clone the repo
 
-Open a **Bash console** on PythonAnywhere and run:
+Open a **Bash console** on PythonAnywhere and clone the **`deploy` branch**, which always contains the latest built frontend:
 
 ```bash
-git clone https://github.com/xljones/sampling.git
+git clone --branch deploy https://github.com/xljones/sampling.git
 cd sampling
 ```
 
-### 2. Build the frontend
+The `deploy` branch mirrors `main` and includes the pre-built `dist/` directory. It is rebuilt and force-pushed automatically by CI on every push to `main`.
 
-Use the pre-built frontend in /dist, or:
-
-```bash
-npm install
-npm run build
-```
-
-This produces the `dist/` directory that Flask serves as static files.
-
-### 3. Set up the Python environment
+### 2. Set up the Python environment
 
 ```bash
 python3 -m venv venv
@@ -79,7 +70,7 @@ From a **PythonAnywhere Bash console** inside `~/sampling`:
 make deploy-pa
 ```
 
-This pulls the latest `main` and installs any new Python dependencies. Reload the web app from the PythonAnywhere Web tab to apply the changes.
+This switches to the `deploy` branch, pulls the latest changes (including the freshly built `dist/`), and installs any new Python dependencies. Reload the web app from the PythonAnywhere Web tab to apply the changes.
 
 Database migrations run automatically on the next request after reload.
 
