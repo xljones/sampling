@@ -15,7 +15,7 @@ _TUBE_FIELDS = [
     "barcode",
     "box_barcode",
     "box_name",
-    "collection_date",
+    "sample_date",
     "site_name",
     "latitude",
     "longitude",

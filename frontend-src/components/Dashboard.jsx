@@ -100,7 +100,7 @@ export default function Dashboard() {
                   <td>{t.site_name || '—'}</td>
                   <td>{t.sample_type || '—'}</td>
                   <td className="col-mobile-hide">{t.depth_cm ?? '—'}</td>
-                  <td className="col-mobile-hide">{t.collection_date || '—'}</td>
+                  <td className="col-mobile-hide">{t.sample_date || '—'}</td>
                 </tr>
               ))}
               {tubes.length === 0 && <tr><td colSpan={6} className="empty">No tubes yet</td></tr>}

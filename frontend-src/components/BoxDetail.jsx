@@ -261,7 +261,7 @@ export default function BoxDetail() {
                   <td>{t.site_name || '—'}</td>
                   <td>{t.sample_type || '—'}</td>
                   <td>{t.depth_cm ?? '—'}</td>
-                  <td>{t.collection_date || '—'}</td>
+                  <td>{t.sample_date || '—'}</td>
                   <td>
                     <div className="row-actions">
                       {!ro && <Link to={`/tubes/${t.id}?edit=1&from=/boxes/${id}`} className="btn btn-secondary btn-sm">Edit</Link>}

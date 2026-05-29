@@ -86,7 +86,7 @@ export default function ScanPage() {
               <Field label="Depth (cm)" value={result.data.depth_cm} />
               <Field label="Volume (mL)" value={result.data.volume_ml} />
               <Field label="Weight (g)" value={result.data.weight_g} />
-              <Field label="Date" value={result.data.collection_date} />
+              <Field label="Date" value={result.data.sample_date} />
               <Field label="Description" value={result.data.description} />
             </div>
           )}

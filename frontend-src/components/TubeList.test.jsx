@@ -7,8 +7,8 @@ vi.mock('../api.js', () => ({
   api: {
     getBoxes: vi.fn().mockResolvedValue([]),
     getTubes: vi.fn().mockResolvedValue([
-      { id: 1, barcode: 'T001', box_id: 1, box_barcode: 'BOX001', site_name: 'Site A', sample_type: 'core', depth_cm: 10, collection_date: '2024-01-01' },
-      { id: 2, barcode: 'T002', box_id: null, box_barcode: null, site_name: 'Site B', sample_type: null, depth_cm: null, collection_date: null },
+      { id: 1, barcode: 'T001', box_id: 1, box_barcode: 'BOX001', site_name: 'Site A', sample_type: 'core', depth_cm: 10, sample_date: '2024-01-01' },
+      { id: 2, barcode: 'T002', box_id: null, box_barcode: null, site_name: 'Site B', sample_type: null, depth_cm: null, sample_date: null },
     ]),
   },
 }));

@@ -67,7 +67,7 @@ class TubeRepository:
         barcode,
         box_id=None,
         core_id=None,
-        collection_date=None,
+        sample_date=None,
         site_name=None,
         latitude=None,
         longitude=None,
@@ -80,7 +80,7 @@ class TubeRepository:
     ):
         cur = self.db.execute(
             """
-            INSERT INTO tubes (barcode, box_id, core_id, collection_date, site_name, latitude, longitude,
+            INSERT INTO tubes (barcode, box_id, core_id, sample_date, site_name, latitude, longitude,
                 sample_type, description, volume_ml, weight_g, depth_cm)
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
         """,
@@ -88,7 +88,7 @@ class TubeRepository:
                 barcode,
                 box_id,
                 core_id,
-                collection_date,
+                sample_date,
                 site_name,
                 latitude,
                 longitude,
@@ -109,7 +109,7 @@ class TubeRepository:
         barcode,
         box_id=None,
         core_id=None,
-        collection_date=None,
+        sample_date=None,
         site_name=None,
         latitude=None,
         longitude=None,
@@ -123,7 +123,7 @@ class TubeRepository:
         self.db.execute(
             """
             UPDATE tubes
-            SET barcode=?, box_id=?, core_id=?, collection_date=?, site_name=?, latitude=?,
+            SET barcode=?, box_id=?, core_id=?, sample_date=?, site_name=?, latitude=?,
                 longitude=?, sample_type=?, description=?, volume_ml=?, weight_g=?,
                 depth_cm=?, updated_at=CURRENT_TIMESTAMP
             WHERE id=?
@@ -132,7 +132,7 @@ class TubeRepository:
                 barcode,
                 box_id,
                 core_id,
-                collection_date,
+                sample_date,
                 site_name,
                 latitude,
                 longitude,
@@ -178,7 +178,7 @@ class TubeRepository:
             h["barcode"],
             box_id=h["box_id"],
             core_id=h["core_id"],
-            collection_date=h["collection_date"],
+            sample_date=h["sample_date"],
             site_name=h["site_name"],
             latitude=h["latitude"],
             longitude=h["longitude"],
@@ -194,7 +194,7 @@ class TubeRepository:
         self.db.execute(
             """
             INSERT INTO tube_history
-                (tube_id, changed_by, barcode, box_id, core_id, collection_date, site_name,
+                (tube_id, changed_by, barcode, box_id, core_id, sample_date, site_name,
                  latitude, longitude, sample_type, description, volume_ml, weight_g, depth_cm)
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """,
@@ -204,7 +204,7 @@ class TubeRepository:
                 tube["barcode"],
                 tube.get("box_id"),
                 tube.get("core_id"),
-                tube.get("collection_date"),
+                tube.get("sample_date"),
                 tube.get("site_name"),
                 tube.get("latitude"),
                 tube.get("longitude"),
@@ -252,7 +252,7 @@ class TubeRepository:
                    c.site_name AS core_site_name, c.latitude AS core_latitude,
                    c.longitude AS core_longitude, c.collection_date AS core_collection_date,
                    c.sample_type AS core_sample_type, c.depth_cm AS core_total_depth,
-                   t.collection_date, t.site_name, t.latitude, t.longitude,
+                   t.sample_date, t.site_name, t.latitude, t.longitude,
                    t.sample_type, t.description, t.volume_ml, t.weight_g, t.depth_cm,
                    t.created_at, t.updated_at
             FROM tubes t

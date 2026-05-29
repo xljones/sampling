@@ -157,7 +157,7 @@ def cmd_seed(_):
                 existing = box_repo.get_by_barcode(box_bc)
                 box_id = existing["id"] if existing else None
             tube_repo.create(
-                barcode, box_id=box_id, collection_date=date,
+                barcode, box_id=box_id, sample_date=date,
                 site_name=site, latitude=lat, longitude=lon,
                 sample_type=stype, description=desc,
                 volume_ml=vol, weight_g=wt, depth_cm=depth,

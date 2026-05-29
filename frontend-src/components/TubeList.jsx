@@ -35,7 +35,7 @@ export default function TubeList() {
       (t.box_barcode ?? '').toLowerCase().includes(q) ||
       (t.box_name ?? '').toLowerCase().includes(q) ||
       (t.description ?? '').toLowerCase().includes(q) ||
-      (t.collection_date ?? '').toLowerCase().includes(q) ||
+      (t.sample_date ?? '').toLowerCase().includes(q) ||
       (t.volume_ml != null ? String(t.volume_ml) : '').includes(q) ||
       (t.weight_g != null ? String(t.weight_g) : '').includes(q) ||
       (t.depth_cm != null ? String(t.depth_cm) : '').includes(q) ||
@@ -175,7 +175,7 @@ export default function TubeList() {
                   </th>
                 )}
                 <th>Barcode</th><th>Box</th><th>Site</th><th>Type</th>
-                <th className="col-mobile-hide">Depth (cm)</th><th className="col-mobile-hide">Collected</th><th></th>
+                <th className="col-mobile-hide">Depth (cm)</th><th className="col-mobile-hide">Sample date</th><th></th>
               </tr>
             </thead>
             <tbody>
@@ -195,7 +195,7 @@ export default function TubeList() {
                   <td>{t.site_name || '—'}</td>
                   <td>{t.sample_type || '—'}</td>
                   <td className="col-mobile-hide">{t.depth_cm ?? '—'}</td>
-                  <td className="col-mobile-hide">{t.collection_date || '—'}</td>
+                  <td className="col-mobile-hide">{t.sample_date || '—'}</td>
                   <td>
                     <div className="row-actions">
                       {!ro && <Link to={`/tubes/${t.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>}

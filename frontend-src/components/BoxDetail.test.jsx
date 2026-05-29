@@ -15,13 +15,13 @@ vi.mock('../api.js', () => ({
       notes: '',
       created_at: '2024-01-01T00:00:00',
       tubes: [
-        { id: 10, barcode: 'T001', site_name: 'River', sample_type: 'core', depth_cm: 5, collection_date: '2024-01-01', box_id: 1, latitude: null, longitude: null },
+        { id: 10, barcode: 'T001', site_name: 'River', sample_type: 'core', depth_cm: 5, sample_date: '2024-01-01', box_id: 1, latitude: null, longitude: null },
       ],
     }),
     getTubes: vi.fn().mockResolvedValue([
-      { id: 10, barcode: 'T001', box_id: 1, site_name: 'River', sample_type: 'core', depth_cm: 5, collection_date: '2024-01-01', latitude: null, longitude: null },
-      { id: 20, barcode: 'T002', box_id: null, site_name: 'Lake', sample_type: null, depth_cm: null, collection_date: null, latitude: null, longitude: null },
-      { id: 21, barcode: 'T003', box_id: null, site_name: null, sample_type: null, depth_cm: null, collection_date: null, latitude: null, longitude: null },
+      { id: 10, barcode: 'T001', box_id: 1, site_name: 'River', sample_type: 'core', depth_cm: 5, sample_date: '2024-01-01', latitude: null, longitude: null },
+      { id: 20, barcode: 'T002', box_id: null, site_name: 'Lake', sample_type: null, depth_cm: null, sample_date: null, latitude: null, longitude: null },
+      { id: 21, barcode: 'T003', box_id: null, site_name: null, sample_type: null, depth_cm: null, sample_date: null, latitude: null, longitude: null },
     ]),
     updateBox: vi.fn().mockResolvedValue({ id: 1, barcode: 'BOX001', name: 'Shelf A' }),
     deleteBox: vi.fn().mockResolvedValue(null),

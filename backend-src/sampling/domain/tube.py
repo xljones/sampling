@@ -7,7 +7,7 @@ class Tube:
     barcode: str
     box_id: int | None = None
     core_id: int | None = None
-    collection_date: str | None = None
+    sample_date: str | None = None
     site_name: str | None = None
     latitude: float | None = None
     longitude: float | None = None
