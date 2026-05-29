@@ -159,63 +159,78 @@ def cmd_seed(_):
         ),
     ]
 
-    # (barcode, box_bc, core_bc, sample_type, description, vol_ml, wt_g, depth_cm)
-    # site/lat/lon/date are omitted — inherited from core.
+    # (barcode, box_bc, core_bc, sample_date, sample_type, description, vol_ml, wt_g, depth_cm)
+    # site/lat/lon inherited from core. sample_date is the lab sub-sampling date.
     # A few tubes carry explicit coords to demonstrate the override feature.
     TUBES = [
-        ("T-0001", "BX-001", "CR-001", "Sediment", "Olive-grey silty clay",             45.0,  98.2,   5.0),
-        ("T-0002", "BX-001", "CR-001", "Sediment", "Olive-grey silty clay",             45.0,  97.1,  25.0),
-        ("T-0003", "BX-001", "CR-001", "Sediment", "Sandy layer, possible turbidite",   40.0, 102.5,  50.0),
-        ("T-0004", "BX-001", "CR-001", "Sediment", "Dark organic-rich layer",           38.0,  89.3,  80.0),
-        ("T-0005", "BX-002", "CR-002", "Sediment", "Foram-rich foraminiferal ooze",     50.0, 110.0,  10.0),
-        ("T-0006", "BX-002", "CR-002", "Sediment", "Foram-rich foraminiferal ooze",     50.0, 108.4,  30.0),
-        ("T-0007", "BX-002", "CR-002", "Sand",     "Coarse sand, IRD present",          42.0,  95.0,  60.0),
-        ("T-0008", "BX-003", "CR-003", "Sediment", "Homogeneous grey clay",             44.0,  96.1,  15.0),
-        ("T-0009", "BX-003", "CR-003", "Sediment", "Laminated clay-silt",               44.0,  94.7,  45.0),
-        ("T-0010", "BX-003", "CR-003", "Sediment", "Bioturbated silty clay",            43.0,  93.8,  90.0),
-        ("T-0011", "BX-004", "CR-004", "Organic",  "Peat layer, dark brown fibrous",    30.0,  52.4,   8.0),
-        ("T-0012", "BX-004", "CR-004", "Sediment", "Blue-grey estuarine clay",          48.0, 103.2,  22.0),
-        ("T-0013", "BX-004", "CR-004", "Sediment", "Blue-grey estuarine clay",          47.0, 101.5,  40.0),
-        ("T-0014", "BX-004", "CR-004", "Sand",     "Tidal flat sand, shell fragments",  35.0,  88.9,  60.0),
-        ("T-0015", "BX-005", "CR-005", "Sediment", "Silty clay with organic flecks",    46.0,  99.0,  12.0),
-        ("T-0016", "BX-005", "CR-005", "Sediment", "Silty clay with organic flecks",    45.0,  97.3,  35.0),
-        ("T-0017", "BX-005", "CR-005", "Organic",  "Buried saltmarsh peat",             28.0,  48.1,  55.0),
-        ("T-0018", "BX-006", "CR-006", "Sediment", "Lake marl, white calcareous",       40.0,  72.3,   5.0),
-        ("T-0019", "BX-006", "CR-006", "Organic",  "Gyttja, dark organic lake mud",     38.0,  68.5,  20.0),
-        ("T-0020", "BX-006", "CR-006", "Organic",  "Gyttja, dark organic lake mud",     37.0,  67.1,  40.0),
-        ("T-0021", "BX-006", "CR-006", "Peat",     "Reed peat, brown fibrous",          32.0,  55.8,  65.0),
-        ("T-0022", "BX-007", "CR-007", "Sediment", "Grey silty clay with diatoms",      41.0,  80.2,  10.0),
-        ("T-0023", "BX-007", "CR-007", "Organic",  "Dark gyttja",                       39.0,  71.4,  30.0),
-        ("T-0024", "BX-007", "CR-007", "Peat",     "Fen peat",                          31.0,  53.2,  55.0),
-        ("T-0025", "BX-008", "CR-008", "Sediment", "Calcareous mud",                    40.0,  78.9,   8.0),
-        ("T-0026", "BX-008", "CR-008", "Organic",  "Organic-rich clay",                 39.0,  73.6,  25.0),
-        ("T-0027", "BX-008", "CR-008", "Peat",     "Basal peat, woody fragments",       30.0,  51.0,  50.0),
-        ("T-0028", "BX-009", "CR-009", "Sediment", "Laminated estuarine clay",          49.0, 106.3,   6.0),
-        ("T-0029", "BX-009", "CR-009", "Organic",  "Submerged forest peat",             27.0,  46.2,  18.0),
-        ("T-0030", "BX-009", "CR-009", "Sediment", "Red-brown alluvial clay",           48.0, 104.1,  35.0),
-        ("T-0031", "BX-009", "CR-009", "Sediment", "Red-brown alluvial clay",           47.0, 102.8,  55.0),
-        ("T-0032", "BX-010", "CR-010", "Sediment", "Grey estuarine clay",               48.0, 105.0,  10.0),
-        ("T-0033", "BX-010", "CR-010", "Sand",     "Intertidal sand layer",             36.0,  84.5,  28.0),
-        ("T-0034", "BX-010", "CR-010", "Sediment", "Grey estuarine clay",               47.0, 103.3,  48.0),
-        ("T-0035", "BX-011", "CR-011", "Sediment", "Dark laminated fjord sediment",     46.0, 100.7,   3.0),
-        ("T-0036", "BX-011", "CR-011", "Sediment", "Varved clay, annual laminae",       45.0,  98.9,  20.0),
-        ("T-0037", "BX-011", "CR-011", "Sediment", "Varved clay, annual laminae",       44.0,  97.4,  50.0),
-        ("T-0038", "BX-011", "CR-011", "Sand",     "Event layer, coarse sand",          38.0,  92.0,  85.0),
-        ("T-0039", "BX-012", "CR-012", "Sediment", "Olive-grey silty clay",             45.0,  99.2,   7.0),
-        ("T-0040", "BX-012", "CR-012", "Sediment", "Olive-grey silty clay",             44.0,  97.8,  30.0),
-        ("T-0041", "BX-012", "CR-012", "Organic",  "Organic-rich layer",                36.0,  68.3,  60.0),
-        ("T-0042", "BX-013", "CR-013", "Sediment", "Grey glaciolacustrine clay",        47.0, 101.5,  10.0),
-        ("T-0043", "BX-013", "CR-013", "Sediment", "Grey glaciolacustrine clay",        46.0, 100.2,  35.0),
-        ("T-0044", "BX-013", "CR-013", "Sediment", "Diamict, possible till",            50.0, 118.4,  70.0),
-        ("T-0045", "BX-013", "CR-013", "Sediment", "Diamict, possible till",            50.0, 117.1, 100.0),
-        ("T-0046", "BX-014", "CR-014", "Sediment", "Estuarine silty clay",              47.0, 102.0,   5.0),
-        ("T-0047", "BX-014", "CR-014", "Sand",     "Fluvial sand, cross-bedded",        34.0,  82.3,  22.0),
-        ("T-0048", "BX-014", "CR-014", "Sediment", "Grey estuarine clay",               46.0, 100.8,  42.0),
-        ("T-0049", "BX-014", "CR-014", "Organic",  "Rootlet bed, reworked peat",        26.0,  43.5,  62.0),
-        ("T-0050", "BX-015", "CR-015", "Sediment", "Pale grey calcareous mud",          44.0,  96.5,   4.0),
-        ("T-0051", "BX-015", "CR-015", "Sediment", "Pale grey calcareous mud",          44.0,  95.8,  18.0),
-        ("T-0052", "BX-015", "CR-015", "Sand",     "Shelly coarse sand",                37.0,  87.2,  38.0),
-        ("T-0053", "BX-015", "CR-015", "Sediment", "Grey silty clay",                   45.0,  98.1,  58.0),
+        # CR-001 collected 2023-07-14 — sub-sampled late July
+        ("T-0001", "BX-001", "CR-001", "2023-07-21", "Sediment", "Olive-grey silty clay",             45.0,  98.2,   5.0),
+        ("T-0002", "BX-001", "CR-001", "2023-07-21", "Sediment", "Olive-grey silty clay",             45.0,  97.1,  25.0),
+        ("T-0003", "BX-001", "CR-001", "2023-07-22", "Sediment", "Sandy layer, possible turbidite",   40.0, 102.5,  50.0),
+        ("T-0004", "BX-001", "CR-001", "2023-07-22", "Sediment", "Dark organic-rich layer",           38.0,  89.3,  80.0),
+        # CR-002 collected 2023-07-15 — sub-sampled early August
+        ("T-0005", "BX-002", "CR-002", "2023-08-01", "Sediment", "Foram-rich foraminiferal ooze",     50.0, 110.0,  10.0),
+        ("T-0006", "BX-002", "CR-002", "2023-08-01", "Sediment", "Foram-rich foraminiferal ooze",     50.0, 108.4,  30.0),
+        ("T-0007", "BX-002", "CR-002", "2023-08-02", "Sand",     "Coarse sand, IRD present",          42.0,  95.0,  60.0),
+        # CR-003 collected 2023-07-16 — sub-sampled early August
+        ("T-0008", "BX-003", "CR-003", "2023-08-07", "Sediment", "Homogeneous grey clay",             44.0,  96.1,  15.0),
+        ("T-0009", "BX-003", "CR-003", "2023-08-07", "Sediment", "Laminated clay-silt",               44.0,  94.7,  45.0),
+        ("T-0010", "BX-003", "CR-003", "2023-08-08", "Sediment", "Bioturbated silty clay",            43.0,  93.8,  90.0),
+        # CR-004 collected 2022-09-03 — sub-sampled mid-September
+        ("T-0011", "BX-004", "CR-004", "2022-09-16", "Organic",  "Peat layer, dark brown fibrous",    30.0,  52.4,   8.0),
+        ("T-0012", "BX-004", "CR-004", "2022-09-16", "Sediment", "Blue-grey estuarine clay",          48.0, 103.2,  22.0),
+        ("T-0013", "BX-004", "CR-004", "2022-09-17", "Sediment", "Blue-grey estuarine clay",          47.0, 101.5,  40.0),
+        ("T-0014", "BX-004", "CR-004", "2022-09-17", "Sand",     "Tidal flat sand, shell fragments",  35.0,  88.9,  60.0),
+        # CR-005 collected 2022-09-04 — sub-sampled late September
+        ("T-0015", "BX-005", "CR-005", "2022-09-23", "Sediment", "Silty clay with organic flecks",    46.0,  99.0,  12.0),
+        ("T-0016", "BX-005", "CR-005", "2022-09-23", "Sediment", "Silty clay with organic flecks",    45.0,  97.3,  35.0),
+        ("T-0017", "BX-005", "CR-005", "2022-09-24", "Organic",  "Buried saltmarsh peat",             28.0,  48.1,  55.0),
+        # CR-006 collected 2021-04-20 — sub-sampled early May
+        ("T-0018", "BX-006", "CR-006", "2021-05-05", "Sediment", "Lake marl, white calcareous",       40.0,  72.3,   5.0),
+        ("T-0019", "BX-006", "CR-006", "2021-05-05", "Organic",  "Gyttja, dark organic lake mud",     38.0,  68.5,  20.0),
+        ("T-0020", "BX-006", "CR-006", "2021-05-06", "Organic",  "Gyttja, dark organic lake mud",     37.0,  67.1,  40.0),
+        ("T-0021", "BX-006", "CR-006", "2021-05-06", "Peat",     "Reed peat, brown fibrous",          32.0,  55.8,  65.0),
+        # CR-007 collected 2021-04-22 — sub-sampled mid-May
+        ("T-0022", "BX-007", "CR-007", "2021-05-13", "Sediment", "Grey silty clay with diatoms",      41.0,  80.2,  10.0),
+        ("T-0023", "BX-007", "CR-007", "2021-05-13", "Organic",  "Dark gyttja",                       39.0,  71.4,  30.0),
+        ("T-0024", "BX-007", "CR-007", "2021-05-14", "Peat",     "Fen peat",                          31.0,  53.2,  55.0),
+        # CR-008 collected 2021-04-23 — sub-sampled mid-May
+        ("T-0025", "BX-008", "CR-008", "2021-05-19", "Sediment", "Calcareous mud",                    40.0,  78.9,   8.0),
+        ("T-0026", "BX-008", "CR-008", "2021-05-19", "Organic",  "Organic-rich clay",                 39.0,  73.6,  25.0),
+        ("T-0027", "BX-008", "CR-008", "2021-05-20", "Peat",     "Basal peat, woody fragments",       30.0,  51.0,  50.0),
+        # CR-009 collected 2023-03-10 — sub-sampled late March
+        ("T-0028", "BX-009", "CR-009", "2023-03-24", "Sediment", "Laminated estuarine clay",          49.0, 106.3,   6.0),
+        ("T-0029", "BX-009", "CR-009", "2023-03-24", "Organic",  "Submerged forest peat",             27.0,  46.2,  18.0),
+        ("T-0030", "BX-009", "CR-009", "2023-03-25", "Sediment", "Red-brown alluvial clay",           48.0, 104.1,  35.0),
+        ("T-0031", "BX-009", "CR-009", "2023-03-25", "Sediment", "Red-brown alluvial clay",           47.0, 102.8,  55.0),
+        # CR-010 collected 2023-03-11 — sub-sampled early April
+        ("T-0032", "BX-010", "CR-010", "2023-04-01", "Sediment", "Grey estuarine clay",               48.0, 105.0,  10.0),
+        ("T-0033", "BX-010", "CR-010", "2023-04-01", "Sand",     "Intertidal sand layer",             36.0,  84.5,  28.0),
+        ("T-0034", "BX-010", "CR-010", "2023-04-02", "Sediment", "Grey estuarine clay",               47.0, 103.3,  48.0),
+        # CR-011 collected 2020-08-05 — sub-sampled late August
+        ("T-0035", "BX-011", "CR-011", "2020-08-21", "Sediment", "Dark laminated fjord sediment",     46.0, 100.7,   3.0),
+        ("T-0036", "BX-011", "CR-011", "2020-08-21", "Sediment", "Varved clay, annual laminae",       45.0,  98.9,  20.0),
+        ("T-0037", "BX-011", "CR-011", "2020-08-22", "Sediment", "Varved clay, annual laminae",       44.0,  97.4,  50.0),
+        ("T-0038", "BX-011", "CR-011", "2020-08-22", "Sand",     "Event layer, coarse sand",          38.0,  92.0,  85.0),
+        # CR-012 collected 2020-08-06 — sub-sampled early September
+        ("T-0039", "BX-012", "CR-012", "2020-09-04", "Sediment", "Olive-grey silty clay",             45.0,  99.2,   7.0),
+        ("T-0040", "BX-012", "CR-012", "2020-09-04", "Sediment", "Olive-grey silty clay",             44.0,  97.8,  30.0),
+        ("T-0041", "BX-012", "CR-012", "2020-09-05", "Organic",  "Organic-rich layer",                36.0,  68.3,  60.0),
+        # CR-013 collected 2019-06-18 — sub-sampled early July
+        ("T-0042", "BX-013", "CR-013", "2019-07-04", "Sediment", "Grey glaciolacustrine clay",        47.0, 101.5,  10.0),
+        ("T-0043", "BX-013", "CR-013", "2019-07-04", "Sediment", "Grey glaciolacustrine clay",        46.0, 100.2,  35.0),
+        ("T-0044", "BX-013", "CR-013", "2019-07-05", "Sediment", "Diamict, possible till",            50.0, 118.4,  70.0),
+        ("T-0045", "BX-013", "CR-013", "2019-07-05", "Sediment", "Diamict, possible till",            50.0, 117.1, 100.0),
+        # CR-014 collected 2022-05-12 — sub-sampled late May
+        ("T-0046", "BX-014", "CR-014", "2022-05-27", "Sediment", "Estuarine silty clay",              47.0, 102.0,   5.0),
+        ("T-0047", "BX-014", "CR-014", "2022-05-27", "Sand",     "Fluvial sand, cross-bedded",        34.0,  82.3,  22.0),
+        ("T-0048", "BX-014", "CR-014", "2022-05-28", "Sediment", "Grey estuarine clay",               46.0, 100.8,  42.0),
+        ("T-0049", "BX-014", "CR-014", "2022-05-28", "Organic",  "Rootlet bed, reworked peat",        26.0,  43.5,  62.0),
+        # CR-015 collected 2023-11-08 — sub-sampled late November
+        ("T-0050", "BX-015", "CR-015", "2023-11-23", "Sediment", "Pale grey calcareous mud",          44.0,  96.5,   4.0),
+        ("T-0051", "BX-015", "CR-015", "2023-11-23", "Sediment", "Pale grey calcareous mud",          44.0,  95.8,  18.0),
+        ("T-0052", "BX-015", "CR-015", "2023-11-24", "Sand",     "Shelly coarse sand",                37.0,  87.2,  38.0),
+        ("T-0053", "BX-015", "CR-015", "2023-11-24", "Sediment", "Grey silty clay",                   45.0,  98.1,  58.0),
     ]
 
     # Tubes that carry their own coordinates (overriding core inheritance)
@@ -267,7 +282,7 @@ def cmd_seed(_):
             core_ids[bc] = core["id"]
             print(f"  core {bc} — {name}")
 
-        for (barcode, box_bc, core_bc, stype, desc, vol, wt, depth) in TUBES:
+        for (barcode, box_bc, core_bc, sample_date, stype, desc, vol, wt, depth) in TUBES:
             if tube_repo.get_by_barcode(barcode):
                 print(f"  skip tube {barcode} (already exists)")
                 continue
@@ -280,7 +295,7 @@ def cmd_seed(_):
             lat, lon = TUBE_COORD_OVERRIDES.get(barcode, (None, None))
             tube_repo.create(
                 barcode, box_id=box_id, core_id=core_id,
-                sample_type=stype, description=desc,
+                sample_date=sample_date, sample_type=stype, description=desc,
                 latitude=lat, longitude=lon,
                 volume_ml=vol, weight_g=wt, depth_cm=depth,
             )
