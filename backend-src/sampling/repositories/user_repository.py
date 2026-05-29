@@ -22,7 +22,8 @@ class UserRepository:
         return [
             dict(r)
             for r in self.db.execute(
-                "SELECT id, username, is_readonly, expires_at, created_at FROM users ORDER BY created_at"
+                "SELECT id, username, is_readonly, expires_at, created_at"
+                " FROM users ORDER BY created_at"
             ).fetchall()
         ]
 

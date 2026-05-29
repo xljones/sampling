@@ -7,7 +7,7 @@ except ModuleNotFoundError:
         import tomli as tomllib  # type: ignore[no-redef]
     except ModuleNotFoundError:
         tomllib = None  # type: ignore[assignment]
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 from flask import Flask, jsonify, request, send_from_directory
@@ -78,7 +78,7 @@ def create_app():
             return
         if current_user.expires_at:
             try:
-                if datetime.now(timezone.utc) >= datetime.fromisoformat(current_user.expires_at):
+                if datetime.now(datetime.UTC) >= datetime.fromisoformat(current_user.expires_at):
                     logout_user()
                     return jsonify(error="Account expired"), 401
             except ValueError:

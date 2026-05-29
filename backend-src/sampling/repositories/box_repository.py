@@ -60,7 +60,8 @@ class BoxRepository:
 
     def update(self, box_id, barcode, name=None, location_id=None, notes=None, changed_by=None):
         self.db.execute(
-            "UPDATE boxes SET barcode=?, name=?, location_id=?, notes=?, updated_at=CURRENT_TIMESTAMP WHERE id=?",
+            "UPDATE boxes SET barcode=?, name=?, location_id=?, notes=?,"
+            " updated_at=CURRENT_TIMESTAMP WHERE id=?",
             (barcode, name, location_id, notes, box_id),
         )
         box = self.get_by_id(box_id)
