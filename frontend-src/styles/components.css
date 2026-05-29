@@ -2,8 +2,7 @@
 .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg); }
 .auth-card { width: 100%; max-width: 360px; }
 .auth-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-.auth-tagline { color: var(--text2); font-size: 13px; margin-bottom: 4px; }
-.auth-subtitle { color: var(--text2); font-size: 13px; margin-bottom: 24px; }
+.auth-tagline { color: var(--text2); font-size: 13px; margin-bottom: 24px; }
 
 /* ── Toast ─────────────────────────────────────────────────────────────────── */
 .toast-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 999; }

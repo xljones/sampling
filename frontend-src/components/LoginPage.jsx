@@ -26,7 +26,6 @@ export default function LoginPage() {
       <div className="card card-body auth-card">
         <h1 className="auth-title">Dirt Nap</h1>
         <p className="auth-tagline">The samples are at rest</p>
-        <p className="auth-subtitle">Sign in to continue</p>
         <form onSubmit={handleSubmit}>
           <div className="form-grid full mb-4">
             <div className="field">
