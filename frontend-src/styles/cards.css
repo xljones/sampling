@@ -1,0 +1,6 @@
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+.card-body { padding: 16px; }
+.card-map { overflow: hidden; }
+.card.mb-4 { margin-bottom: 16px; }
+.card.mb-6 { margin-bottom: 24px; }
+.card-message { padding: 16px; color: var(--text2); }
