@@ -35,7 +35,7 @@ function Nav() {
         </div>
         {!user?.is_readonly && <NavLink to="/users" className="sidebar-nav-btn">Users</NavLink>}
         <NavLink to="/account" className="sidebar-nav-btn">Change password</NavLink>
-        <button className="sidebar-nav-btn" onClick={logout}>Sign out</button>
+        <button className="sidebar-nav-btn text-danger" onClick={logout}>Sign out</button>
         <BuildInfo className="sidebar-version" />
       </div>
     </nav>
