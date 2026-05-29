@@ -94,19 +94,19 @@ export default function TubeList() {
     <div>
       <div className="page-header">
         <h1 className="page-title">{unassignedOnly ? 'Unassigned tubes' : 'Tubes'}</h1>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="btn-group">
           <a href="/api/export/tubes" className="btn btn-secondary" download>Export CSV</a>
           {!ro && <Link to="/tubes/new" className="btn btn-primary">+ New tube</Link>}
         </div>
       </div>
 
-      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+      <div className="filter-bar">
         <input
           type="search"
           value={filter}
           onChange={e => setFilter(e.target.value)}
           placeholder="Filter by barcode, site, type…"
-          style={{ width: '100%', maxWidth: 360, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 13 }}
+          className="search-input"
         />
         {unassignedOnly && (
           <button
@@ -119,9 +119,9 @@ export default function TubeList() {
       </div>
 
       {selected.size > 0 && !ro && (
-        <div className="card card-body" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 13, fontWeight: 600 }}>{selected.size} tube{selected.size !== 1 ? 's' : ''} selected</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 260 }}>
+        <div className="card card-body mb-4 assign-bar">
+          <span className="text-sm fw-600">{selected.size} tube{selected.size !== 1 ? 's' : ''} selected</span>
+          <div className="assign-input-group">
             {assignMode === 'scan' ? (
               <>
                 <BarcodeInput
@@ -130,22 +130,21 @@ export default function TubeList() {
                   placeholder="Scan or type box barcode…"
                 />
                 {assignBarcode && !boxMatch && (
-                  <span style={{ fontSize: 12, color: 'var(--text2)' }}>Box not found</span>
+                  <span className="meta">Box not found</span>
                 )}
               </>
             ) : (
               <select
                 value={assignBoxId}
                 onChange={e => setAssignBoxId(e.target.value)}
-                style={{ flex: 1, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 13, background: 'var(--surface)', color: 'var(--text)' }}
+                className="select-sm"
               >
                 <option value="">— Select a box —</option>
                 {boxes.map(b => <option key={b.id} value={b.id}>{b.barcode}{b.name ? ` — ${b.name}` : ''}</option>)}
               </select>
             )}
             <button
-              className="btn btn-secondary btn-sm"
-              style={{ flexShrink: 0 }}
+              className="btn btn-secondary btn-sm flex-shrink-0"
               onClick={() => {
                 if (assignMode === 'scan') { setAssignMode('select'); setAssignBarcode(''); }
                 else { setAssignMode('scan'); setAssignBoxId(''); }
@@ -154,7 +153,7 @@ export default function TubeList() {
               {assignMode === 'scan' ? 'Choose from list' : 'Scan barcode'}
             </button>
             {boxMatch && (
-              <button className="btn btn-success btn-sm" style={{ flexShrink: 0 }} onClick={handleBulkAssign} disabled={assigning}>
+              <button className="btn btn-success btn-sm flex-shrink-0" onClick={handleBulkAssign} disabled={assigning}>
                 {assigning ? 'Assigning…' : `Assign to ${boxMatch.barcode}`}
               </button>
             )}
@@ -171,7 +170,7 @@ export default function TubeList() {
             <thead>
               <tr>
                 {!ro && (
-                  <th style={{ width: 32, padding: '0 8px' }}>
+                  <th className="col-checkbox">
                     <input type="checkbox" checked={allVisibleSelected} onChange={toggleAll} />
                   </th>
                 )}
@@ -183,16 +182,16 @@ export default function TubeList() {
               {visible.map(t => (
                 <tr
                   key={t.id}
-                  style={{ cursor: 'pointer', ...(selected.has(t.id) ? { background: 'var(--surface2)' } : {}) }}
+                  className={`row-clickable${selected.has(t.id) ? ' row-selected' : ''}`}
                   onClick={e => { if (!e.target.closest('a, button, input')) navigate(`/tubes/${t.id}`); }}
                 >
                   {!ro && (
-                    <td style={{ width: 32, padding: '0 8px' }} onClick={e => e.stopPropagation()}>
+                    <td className="col-checkbox" onClick={e => e.stopPropagation()}>
                       <input type="checkbox" checked={selected.has(t.id)} onChange={() => toggleOne(t.id)} />
                     </td>
                   )}
                   <td><Link to={`/tubes/${t.id}`}><span className="barcode">{t.barcode}</span></Link></td>
-                  <td>{t.box_barcode ? <Link to={`/boxes/${t.box_id}`}><span className="barcode">{t.box_barcode}</span></Link> : <span style={{ color: 'var(--text2)' }}>—</span>}</td>
+                  <td>{t.box_barcode ? <Link to={`/boxes/${t.box_id}`}><span className="barcode">{t.box_barcode}</span></Link> : <span className="text-muted">—</span>}</td>
                   <td>{t.site_name || '—'}</td>
                   <td>{t.sample_type || '—'}</td>
                   <td className="col-mobile-hide">{t.depth_cm ?? '—'}</td>

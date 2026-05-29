@@ -31,10 +31,8 @@ export default function ScanPage() {
         <h1 className="page-title">Scan barcode</h1>
       </div>
 
-      <div className="card card-body" style={{ maxWidth: 520, marginBottom: 24 }}>
-        <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 12 }}>
-          Scan or type any barcode to look up a box or tube.
-        </p>
+      <div className="card card-body mw-md mb-6">
+        <p className="text-muted mb-3">Scan or type any barcode to look up a box or tube.</p>
         <BarcodeInput
           value={barcode}
           onChange={setBarcode}
@@ -43,8 +41,7 @@ export default function ScanPage() {
           autoFocus
         />
         <button
-          className="btn btn-primary"
-          style={{ marginTop: 10 }}
+          className="btn btn-primary mt-3"
           onClick={() => lookup()}
           disabled={loading || !barcode.trim()}
         >
@@ -53,9 +50,9 @@ export default function ScanPage() {
       </div>
 
       {error && (
-        <div style={{ color: 'var(--danger)', background: '#fff0f0', border: '1px solid #f5c0c0', borderRadius: 'var(--radius)', padding: '12px 16px', maxWidth: 520 }}>
+        <div className="alert-error mw-md">
           {error}
-          <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+          <div className="btn-group mt-3">
             <Link to={`/boxes?add=1&barcode=${encodeURIComponent(barcode.trim())}`} className="btn btn-secondary btn-sm">Register as box</Link>
             <Link to={`/tubes/new?barcode=${encodeURIComponent(barcode.trim())}`} className="btn btn-secondary btn-sm">Register as tube</Link>
           </div>
@@ -63,16 +60,16 @@ export default function ScanPage() {
       )}
 
       {result && (
-        <div className="card card-body" style={{ maxWidth: 520 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+        <div className="card card-body mw-md">
+          <div className="scan-badge-row">
             <span className={`badge ${result.type === 'box' ? 'badge-box' : 'badge-tube'}`}>
               {result.type}
             </span>
-            <span className="barcode" style={{ fontSize: 14 }}>{result.data.barcode}</span>
+            <span className="barcode">{result.data.barcode}</span>
           </div>
 
           {result.type === 'box' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div className="scan-result-grid">
               <Field label="Name" value={result.data.name} />
               <Field label="Location" value={result.data.location} />
               <Field label="Notes" value={result.data.notes} />
@@ -81,7 +78,7 @@ export default function ScanPage() {
           )}
 
           {result.type === 'tube' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div className="scan-result-grid">
               <Field label="Box" value={result.data.box_barcode} />
               <Field label="Site" value={result.data.site_name} />
               <Field label="Type" value={result.data.sample_type} />
@@ -93,7 +90,7 @@ export default function ScanPage() {
             </div>
           )}
 
-          <div style={{ marginTop: 14 }}>
+          <div className="mt-4">
             <Link
               to={result.type === 'box' ? `/boxes/${result.data.id}` : `/tubes/${result.data.id}`}
               className="btn btn-primary btn-sm"
@@ -110,7 +107,7 @@ export default function ScanPage() {
 function Field({ label, value }) {
   return (
     <div>
-      <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text2)', marginBottom: 2 }}>{label}</div>
+      <div className="scan-field-label">{label}</div>
       <div>{value ?? '—'}</div>
     </div>
   );

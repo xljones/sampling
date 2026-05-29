@@ -14,8 +14,8 @@ export default function BarcodeInput({ value, onChange, onSubmit, placeholder = 
   }, [onChange, onSubmit]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ display: 'flex', gap: 6 }}>
+    <div className="camera-wrap">
+      <div className="inline-form-sm">
         <input
           ref={inputRef}
           type="text"
@@ -26,7 +26,7 @@ export default function BarcodeInput({ value, onChange, onSubmit, placeholder = 
           autoFocus={autoFocus}
           autoComplete="off"
           data-1p-ignore
-          style={{ flex: 1, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 13 }}
+          className="barcode-input"
         />
         <button
           type="button"
@@ -38,7 +38,7 @@ export default function BarcodeInput({ value, onChange, onSubmit, placeholder = 
         </button>
       </div>
       {cameraOpen && (
-        <Suspense fallback={<p style={{ fontSize: 13, color: 'var(--text2)' }}>Loading camera…</p>}>
+        <Suspense fallback={<p className="text-muted text-sm">Loading camera…</p>}>
           <CameraScanner onScan={handleScan} onClose={() => setCameraOpen(false)} />
         </Suspense>
       )}

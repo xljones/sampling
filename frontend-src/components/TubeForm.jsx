@@ -111,7 +111,7 @@ export default function TubeForm({ mode }) {
     <div>
       <div className="page-header">
         <div>
-          <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 4 }}>
+          <div className="back-link">
             {isEdit ? <Link to={`/tubes/${id}`}>← Tube</Link> : <Link to="/tubes">← Tubes</Link>}
           </div>
           <h1 className="page-title">{isEdit ? 'Edit tube' : 'New tube'}</h1>
@@ -120,7 +120,7 @@ export default function TubeForm({ mode }) {
 
       <div className="card card-body">
         <form onSubmit={handleSubmit}>
-          <div className="form-grid" style={{ marginBottom: 16 }}>
+          <div className="form-grid mb-4">
             <div className="field span-2">
               <label>Barcode *</label>
               <BarcodeInput
@@ -132,7 +132,7 @@ export default function TubeForm({ mode }) {
             </div>
 
             <div className="field">
-              <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label className="field-label-row">
                 Box
                 <button
                   type="button"
@@ -155,12 +155,12 @@ export default function TubeForm({ mode }) {
                     placeholder="Scan or type box barcode"
                   />
                   {boxMatch && (
-                    <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--accent)' }}>
+                    <p className="form-hint accent">
                       ✓ {boxMatch.barcode}{boxMatch.name ? ` — ${boxMatch.name}` : ''}
                     </p>
                   )}
                   {boxNotFound && (
-                    <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--text2)' }}>
+                    <p className="form-hint muted">
                       Box not found.{' '}
                       <button
                         type="button"
@@ -192,7 +192,7 @@ export default function TubeForm({ mode }) {
             </div>
 
             <div className="field">
-              <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label className="field-label-row">
                 Latitude
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowMap(v => !v)}>
                   {showMap ? 'Hide map' : '📍 Pick on map'}

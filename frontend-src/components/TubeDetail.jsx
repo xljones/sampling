@@ -150,7 +150,7 @@ export default function TubeDetail() {
     toast('Tube reverted');
   }
 
-  if (!tube) return <p style={{ color: 'var(--text2)', padding: 32 }}>Loading…</p>;
+  if (!tube) return <p className="loading">Loading…</p>;
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -158,12 +158,12 @@ export default function TubeDetail() {
     <div>
       <div className="page-header">
         <div>
-          <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 4 }}>
+          <div className="back-link">
             <Link to={searchParams.get('from') ?? '/tubes'}>← {searchParams.get('from')?.startsWith('/boxes/') ? `Box ${tube.box_barcode}` : 'Tubes'}</Link>
           </div>
-          <h1 className="page-title"><span className="barcode" style={{ fontSize: 18 }}>{tube.barcode}</span></h1>
+          <h1 className="page-title"><span className="barcode barcode-lg">{tube.barcode}</span></h1>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="btn-group">
           {editing && (
             <button type="submit" form="tube-edit-form" className="btn btn-success" disabled={saving || !form.barcode}>
               {saving ? 'Saving…' : 'Save changes'}
@@ -179,9 +179,9 @@ export default function TubeDetail() {
         </div>
       </div>
 
-      <div className="card card-body" style={{ marginBottom: 16 }}>
+      <div className="card card-body mb-4">
         <form id="tube-edit-form" onSubmit={handleSave}>
-          <div className="form-grid" style={{ marginBottom: editing ? 12 : 0 }}>
+          <div className={editing ? 'form-grid mb-3' : 'form-grid'}>
 
             <div className="field span-2">
               <label>Barcode *</label>
@@ -191,7 +191,7 @@ export default function TubeDetail() {
             </div>
 
             <div className="field">
-              <label style={editing ? { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } : {}}>
+              <label className={editing ? 'field-label-row' : ''}>
                 Box
                 {editing && (
                   <button
@@ -213,12 +213,12 @@ export default function TubeDetail() {
                   <>
                     <BarcodeInput value={boxBarcode} onChange={handleBoxBarcodeChange} placeholder="Scan or type box barcode" />
                     {boxMatch && (
-                      <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--accent)' }}>
+                      <p className="form-hint accent">
                         ✓ {boxMatch.barcode}{boxMatch.name ? ` — ${boxMatch.name}` : ''}
                       </p>
                     )}
                     {boxNotFound && (
-                      <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--text2)' }}>
+                      <p className="form-hint muted">
                         Box not found.{' '}
                         <button type="button" className="btn btn-secondary btn-sm" onClick={handleCreateBox} disabled={creatingBox}>
                           {creatingBox ? 'Creating…' : `Create "${boxBarcode}"`}
@@ -234,7 +234,7 @@ export default function TubeDetail() {
                       <span className="barcode">{tube.box_barcode}</span>{tube.box_name ? ` — ${tube.box_name}` : ''}
                     </Link>
                     {tube.box_location_name && (
-                      <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 3 }}>{tube.box_location_name}</div>
+                      <div className="meta">{tube.box_location_name}</div>
                     )}
                   </>
                 ) : <span>—</span>
@@ -263,7 +263,7 @@ export default function TubeDetail() {
             </div>
 
             <div className="field">
-              <label style={editing ? { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } : {}}>
+              <label className={editing ? 'field-label-row' : ''}>
                 Latitude
                 {editing && (
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowMap(v => !v)}>
@@ -320,7 +320,7 @@ export default function TubeDetail() {
               <label>Description / notes</label>
               {editing
                 ? <textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Any additional notes…" />
-                : <span style={{ whiteSpace: 'pre-wrap' }}>{tube.description || '—'}</span>}
+                : <span className="pre-wrap">{tube.description || '—'}</span>}
             </div>
 
             <div className="field">
@@ -341,31 +341,31 @@ export default function TubeDetail() {
         <LeafletMap points={[{ lat: tube.latitude, lng: tube.longitude, label: tube.barcode }]} />
       )}
 
-      <div style={{ marginTop: 16 }}>
+      <div className="mt-4">
         <button className="btn btn-secondary btn-sm" onClick={toggleHistory}>
           {showHistory ? '▼' : '▶'} Version history{history ? ` (${history.length})` : ''}
         </button>
         {showHistory && (
-          <div className="card" style={{ marginTop: 8 }}>
-            {history === null && <p style={{ padding: 16, color: 'var(--text2)' }}>Loading…</p>}
-            {history?.length === 0 && <p style={{ padding: 16, color: 'var(--text2)' }}>No history yet.</p>}
+          <div className="card mt-2">
+            {history === null && <p className="card-message">Loading…</p>}
+            {history?.length === 0 && <p className="card-message">No history yet.</p>}
             {history?.map((v, i) => {
               const prev = history[i + 1];
               const diff = (key) => prev && String(v[key] ?? '') !== String(prev[key] ?? '');
               const f = (label, value, key) => (
                 <span>
-                  <em style={diff(key) ? { borderColor: 'var(--accent-light)', color: 'var(--accent-light)' } : {}}>{label}</em>{' '}
-                  <span style={diff(key) ? { color: 'var(--accent-light)', fontWeight: 600 } : {}}>{value}</span>
+                  <em className={diff(key) ? 'diff' : ''}>{label}</em>{' '}
+                  <span className={diff(key) ? 'diff-value' : ''}>{value}</span>
                 </span>
               );
               return (
-                <div key={v.id} style={{ padding: '12px 16px', borderBottom: i < history.length - 1 ? '1px solid var(--border)' : undefined }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                <div key={v.id} className="history-entry">
+                  <div className="history-row">
                     <div>
-                      <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 4 }}>
+                      <div className="history-meta">
                         {v.changed_at} — <strong>{v.changed_by_username ?? 'unknown'}</strong>
                       </div>
-                      <div className="history-fields" style={{ fontSize: 13 }}>
+                      <div className="history-fields">
                         {f('barcode', v.barcode, 'barcode')}
                         {f('box', v.box_barcode || '—', 'box_id')}
                         {f('collected', v.collection_date || '—', 'collection_date')}
@@ -380,7 +380,7 @@ export default function TubeDetail() {
                       </div>
                     </div>
                     {i > 0 && (
-                      <button className="btn btn-secondary btn-sm" style={{ flexShrink: 0 }} onClick={() => handleRevert(v.id)}>
+                      <button className="btn btn-secondary btn-sm flex-shrink-0" onClick={() => handleRevert(v.id)}>
                         Revert to this
                       </button>
                     )}

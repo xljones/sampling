@@ -40,17 +40,17 @@ export default function Dashboard() {
 
       <LeafletMap points={mappable} height={360} />
 
-      <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, marginTop: mappable.length ? 24 : 0 }}>Recent boxes</h2>
-      <div className="card" style={{ marginBottom: 24 }}>
+      <h2 className={`section-title mb-3${mappable.length ? ' mt-6' : ''}`}>Recent boxes</h2>
+      <div className="card mb-6">
         <div className="table-wrap">
           <table>
             <thead><tr><th>Barcode</th><th>Name</th><th className="col-mobile-hide">Location</th><th>Tubes</th></tr></thead>
             <tbody>
               {boxes.slice(0, 5).map(b => (
-                <tr key={b.id} style={{ cursor: 'pointer' }} onClick={e => { if (!e.target.closest('a, button')) navigate(`/boxes/${b.id}`); }}>
+                <tr key={b.id} className="row-clickable" onClick={e => { if (!e.target.closest('a, button')) navigate(`/boxes/${b.id}`); }}>
                   <td><Link to={`/boxes/${b.id}`}><span className="barcode">{b.barcode}</span></Link></td>
-                  <td>{b.name || <span style={{ color: 'var(--text2)' }}>—</span>}</td>
-                  <td className="col-mobile-hide">{b.location_name || <span style={{ color: 'var(--text2)' }}>—</span>}</td>
+                  <td>{b.name || <span className="text-muted">—</span>}</td>
+                  <td className="col-mobile-hide">{b.location_name || <span className="text-muted">—</span>}</td>
                   <td>{b.tube_count}</td>
                 </tr>
               ))}
@@ -60,16 +60,16 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Recent tubes</h2>
+      <h2 className="section-title mb-3">Recent tubes</h2>
       <div className="card">
         <div className="table-wrap">
           <table>
             <thead><tr><th>Barcode</th><th>Box</th><th>Site</th><th>Type</th><th className="col-mobile-hide">Depth (cm)</th><th className="col-mobile-hide">Date</th></tr></thead>
             <tbody>
               {tubes.slice(0, 8).map(t => (
-                <tr key={t.id} style={{ cursor: 'pointer' }} onClick={e => { if (!e.target.closest('a, button')) navigate(`/tubes/${t.id}`); }}>
+                <tr key={t.id} className="row-clickable" onClick={e => { if (!e.target.closest('a, button')) navigate(`/tubes/${t.id}`); }}>
                   <td><Link to={`/tubes/${t.id}`}><span className="barcode">{t.barcode}</span></Link></td>
-                  <td>{t.box_barcode ? <Link to={`/boxes/${t.box_id}`}><span className="barcode">{t.box_barcode}</span></Link> : <span style={{ color: 'var(--text2)' }}>—</span>}</td>
+                  <td>{t.box_barcode ? <Link to={`/boxes/${t.box_id}`}><span className="barcode">{t.box_barcode}</span></Link> : <span className="text-muted">—</span>}</td>
                   <td>{t.site_name || '—'}</td>
                   <td>{t.sample_type || '—'}</td>
                   <td className="col-mobile-hide">{t.depth_cm ?? '—'}</td>

@@ -24,25 +24,22 @@ function Nav() {
 
   return (
     <nav className="sidebar">
-      <div className="sidebar-title">Sediment Samples</div>
+      <div className="sidebar-title">Dirt Nap</div>
+      <div className="sidebar-tagline">The samples are at rest</div>
       <NavLink to="/" end>Overview</NavLink>
       <NavLink to="/scan">Scan barcode</NavLink>
       <NavLink to="/boxes">Boxes</NavLink>
       <NavLink to="/tubes">Tubes</NavLink>
       <NavLink to="/locations">Locations</NavLink>
-      <div style={{ marginTop: 'auto' }}>
-        <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
-          <div style={{ fontSize: 12, color: 'var(--text2)' }}>{user?.username}</div>
-          {user?.is_readonly && <div style={{ fontSize: 11, color: 'var(--text2)', opacity: 0.7 }}>read-only</div>}
+      <div className="mt-auto">
+        <div className="sidebar-user">
+          <div className="meta">{user?.username}</div>
+          {user?.is_readonly && <div className="meta dim">read-only</div>}
         </div>
-        {!user?.is_readonly && <NavLink to="/users" className="sidebar-nav-btn" style={{ display: 'flex' }}>Users</NavLink>}
-        <NavLink to="/account" className="sidebar-nav-btn" style={{ display: 'flex' }}>Change password</NavLink>
+        {!user?.is_readonly && <NavLink to="/users" className="sidebar-nav-btn">Users</NavLink>}
+        <NavLink to="/account" className="sidebar-nav-btn">Change password</NavLink>
         <button className="sidebar-nav-btn" onClick={logout}>Sign out</button>
-        {version && (
-          <div style={{ borderTop: '1px solid var(--border)', padding: '8px 16px', fontSize: 11, color: 'var(--text2)', opacity: 0.6 }}>
-            v{version}
-          </div>
-        )}
+        {version && <div className="sidebar-version">v{version}</div>}
       </div>
     </nav>
   );
@@ -63,15 +60,15 @@ function BottomNav() {
         <>
           <div className="bottom-nav-backdrop" onClick={closeMore} />
           <div className="bottom-nav-more">
-            <NavLink to="/locations" className="sidebar-nav-btn" style={{ display: 'flex' }} onClick={closeMore}>Locations</NavLink>
+            <NavLink to="/locations" className="sidebar-nav-btn" onClick={closeMore}>Locations</NavLink>
             {!user?.is_readonly && (
-              <NavLink to="/users" className="sidebar-nav-btn" style={{ display: 'flex' }} onClick={closeMore}>Users</NavLink>
+              <NavLink to="/users" className="sidebar-nav-btn" onClick={closeMore}>Users</NavLink>
             )}
-            <NavLink to="/account" className="sidebar-nav-btn" style={{ display: 'flex' }} onClick={closeMore}>Change password</NavLink>
-            <div style={{ borderTop: '1px solid var(--border)', padding: '12px 16px' }}>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>{user?.username}</div>
-              {user?.is_readonly && <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 2 }}>read-only</div>}
-              {version && <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 2 }}>v{version}</div>}
+            <NavLink to="/account" className="sidebar-nav-btn" onClick={closeMore}>Change password</NavLink>
+            <div className="sidebar-user">
+              <div className="text-sm fw-600">{user?.username}</div>
+              {user?.is_readonly && <div className="meta mt-2">read-only</div>}
+              {version && <div className="meta mt-2">v{version}</div>}
             </div>
             <button className="sidebar-nav-btn" onClick={logout}>Sign out</button>
           </div>
@@ -95,8 +92,8 @@ function AppShell() {
 
   if (user === undefined) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: 'var(--text2)' }}>Loading…</p>
+      <div className="page-center">
+        <p className="text-muted">Loading…</p>
       </div>
     );
   }

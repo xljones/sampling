@@ -22,15 +22,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center',
-      justifyContent: 'center', background: 'var(--bg)',
-    }}>
-      <div className="card card-body" style={{ width: '100%', maxWidth: 360 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>Sediment Samples</h1>
-        <p style={{ color: 'var(--text2)', fontSize: 13, marginBottom: 24 }}>Sign in to continue</p>
+    <div className="auth-wrap">
+      <div className="card card-body auth-card">
+        <h1 className="auth-title">Dirt Nap</h1>
+        <p className="auth-tagline">The samples are at rest</p>
+        <p className="auth-subtitle">Sign in to continue</p>
         <form onSubmit={handleSubmit}>
-          <div className="form-grid full" style={{ marginBottom: 16 }}>
+          <div className="form-grid full mb-4">
             <div className="field">
               <label>Username</label>
               <input
@@ -52,10 +50,8 @@ export default function LoginPage() {
               />
             </div>
           </div>
-          {error && (
-            <p style={{ color: 'var(--danger)', fontSize: 13, marginBottom: 12 }}>{error}</p>
-          )}
-          <button className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+          {error && <p className="form-error">{error}</p>}
+          <button className="btn btn-primary btn-full" disabled={loading}>
             {loading ? 'Signing in…' : 'Sign in'}
           </button>
         </form>

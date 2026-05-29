@@ -59,9 +59,9 @@ export default function UserList() {
       </div>
 
       {showAdd && (
-        <div className="card card-body" style={{ marginBottom: 24 }}>
+        <div className="card card-body mb-6">
           <form onSubmit={handleCreate}>
-            <div className="form-grid" style={{ marginBottom: 12 }}>
+            <div className="form-grid mb-3">
               <div className="field">
                 <label>Username *</label>
                 <input value={form.username} onChange={e => set('username', e.target.value)} autoFocus />
@@ -103,23 +103,18 @@ export default function UserList() {
                   <tr key={u.id}>
                     <td>
                       {u.username}
-                      {u.id === me?.id && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--text2)' }}>(you)</span>}
+                      {u.id === me?.id && <span className="tag-you">(you)</span>}
                     </td>
                     <td>
-                      <span style={{
-                        fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em',
-                        padding: '2px 6px', borderRadius: 3,
-                        background: u.is_readonly ? 'var(--surface2)' : 'var(--accent)',
-                        color: u.is_readonly ? 'var(--text2)' : '#fff',
-                      }}>
+                      <span className={`user-badge ${u.is_readonly ? 'user-badge-readonly' : 'user-badge-admin'}`}>
                         {u.is_readonly ? 'Read-only' : 'Normal'}
                       </span>
                     </td>
-                    <td style={{ fontSize: 13, color: isExpired ? 'var(--danger)' : 'var(--text2)' }}>
+                    <td className={isExpired ? 'text-danger text-sm' : 'text-muted text-sm'}>
                       {expiry || '—'}
                     </td>
-                    <td style={{ color: 'var(--text2)', fontSize: 13 }}>{u.created_at?.slice(0, 10)}</td>
-                    <td style={{ width: '1%' }}>
+                    <td className="meta">{u.created_at?.slice(0, 10)}</td>
+                    <td className="col-shrink">
                       {u.is_readonly && u.id !== me?.id && (
                         <button className="btn btn-danger btn-sm" onClick={() => handleDelete(u)}>Delete</button>
                       )}

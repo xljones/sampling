@@ -87,7 +87,7 @@ export default function MapPicker({ lat, lng, onChange }) {
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+      <div className="inline-form-sm mb-2">
         <input
           type="search"
           value={search}
@@ -96,27 +96,25 @@ export default function MapPicker({ lat, lng, onChange }) {
           placeholder="Search for a location…"
           autoComplete="off"
           data-1p-ignore
-          style={{ flex: 1, padding: '7px 10px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 13 }}
+          className="barcode-input"
         />
         <button type="button" className="btn btn-secondary" disabled={searching || !search.trim()} onClick={handleSearch}>
           {searching ? '…' : 'Search'}
         </button>
       </div>
-      {noResults && <p style={{ fontSize: 12, color: 'var(--danger)', margin: '0 0 8px' }}>No results found.</p>}
-      <div style={{ borderRadius: 'var(--radius)', overflow: 'hidden', border: '1px solid var(--border)' }}>
+      {noResults && <p className="form-error">No results found.</p>}
+      <div className="map-container">
         <iframe
           ref={iframeRef}
           title="Pick location"
           width="100%"
           height="300"
-          style={{ display: 'block', border: 0 }}
+          className="iframe-clean"
           srcDoc={MAP_HTML}
           onLoad={handleLoad}
         />
       </div>
-      <p style={{ fontSize: 11, color: 'var(--text2)', margin: '4px 0 0' }}>
-        Click the map or drag the pin to set coordinates.
-      </p>
+      <p className="map-hint">Click the map or drag the pin to set coordinates.</p>
     </div>
   );
 }

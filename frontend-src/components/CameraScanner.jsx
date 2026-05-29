@@ -16,6 +16,11 @@ export default function CameraScanner({ onScan, onClose }) {
   useEffect(() => {
     if (!videoRef.current) return;
 
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setError('Camera requires a secure connection (HTTPS). Try accessing the app via HTTPS.');
+      return;
+    }
+
     const reader = new BrowserMultiFormatReader();
     let controls = null;
     let cancelled = false;
@@ -48,12 +53,12 @@ export default function CameraScanner({ onScan, onClose }) {
   const mirrored = flipped === null ? autoFlip : flipped;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div className="camera-wrap">
       {devices.length > 1 && (
         <select
           value={deviceId ?? ''}
           onChange={e => { setDeviceId(e.target.value); setFlipped(null); }}
-          style={{ fontSize: 13 }}
+          className="camera-select"
         >
           {devices.map(d => (
             <option key={d.deviceId} value={d.deviceId}>{d.label || d.deviceId}</option>
@@ -61,18 +66,15 @@ export default function CameraScanner({ onScan, onClose }) {
         </select>
       )}
       {error
-        ? <p style={{ color: 'var(--danger)' }}>{error}</p>
+        ? <p className="text-danger">{error}</p>
         : (
           <div className="scanner-wrap">
-            <video
-              ref={videoRef}
-              style={{ transform: mirrored ? 'scaleX(-1)' : 'none' }}
-            />
+            <video ref={videoRef} className={mirrored ? 'mirrored' : undefined} />
             <div className="scanner-overlay"><div className="scanner-box" /></div>
           </div>
         )
       }
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div className="row-actions">
         <button
           className="btn btn-secondary btn-sm"
           onClick={() => setFlipped(f => !(f === null ? autoFlip : f))}

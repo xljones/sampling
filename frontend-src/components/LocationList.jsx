@@ -75,14 +75,14 @@ export default function LocationList() {
       </div>
 
       {showAdd && (
-        <div className="card card-body" style={{ marginBottom: 24 }}>
-          <form onSubmit={handleAdd} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div className="card card-body mb-6">
+          <form onSubmit={handleAdd} className="inline-form">
             <input
               value={newName}
               onChange={e => setNewName(e.target.value)}
               placeholder="Location name, e.g. Oslo – Cold Store"
               autoFocus
-              style={{ flex: 1 }}
+              className="barcode-input"
             />
             <button className="btn btn-success" disabled={saving || !newName.trim()}>Save</button>
             <button type="button" className="btn btn-secondary" onClick={() => { setShowAdd(false); setNewName(''); }}>Cancel</button>
@@ -98,13 +98,13 @@ export default function LocationList() {
               {locations.map(loc => (
                 <tr
                   key={loc.id}
-                  style={{ cursor: editId === loc.id ? 'default' : 'pointer' }}
+                  className={editId === loc.id ? '' : 'row-clickable'}
                   onClick={e => { if (editId === loc.id || e.target.closest('a, button, input, form')) return; navigate(`/locations/${loc.id}`); }}
                 >
                   {editId === loc.id ? (
                     <td colSpan={3}>
-                      <form onSubmit={handleEdit} style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
-                        <input value={editName} onChange={e => setEditName(e.target.value)} autoFocus style={{ flex: 1, padding: '4px 8px', fontSize: 12, lineHeight: '1', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--surface)', color: 'var(--text)', boxSizing: 'border-box' }} />
+                      <form onSubmit={handleEdit} className="inline-form">
+                        <input value={editName} onChange={e => setEditName(e.target.value)} autoFocus className="input-sm" />
                         <button className="btn btn-success btn-sm" disabled={saving || !editName.trim()}>Save</button>
                         <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditId(null)}>Cancel</button>
                       </form>
@@ -112,8 +112,8 @@ export default function LocationList() {
                   ) : (
                     <>
                       <td>{loc.name}</td>
-                      <td style={{ color: 'var(--text2)' }}>{loc.box_count}</td>
-                      <td style={{ width: '1%', whiteSpace: 'nowrap' }}>
+                      <td className="text-muted">{loc.box_count}</td>
+                      <td className="col-shrink">
                         {!ro && (
                           <div className="row-actions">
                             <button className="btn btn-secondary btn-sm" onClick={() => startEdit(loc)}>Rename</button>

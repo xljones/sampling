@@ -22,12 +22,12 @@ else{map.fitBounds(L.featureGroup(markers).getBounds().pad(0.2));}
 </body></html>`;
 
   return (
-    <div className="card" style={{ marginTop: 16, overflow: 'hidden' }}>
+    <div className="card card-map mt-4">
       <iframe
         title="Map"
         width="100%"
         height={height}
-        style={{ display: 'block', border: 0 }}
+        className="iframe-clean"
         srcDoc={html}
       />
     </div>

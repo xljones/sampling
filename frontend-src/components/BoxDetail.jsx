@@ -102,16 +102,16 @@ export default function BoxDetail() {
     toast('Box reverted');
   }
 
-  if (!box) return <p style={{ color: 'var(--text2)', padding: 32 }}>Loading…</p>;
+  if (!box) return <p className="loading">Loading…</p>;
 
   return (
     <div>
       <div className="page-header">
         <div>
-          <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 4 }}><Link to="/boxes">← Boxes</Link></div>
+          <div className="back-link"><Link to="/boxes">← Boxes</Link></div>
           <h1 className="page-title">{box.name || <span className="barcode">{box.barcode}</span>}</h1>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="btn-group">
           {editing && (
             <button type="submit" form="box-edit-form" className="btn btn-success" disabled={saving}>Save Changes</button>
           )}
@@ -124,9 +124,9 @@ export default function BoxDetail() {
         </div>
       </div>
 
-      <div className="card card-body" style={{ marginBottom: 24 }}>
+      <div className="card card-body mb-6">
         <form id="box-edit-form" onSubmit={handleSave}>
-          <div className="form-grid" style={{ marginBottom: 0 }}>
+          <div className="form-grid">
             <div className="field">
               <label>Barcode *</label>
               {editing
@@ -168,9 +168,9 @@ export default function BoxDetail() {
         </form>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 700 }}>Tubes ({box.tubes?.length ?? 0})</h2>
-        <div style={{ display: 'flex', gap: 8 }}>
+      <div className="section-header">
+        <h2 className="section-title">Tubes ({box.tubes?.length ?? 0})</h2>
+        <div className="btn-group">
           {!ro && (
             <button className="btn btn-secondary btn-sm" onClick={() => setShowAssign(v => !v)}>
               Assign existing
@@ -184,7 +184,7 @@ export default function BoxDetail() {
       </div>
 
       {showAssign && (
-        <div className="card card-body" style={{ marginBottom: 16 }}>
+        <div className="card card-body mb-4">
           <BarcodeInput
             value={assignBarcode}
             onChange={setAssignBarcode}
@@ -192,8 +192,8 @@ export default function BoxDetail() {
             autoFocus
           />
           {assignMatch && (
-            <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: 13 }}>
+            <div className="assign-match">
+              <span className="text-sm">
                 <span className="barcode">{assignMatch.barcode}</span>
                 {assignMatch.site_name ? ` — ${assignMatch.site_name}` : ''}
               </span>
@@ -203,9 +203,7 @@ export default function BoxDetail() {
             </div>
           )}
           {assignNotFound && (
-            <p style={{ marginTop: 8, fontSize: 12, color: 'var(--text2)' }}>
-              No unassigned tube with that barcode.
-            </p>
+            <p className="form-hint muted mt-2">No unassigned tube with that barcode.</p>
           )}
           {!assignMatch && unassigned.length > 0 && (() => {
             const q = assignBarcode.toLowerCase();
@@ -217,17 +215,17 @@ export default function BoxDetail() {
                 )
               : unassigned;
             return filtered.length > 0 ? (
-              <div style={{ marginTop: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text2)', marginBottom: 6 }}>
+              <div className="mt-3">
+                <div className="label-sm mb-2">
                   Unassigned tubes {q ? `(${filtered.length} match${filtered.length !== 1 ? 'es' : ''})` : `(${filtered.length})`}
                 </div>
-                <div style={{ maxHeight: 240, overflowY: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <div className="scroll-list">
+                  <table>
                     <tbody>
                       {filtered.map(t => (
                         <tr
                           key={t.id}
-                          style={{ cursor: 'pointer', borderBottom: '1px solid var(--border)' }}
+                          className="row-clickable"
                           onClick={async () => {
                             await api.updateTube(t.id, { ...t, box_id: Number(id) });
                             setBox(b => ({ ...b, tubes: [...(b.tubes ?? []), { ...t, box_id: Number(id) }] }));
@@ -235,9 +233,9 @@ export default function BoxDetail() {
                             toast(`Tube ${t.barcode} added to box`);
                           }}
                         >
-                          <td style={{ padding: '8px 12px' }}><span className="barcode">{t.barcode}</span></td>
-                          <td style={{ padding: '8px 12px', color: 'var(--text2)', fontSize: 13 }}>{t.site_name || '—'}</td>
-                          <td style={{ padding: '8px 12px', color: 'var(--text2)', fontSize: 13 }}>{t.sample_type || '—'}</td>
+                          <td><span className="barcode">{t.barcode}</span></td>
+                          <td className="text-muted text-sm">{t.site_name || '—'}</td>
+                          <td className="text-muted text-sm">{t.sample_type || '—'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -247,7 +245,7 @@ export default function BoxDetail() {
             ) : null;
           })()}
           {unassigned.length === 0 && !assignBarcode && (
-            <p style={{ marginTop: 10, fontSize: 12, color: 'var(--text2)' }}>No unassigned tubes.</p>
+            <p className="form-hint muted mt-2">No unassigned tubes.</p>
           )}
         </div>
       )}
@@ -258,7 +256,7 @@ export default function BoxDetail() {
             <thead><tr><th>Barcode</th><th>Site</th><th>Type</th><th>Depth (cm)</th><th>Date</th><th></th></tr></thead>
             <tbody>
               {box.tubes?.map(t => (
-                <tr key={t.id} style={{ cursor: 'pointer' }} onClick={e => { if (!e.target.closest('a, button')) navigate(`/tubes/${t.id}?from=/boxes/${id}`); }}>
+                <tr key={t.id} className="row-clickable" onClick={e => { if (!e.target.closest('a, button')) navigate(`/tubes/${t.id}?from=/boxes/${id}`); }}>
                   <td><Link to={`/tubes/${t.id}?from=/boxes/${id}`}><span className="barcode">{t.barcode}</span></Link></td>
                   <td>{t.site_name || '—'}</td>
                   <td>{t.sample_type || '—'}</td>
@@ -284,31 +282,31 @@ export default function BoxDetail() {
           .map(t => ({ lat: t.latitude, lng: t.longitude, label: t.barcode + (t.site_name ? ` — ${t.site_name}` : ''), url: `/tubes/${t.id}` }))}
       />
 
-      <div style={{ marginTop: 16 }}>
+      <div className="mt-4">
         <button className="btn btn-secondary btn-sm" onClick={toggleHistory}>
           {showHistory ? '▼' : '▶'} Version history{history ? ` (${history.length})` : ''}
         </button>
         {showHistory && (
-          <div className="card" style={{ marginTop: 8 }}>
-            {history === null && <p style={{ padding: 16, color: 'var(--text2)' }}>Loading…</p>}
-            {history?.length === 0 && <p style={{ padding: 16, color: 'var(--text2)' }}>No history yet.</p>}
+          <div className="card mt-2">
+            {history === null && <p className="card-message">Loading…</p>}
+            {history?.length === 0 && <p className="card-message">No history yet.</p>}
             {history?.map((v, i) => {
               const prev = history[i + 1];
               const diff = (key) => prev && String(v[key] ?? '') !== String(prev[key] ?? '');
               const f = (label, value, key) => (
                 <span>
-                  <em style={diff(key) ? { borderColor: 'var(--accent-light)', color: 'var(--accent-light)' } : {}}>{label}</em>{' '}
-                  <span style={diff(key) ? { color: 'var(--accent-light)', fontWeight: 600 } : {}}>{value}</span>
+                  <em className={diff(key) ? 'diff' : ''}>{label}</em>{' '}
+                  <span className={diff(key) ? 'diff-value' : ''}>{value}</span>
                 </span>
               );
               return (
-                <div key={v.id} style={{ padding: '12px 16px', borderBottom: i < history.length - 1 ? '1px solid var(--border)' : undefined }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                <div key={v.id} className="history-entry">
+                  <div className="history-row">
                     <div>
-                      <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 4 }}>
+                      <div className="history-meta">
                         {v.changed_at} — <strong>{v.changed_by_username ?? 'unknown'}</strong>
                       </div>
-                      <div className="history-fields" style={{ fontSize: 13 }}>
+                      <div className="history-fields">
                         {f('barcode', v.barcode, 'barcode')}
                         {f('name', v.name || '—', 'name')}
                         {f('location', v.location_name || '—', 'location_id')}
@@ -316,7 +314,7 @@ export default function BoxDetail() {
                       </div>
                     </div>
                     {i > 0 && (
-                      <button className="btn btn-secondary btn-sm" style={{ flexShrink: 0 }} onClick={() => handleRevert(v.id)}>
+                      <button className="btn btn-secondary btn-sm flex-shrink-0" onClick={() => handleRevert(v.id)}>
                         Revert to this
                       </button>
                     )}

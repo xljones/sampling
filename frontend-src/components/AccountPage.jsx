@@ -35,16 +35,16 @@ export default function AccountPage() {
         <h1 className="page-title">Account</h1>
       </div>
 
-      <div className="card card-body" style={{ maxWidth: 400 }}>
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 2 }}>Signed in as</div>
-          <div style={{ fontWeight: 600 }}>{user?.username}</div>
-          {user?.is_readonly && <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}>Read-only account</div>}
+      <div className="card card-body mw-sm">
+        <div className="mb-4">
+          <div className="meta">Signed in as</div>
+          <div className="fw-600">{user?.username}</div>
+          {user?.is_readonly && <div className="meta">Read-only account</div>}
         </div>
 
-        <h2 style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Change password</h2>
+        <h2 className="section-title mb-3">Change password</h2>
         <form onSubmit={handleSubmit}>
-          <div className="form-grid" style={{ marginBottom: 12 }}>
+          <div className="form-grid mb-3">
             <div className="field span-2">
               <label>Current password</label>
               <input

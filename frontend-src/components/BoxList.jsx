@@ -65,16 +65,16 @@ export default function BoxList() {
     <div>
       <div className="page-header">
         <h1 className="page-title">Boxes</h1>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="btn-group">
           <a href="/api/export/boxes" className="btn btn-secondary" download>Export CSV</a>
           {!ro && <button className="btn btn-primary" onClick={() => setShowAdd(v => !v)}>+ New box</button>}
         </div>
       </div>
 
       {showAdd && !ro && (
-        <div className="card card-body" style={{ marginBottom: 24 }}>
+        <div className="card card-body mb-6">
           <form onSubmit={handleAdd}>
-            <div className="form-grid" style={{ marginBottom: 12 }}>
+            <div className="form-grid mb-3">
               <div className="field">
                 <label>Barcode *</label>
                 <BarcodeInput
@@ -108,13 +108,13 @@ export default function BoxList() {
         </div>
       )}
 
-      <div style={{ marginBottom: 16 }}>
+      <div className="mb-4">
         <input
           type="search"
           value={filter}
           onChange={e => setFilter(e.target.value)}
           placeholder="Filter by barcode, name, location…"
-          style={{ width: '100%', maxWidth: 360, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 13 }}
+          className="search-input"
         />
       </div>
 
@@ -126,15 +126,15 @@ export default function BoxList() {
               {visible.map(b => (
                 <tr
                   key={b.id}
-                  style={{ cursor: 'pointer' }}
+                  className="row-clickable"
                   onClick={e => { if (!e.target.closest('a, button, input')) navigate(`/boxes/${b.id}`); }}
                 >
                   <td><Link to={`/boxes/${b.id}`}><span className="barcode">{b.barcode}</span></Link></td>
                   <td>{b.name || '—'}</td>
                   <td>{b.location_name || '—'}</td>
                   <td>{b.tube_count}</td>
-                  <td className="col-mobile-hide" style={{ color: 'var(--text2)' }}>{b.updated_at?.slice(0, 10)}</td>
-                  <td style={{ width: '1%', whiteSpace: 'nowrap' }}>
+                  <td className="col-mobile-hide text-muted">{b.updated_at?.slice(0, 10)}</td>
+                  <td className="col-shrink">
                     <div className="row-actions">
                       {!ro && <Link to={`/boxes/${b.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>}
                       {!ro && <button className="btn btn-danger btn-sm" onClick={() => handleDelete(b.id)}>Delete</button>}
