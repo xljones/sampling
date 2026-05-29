@@ -32,7 +32,7 @@ export default function AccountPage() {
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Account</h1>
+        <h1 className="page-title">Change Password</h1>
       </div>
 
       <div className="card card-body mw-sm">
@@ -42,7 +42,6 @@ export default function AccountPage() {
           {user?.is_readonly && <div className="meta">Read-only account</div>}
         </div>
 
-        <h2 className="section-title mb-3">Change password</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-grid mb-3">
             <div className="field span-2">
