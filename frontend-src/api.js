@@ -45,6 +45,15 @@ export const api = {
   createUser:  (body)  => req('POST',   '/users', body),
   deleteUser:  (id)    => req('DELETE', `/users/${id}`),
 
+  // Cores
+  getCores:       ()                => req('GET',    '/cores'),
+  getCore:        (id)              => req('GET',    `/cores/${id}`),
+  createCore:     (body)            => req('POST',   '/cores', body),
+  updateCore:     (id, body)        => req('PUT',    `/cores/${id}`, body),
+  deleteCore:     (id)              => req('DELETE', `/cores/${id}`),
+  getCoreHistory: (id)              => req('GET',    `/cores/${id}/history`),
+  revertCore:     (id, versionId)   => req('POST',   `/cores/${id}/revert/${versionId}`),
+
   // Locations
   getLocations:    ()           => req('GET',    '/locations'),
   getLocation:     (id)         => req('GET',    `/locations/${id}`),

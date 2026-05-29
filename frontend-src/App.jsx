@@ -11,6 +11,8 @@ import TubeList from './components/TubeList.jsx';
 import TubeDetail from './components/TubeDetail.jsx';
 import TubeForm from './components/TubeForm.jsx';
 import ScanPage from './components/ScanPage.jsx';
+import CoreList from './components/CoreList.jsx';
+import CoreDetail from './components/CoreDetail.jsx';
 import LocationList from './components/LocationList.jsx';
 import LocationDetail from './components/LocationDetail.jsx';
 import UserList from './components/UserList.jsx';
@@ -27,6 +29,7 @@ function Nav() {
       <NavLink to="/scan">Scan barcode</NavLink>
       <NavLink to="/boxes">Boxes</NavLink>
       <NavLink to="/tubes">Tubes</NavLink>
+      <NavLink to="/cores">Cores</NavLink>
       <NavLink to="/locations">Locations</NavLink>
       <div className="mt-auto">
         <div className="sidebar-user">
@@ -53,6 +56,7 @@ function BottomNav() {
         <>
           <div className="bottom-nav-backdrop" onClick={closeMore} />
           <div className="bottom-nav-more">
+            <NavLink to="/cores" className="sidebar-nav-btn" onClick={closeMore}>Cores</NavLink>
             <NavLink to="/locations" className="sidebar-nav-btn" onClick={closeMore}>Locations</NavLink>
             <div className="sidebar-user">
               <div className="text-sm fw-600">{user?.username}</div>
@@ -105,6 +109,8 @@ function AppShell() {
           <Route path="/tubes" element={<TubeList />} />
           <Route path="/tubes/new" element={<TubeForm mode="create" />} />
           <Route path="/tubes/:id" element={<TubeDetail />} />
+          <Route path="/cores" element={<CoreList />} />
+          <Route path="/cores/:id" element={<CoreDetail />} />
           <Route path="/locations" element={<LocationList />} />
           <Route path="/locations/:id" element={<LocationDetail />} />
           {!user.is_readonly && <Route path="/users" element={<UserList />} />}

@@ -62,7 +62,7 @@ export default function ScanPage() {
       {result && (
         <div className="card card-body mw-md">
           <div className="scan-badge-row">
-            <span className={`badge ${result.type === 'box' ? 'badge-box' : 'badge-tube'}`}>
+            <span className={`badge ${result.type === 'box' ? 'badge-box' : result.type === 'core' ? 'badge-core' : 'badge-tube'}`}>
               {result.type}
             </span>
             <span className="barcode">{result.data.barcode}</span>
@@ -80,6 +80,7 @@ export default function ScanPage() {
           {result.type === 'tube' && (
             <div className="scan-result-grid">
               <Field label="Box" value={result.data.box_barcode} />
+              <Field label="Core" value={result.data.core_barcode} />
               <Field label="Site" value={result.data.site_name} />
               <Field label="Type" value={result.data.sample_type} />
               <Field label="Depth (cm)" value={result.data.depth_cm} />
@@ -90,9 +91,20 @@ export default function ScanPage() {
             </div>
           )}
 
+          {result.type === 'core' && (
+            <div className="scan-result-grid">
+              <Field label="Name" value={result.data.name} />
+              <Field label="Site" value={result.data.site_name} />
+              <Field label="Type" value={result.data.sample_type} />
+              <Field label="Collector" value={result.data.collector} />
+              <Field label="Storage" value={result.data.location_name} />
+              <Field label="Date" value={result.data.collection_date} />
+            </div>
+          )}
+
           <div className="mt-4">
             <Link
-              to={result.type === 'box' ? `/boxes/${result.data.id}` : `/tubes/${result.data.id}`}
+              to={result.type === 'box' ? `/boxes/${result.data.id}` : result.type === 'core' ? `/cores/${result.data.id}` : `/tubes/${result.data.id}`}
               className="btn btn-primary btn-sm"
             >
               Open →
