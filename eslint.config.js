@@ -12,7 +12,7 @@ export default [
       'react-hooks': reactHooks,
     },
     languageOptions: {
-      globals: { ...globals.browser },
+      globals: { ...globals.browser, __APP_VERSION__: 'readonly', __GIT_SHA__: 'readonly' },
       parserOptions: {
         ecmaFeatures: { jsx: true },
       },
