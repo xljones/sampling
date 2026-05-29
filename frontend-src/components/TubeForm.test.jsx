@@ -53,7 +53,7 @@ describe('TubeForm — box scan mode', () => {
   it('switches to dropdown when "Choose from list" is clicked', async () => {
     renderNew();
     await waitFor(() => screen.getByTestId('box-barcode-input'));
-    fireEvent.click(screen.getByText('Choose from list'));
+    fireEvent.click(screen.getAllByText('Choose from list')[0]);
     expect(screen.getByRole('combobox')).toBeInTheDocument();
     expect(screen.queryByTestId('box-barcode-input')).not.toBeInTheDocument();
   });

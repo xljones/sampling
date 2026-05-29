@@ -12,6 +12,7 @@ vi.mock('../api.js', () => ({
       { id: 1, barcode: 'T001', box_id: 1, box_barcode: null, site_name: null, sample_type: null, depth_cm: null, sample_date: null, latitude: null, longitude: null },
       { id: 2, barcode: 'T002', box_id: null, box_barcode: null, site_name: null, sample_type: null, depth_cm: null, sample_date: null, latitude: null, longitude: null },
     ]),
+    getCores: vi.fn().mockResolvedValue([]),
   },
 }));
 
