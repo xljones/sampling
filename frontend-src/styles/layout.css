@@ -54,7 +54,7 @@
     background: none; border: none; cursor: pointer; padding: 8px 4px; transition: color 0.1s;
     font-family: inherit;
   }
-  .bottom-nav-item.active { color: var(--accent); font-weight: 600; }
+  .bottom-nav-item.active { color: var(--accent); font-weight: 600; background: var(--surface2); }
   .bottom-nav-item:hover { color: var(--text); text-decoration: none; }
   .bottom-nav-more {
     position: fixed; bottom: 56px; left: 0; right: 0;

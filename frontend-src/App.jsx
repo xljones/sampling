@@ -54,16 +54,16 @@ function BottomNav() {
           <div className="bottom-nav-backdrop" onClick={closeMore} />
           <div className="bottom-nav-more">
             <NavLink to="/locations" className="sidebar-nav-btn" onClick={closeMore}>Locations</NavLink>
+            <div className="sidebar-user">
+              <div className="text-sm fw-600">{user?.username}</div>
+              {user?.is_readonly && <div className="meta mt-2">read-only</div>}
+            </div>
             {!user?.is_readonly && (
               <NavLink to="/users" className="sidebar-nav-btn" onClick={closeMore}>Users</NavLink>
             )}
             <NavLink to="/account" className="sidebar-nav-btn" onClick={closeMore}>Change password</NavLink>
-            <div className="sidebar-user">
-              <div className="text-sm fw-600">{user?.username}</div>
-              {user?.is_readonly && <div className="meta mt-2">read-only</div>}
-              <BuildInfo className="meta mt-2" />
-            </div>
-            <button className="sidebar-nav-btn" onClick={logout}>Sign out</button>
+            <button className="sidebar-nav-btn text-danger" onClick={logout}>Sign out</button>
+            <BuildInfo className="sidebar-version" />
           </div>
         </>
       )}
