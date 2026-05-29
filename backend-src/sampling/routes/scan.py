@@ -3,6 +3,7 @@ from flask_login import login_required
 
 from sampling.db import get_db
 from sampling.repositories.box_repository import BoxRepository
+from sampling.repositories.core_repository import CoreRepository
 from sampling.repositories.tube_repository import TubeRepository
 
 bp = Blueprint("scan", __name__)
@@ -18,6 +19,9 @@ def scan(barcode):
         tube = TubeRepository(db).get_by_barcode(barcode)
         if tube:
             return jsonify(type="tube", data=tube)
+        core = CoreRepository(db).get_by_barcode(barcode)
+        if core:
+            return jsonify(type="core", data=core)
     return jsonify(error="Barcode not found"), 404
 
 
@@ -26,5 +30,5 @@ def scan(barcode):
 def search():
     q = request.args.get("q", "")
     with get_db() as db:
-        results = BoxRepository(db).search(q) + TubeRepository(db).search(q)
+        results = BoxRepository(db).search(q) + TubeRepository(db).search(q) + CoreRepository(db).search(q)
     return jsonify(results)

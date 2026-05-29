@@ -12,6 +12,7 @@ bp = Blueprint("tubes", __name__)
 def _tube_fields(d):
     return dict(
         box_id=d.get("box_id") or None,
+        core_id=d.get("core_id") or None,
         collection_date=d.get("collection_date") or None,
         site_name=d.get("site_name") or None,
         latitude=d.get("latitude"),

@@ -6,10 +6,16 @@ class TubeRepository:
         return self._rows(
             self.db.execute("""
             SELECT t.*, b.name AS box_name, b.barcode AS box_barcode,
-                   l.name AS box_location_name
+                   l.name AS box_location_name,
+                   c.barcode AS core_barcode, c.name AS core_name, cl.name AS core_location_name,
+                   c.site_name AS core_site_name, c.latitude AS core_latitude,
+                   c.longitude AS core_longitude, c.collection_date AS core_collection_date,
+                   c.sample_type AS core_sample_type, c.depth_cm AS core_total_depth
             FROM tubes t
             LEFT JOIN boxes b ON b.id = t.box_id
             LEFT JOIN locations l ON l.id = b.location_id
+            LEFT JOIN cores c ON c.id = t.core_id
+            LEFT JOIN locations cl ON cl.id = c.location_id
             ORDER BY t.created_at DESC
         """).fetchall()
         )
@@ -19,10 +25,16 @@ class TubeRepository:
             self.db.execute(
                 """
             SELECT t.*, b.name AS box_name, b.barcode AS box_barcode,
-                   l.name AS box_location_name
+                   l.name AS box_location_name,
+                   c.barcode AS core_barcode, c.name AS core_name, cl.name AS core_location_name,
+                   c.site_name AS core_site_name, c.latitude AS core_latitude,
+                   c.longitude AS core_longitude, c.collection_date AS core_collection_date,
+                   c.sample_type AS core_sample_type, c.depth_cm AS core_total_depth
             FROM tubes t
             LEFT JOIN boxes b ON b.id = t.box_id
             LEFT JOIN locations l ON l.id = b.location_id
+            LEFT JOIN cores c ON c.id = t.core_id
+            LEFT JOIN locations cl ON cl.id = c.location_id
             WHERE t.id=?
         """,
                 (tube_id,),
@@ -34,10 +46,16 @@ class TubeRepository:
             self.db.execute(
                 """
             SELECT t.*, b.name AS box_name, b.barcode AS box_barcode,
-                   l.name AS box_location_name
+                   l.name AS box_location_name,
+                   c.barcode AS core_barcode, c.name AS core_name, cl.name AS core_location_name,
+                   c.site_name AS core_site_name, c.latitude AS core_latitude,
+                   c.longitude AS core_longitude, c.collection_date AS core_collection_date,
+                   c.sample_type AS core_sample_type, c.depth_cm AS core_total_depth
             FROM tubes t
             LEFT JOIN boxes b ON b.id = t.box_id
             LEFT JOIN locations l ON l.id = b.location_id
+            LEFT JOIN cores c ON c.id = t.core_id
+            LEFT JOIN locations cl ON cl.id = c.location_id
             WHERE t.barcode=?
         """,
                 (barcode,),
@@ -48,6 +66,7 @@ class TubeRepository:
         self,
         barcode,
         box_id=None,
+        core_id=None,
         collection_date=None,
         site_name=None,
         latitude=None,
@@ -61,13 +80,14 @@ class TubeRepository:
     ):
         cur = self.db.execute(
             """
-            INSERT INTO tubes (barcode, box_id, collection_date, site_name, latitude, longitude,
+            INSERT INTO tubes (barcode, box_id, core_id, collection_date, site_name, latitude, longitude,
                 sample_type, description, volume_ml, weight_g, depth_cm)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
         """,
             (
                 barcode,
                 box_id,
+                core_id,
                 collection_date,
                 site_name,
                 latitude,
@@ -88,6 +108,7 @@ class TubeRepository:
         tube_id,
         barcode,
         box_id=None,
+        core_id=None,
         collection_date=None,
         site_name=None,
         latitude=None,
@@ -102,7 +123,7 @@ class TubeRepository:
         self.db.execute(
             """
             UPDATE tubes
-            SET barcode=?, box_id=?, collection_date=?, site_name=?, latitude=?,
+            SET barcode=?, box_id=?, core_id=?, collection_date=?, site_name=?, latitude=?,
                 longitude=?, sample_type=?, description=?, volume_ml=?, weight_g=?,
                 depth_cm=?, updated_at=CURRENT_TIMESTAMP
             WHERE id=?
@@ -110,6 +131,7 @@ class TubeRepository:
             (
                 barcode,
                 box_id,
+                core_id,
                 collection_date,
                 site_name,
                 latitude,
@@ -130,10 +152,12 @@ class TubeRepository:
         return self._rows(
             self.db.execute(
                 """
-            SELECT th.*, u.username AS changed_by_username, b.barcode AS box_barcode
+            SELECT th.*, u.username AS changed_by_username,
+                   b.barcode AS box_barcode, c.barcode AS core_barcode
             FROM tube_history th
             LEFT JOIN users u ON u.id = th.changed_by
             LEFT JOIN boxes b ON b.id = th.box_id
+            LEFT JOIN cores c ON c.id = th.core_id
             WHERE th.tube_id = ?
             ORDER BY th.changed_at DESC
         """,
@@ -153,6 +177,7 @@ class TubeRepository:
             tube_id,
             h["barcode"],
             box_id=h["box_id"],
+            core_id=h["core_id"],
             collection_date=h["collection_date"],
             site_name=h["site_name"],
             latitude=h["latitude"],
@@ -169,15 +194,16 @@ class TubeRepository:
         self.db.execute(
             """
             INSERT INTO tube_history
-                (tube_id, changed_by, barcode, box_id, collection_date, site_name,
+                (tube_id, changed_by, barcode, box_id, core_id, collection_date, site_name,
                  latitude, longitude, sample_type, description, volume_ml, weight_g, depth_cm)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """,
             (
                 tube["id"],
                 changed_by,
                 tube["barcode"],
                 tube.get("box_id"),
+                tube.get("core_id"),
                 tube.get("collection_date"),
                 tube.get("site_name"),
                 tube.get("latitude"),
@@ -222,10 +248,17 @@ class TubeRepository:
         return self._rows(
             self.db.execute("""
             SELECT t.barcode, b.barcode AS box_barcode, b.name AS box_name,
+                   c.barcode AS core_barcode, c.name AS core_name, cl.name AS core_location_name,
+                   c.site_name AS core_site_name, c.latitude AS core_latitude,
+                   c.longitude AS core_longitude, c.collection_date AS core_collection_date,
+                   c.sample_type AS core_sample_type, c.depth_cm AS core_total_depth,
                    t.collection_date, t.site_name, t.latitude, t.longitude,
                    t.sample_type, t.description, t.volume_ml, t.weight_g, t.depth_cm,
                    t.created_at, t.updated_at
-            FROM tubes t LEFT JOIN boxes b ON b.id = t.box_id
+            FROM tubes t
+            LEFT JOIN boxes b ON b.id = t.box_id
+            LEFT JOIN cores c ON c.id = t.core_id
+            LEFT JOIN locations cl ON cl.id = c.location_id
             ORDER BY t.created_at DESC
         """).fetchall()
         )

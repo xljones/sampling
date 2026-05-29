@@ -36,7 +36,7 @@ def create_app():
     from sampling.db import get_db, run_migrations
     from sampling.domain.user import User
     from sampling.repositories.user_repository import UserRepository
-    from sampling.routes import auth, boxes, export, locations, scan, tubes, users
+    from sampling.routes import auth, boxes, cores, export, locations, scan, tubes, users
 
     run_migrations()
 
@@ -90,7 +90,7 @@ def create_app():
         ):
             return jsonify(error="Read-only access"), 403
 
-    for bp in (auth.bp, boxes.bp, tubes.bp, scan.bp, export.bp, locations.bp, users.bp):
+    for bp in (auth.bp, boxes.bp, cores.bp, tubes.bp, scan.bp, export.bp, locations.bp, users.bp):
         app.register_blueprint(bp)
 
     @app.get("/api/version")
