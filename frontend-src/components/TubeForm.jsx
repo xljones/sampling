@@ -63,7 +63,7 @@ export default function TubeForm({ mode }) {
         if (match) setBoxBarcode(match.barcode);
       }
     });
-  }, []);
+  }, [params]);
   useEffect(() => {
     if (isEdit && id) {
       api.getTube(id).then(t => {

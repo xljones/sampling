@@ -26,7 +26,7 @@ export default function BoxList() {
       setShowAdd(true);
       if (barcode) setForm(f => ({ ...f, barcode }));
     }
-  }, []);
+  }, [searchParams]);
 
   const q = filter.toLowerCase();
   const visible = q

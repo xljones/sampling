@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const MAP_HTML = `<!DOCTYPE html>
 <html><head>

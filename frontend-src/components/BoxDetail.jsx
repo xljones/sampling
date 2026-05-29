@@ -34,7 +34,7 @@ export default function BoxDetail() {
     if (showAssign && unassigned.length === 0) {
       api.getTubes().then(tubes => setUnassigned(tubes.filter(t => !t.box_id)));
     }
-  }, [showAssign]);
+  }, [showAssign, unassigned.length]);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 

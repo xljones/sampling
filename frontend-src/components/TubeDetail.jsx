@@ -40,7 +40,7 @@ export default function TubeDetail() {
         setBoxBarcode(t.box_barcode ?? '');
       }
     });
-  }, [id]);
+  }, [id, searchParams]);
   useEffect(() => { api.getTubeHistory(id).then(setHistory); }, [id]);
   useEffect(() => { if (editing) api.getBoxes().then(setBoxes); }, [editing]);
 
