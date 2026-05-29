@@ -43,4 +43,9 @@
 @media (max-width: 768px) {
   .form-grid { grid-template-columns: 1fr; }
   .span-2 { grid-column: span 1; }
+  /* Prevent iOS Safari from auto-zooming on input focus (requires font-size >= 16px) */
+  .field input, .field textarea, .field select,
+  .barcode-input, .input-sm, .select-sm, .camera-select, .search-input {
+    font-size: 16px;
+  }
 }
