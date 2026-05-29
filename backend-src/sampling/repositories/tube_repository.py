@@ -80,7 +80,8 @@ class TubeRepository:
     ):
         cur = self.db.execute(
             """
-            INSERT INTO tubes (barcode, box_id, core_id, sample_date, site_name, latitude, longitude,
+            INSERT INTO tubes (
+                barcode, box_id, core_id, sample_date, site_name, latitude, longitude,
                 sample_type, description, volume_ml, weight_g, depth_cm)
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
         """,

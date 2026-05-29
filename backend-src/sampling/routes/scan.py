@@ -30,5 +30,9 @@ def scan(barcode):
 def search():
     q = request.args.get("q", "")
     with get_db() as db:
-        results = BoxRepository(db).search(q) + TubeRepository(db).search(q) + CoreRepository(db).search(q)
+        results = (
+            BoxRepository(db).search(q)
+            + TubeRepository(db).search(q)
+            + CoreRepository(db).search(q)
+        )
     return jsonify(results)

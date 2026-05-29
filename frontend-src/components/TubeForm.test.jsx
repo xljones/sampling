@@ -9,6 +9,7 @@ vi.mock('../api.js', () => ({
       { id: 1, barcode: 'BOX001', name: 'Shelf A' },
       { id: 2, barcode: 'BOX002', name: null },
     ]),
+    getCores: vi.fn().mockResolvedValue([]),
     getTube: vi.fn(),
     createTube: vi.fn().mockResolvedValue({ id: 99, barcode: 'TUBE001' }),
     updateTube: vi.fn().mockResolvedValue({ id: 99, barcode: 'TUBE001' }),
