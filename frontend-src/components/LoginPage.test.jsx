@@ -8,6 +8,10 @@ vi.mock('../AuthContext.jsx', () => ({
   useAuth: () => ({ login: mockLogin }),
 }));
 
+vi.mock('../api.js', () => ({
+  api: { version: vi.fn().mockResolvedValue({ version: '0.2.1' }) },
+}));
+
 beforeEach(() => {
   mockLogin.mockReset();
 });
