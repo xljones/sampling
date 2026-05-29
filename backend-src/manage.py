@@ -348,11 +348,7 @@ def cmd_delete_user(args):
 
 
 def cmd_reset_db(args):
-    drop_all = "all" in args
-    if drop_all:
-        msg = "This will drop ALL tables including users. Type YES to confirm: "
-    else:
-        msg = "This will drop all tables except users. Type YES to confirm: "
+    msg = "This will drop ALL tables including users. Type YES to confirm: "
     confirm = input(msg)
     if confirm.strip() != "YES":
         print("Aborted.")
@@ -362,14 +358,11 @@ def cmd_reset_db(args):
         tables = [
             "tube_history", "box_history", "core_history",
             "tubes", "boxes", "cores", "locations",
-            "schema_migrations",
+            "schema_migrations", "users"
         ]
-        if drop_all:
-            tables.append("users")
         for table in tables:
             db.execute(f"DROP TABLE IF EXISTS {table}")
-    suffix = "" if drop_all else " Users preserved."
-    print(f"Tables dropped.{suffix} Run seed to repopulate.")
+    print(f"All tables dropped. Run seed to repopulate.")
 
 
 COMMANDS = {
