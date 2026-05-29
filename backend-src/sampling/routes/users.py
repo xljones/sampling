@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from flask import Blueprint, jsonify, request
 from flask_login import current_user, login_required
@@ -34,7 +34,7 @@ def create_user():
                 raise ValueError
         except (ValueError, TypeError):
             return jsonify(error="ttl_days must be a positive integer"), 400
-        expires_at = (datetime.now(datetime.UTC) + timedelta(days=ttl_days)).isoformat()
+        expires_at = (datetime.now(UTC) + timedelta(days=ttl_days)).isoformat()
     try:
         with get_db() as db:
             user = UserRepository(db).create(

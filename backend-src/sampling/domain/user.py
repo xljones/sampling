@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 
 from flask_login import UserMixin
 
@@ -16,7 +16,7 @@ class User(UserMixin):
     def is_active(self):
         if self.expires_at:
             try:
-                return datetime.now(datetime.UTC) < datetime.fromisoformat(self.expires_at)
+                return datetime.now(UTC) < datetime.fromisoformat(self.expires_at)
             except ValueError:
                 pass
         return True

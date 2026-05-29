@@ -1,6 +1,6 @@
 import csv
 import io
-from datetime import datetime
+from datetime import UTC, datetime
 
 from flask import Blueprint, Response
 from flask_login import login_required
@@ -51,7 +51,7 @@ def _csv_response(data, fields, basename):
     writer = csv.DictWriter(buf, fieldnames=fields, extrasaction="ignore", lineterminator="\r\n")
     writer.writeheader()
     writer.writerows(data)
-    ts = datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%S")
+    ts = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%S")
     filename = f"{basename}-{ts}.csv"
     return Response(
         buf.getvalue(),
