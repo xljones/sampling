@@ -79,6 +79,13 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+      - name: Write build-info.json
+        run: |
+          VERSION=$(grep -m1 '^version' pyproject.toml | awk -F'"' '{print $2}')
+          SHA=$(git rev-parse --short HEAD)
+          BUILT_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "{\"version\":\"$VERSION\",\"sha\":\"$SHA\",\"built_at\":\"$BUILT_AT\"}" > dist/build-info.json
+
       - name: Push deploy branch
         run: |
           git config user.name "github-actions[bot]"
