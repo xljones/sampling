@@ -1,6 +1,7 @@
-class TubeRepository:
-    def __init__(self, db):
-        self.db = db
+from sampling.repositories.base import BaseRepository
+
+
+class TubeRepository(BaseRepository):
 
     def list_all(self):
         return self._rows(
@@ -264,10 +265,3 @@ class TubeRepository:
         """).fetchall()
         )
 
-    @staticmethod
-    def _row(r):
-        return dict(r) if r else None
-
-    @staticmethod
-    def _rows(rs):
-        return [dict(r) for r in rs]

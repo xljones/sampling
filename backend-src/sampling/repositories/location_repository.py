@@ -1,6 +1,7 @@
-class LocationRepository:
-    def __init__(self, db):
-        self.db = db
+from sampling.repositories.base import BaseRepository
+
+
+class LocationRepository(BaseRepository):
 
     def list_all(self):
         return self._rows(
@@ -53,10 +54,3 @@ class LocationRepository:
         self.db.execute("DELETE FROM locations WHERE id=?", (loc_id,))
         return True, None
 
-    @staticmethod
-    def _row(r):
-        return dict(r) if r else None
-
-    @staticmethod
-    def _rows(rs):
-        return [dict(r) for r in rs]
