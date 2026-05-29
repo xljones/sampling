@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../AuthContext.jsx';
-import { api } from '../api.js';
+import BuildInfo from './BuildInfo.jsx';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -8,9 +8,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [version, setVersion] = useState('');
-
-  useEffect(() => { api.version().then(d => setVersion(d.version)).catch(() => {}); }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -28,7 +25,7 @@ export default function LoginPage() {
   return (
     <div className="auth-wrap">
       <div className="card card-body auth-card">
-        <h1 className="auth-title">Dirt Nap{version && <em> v{version}</em>}</h1>
+        <h1 className="auth-title">Dirt Nap</h1>
         <p className="auth-tagline">The samples are at rest</p>
         <form onSubmit={handleSubmit}>
           <div className="form-grid full mb-4">
@@ -59,6 +56,7 @@ export default function LoginPage() {
           </button>
         </form>
       </div>
+      <BuildInfo className="auth-version" />
     </div>
   );
 }

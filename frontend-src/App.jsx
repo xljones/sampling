@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ToastProvider } from './components/Toast.jsx';
+import BuildInfo from './components/BuildInfo.jsx';
 import { AuthProvider, useAuth } from './AuthContext.jsx';
 import LoginPage from './components/LoginPage.jsx';
 import Dashboard from './components/Dashboard.jsx';
@@ -14,13 +15,9 @@ import LocationList from './components/LocationList.jsx';
 import LocationDetail from './components/LocationDetail.jsx';
 import UserList from './components/UserList.jsx';
 import AccountPage from './components/AccountPage.jsx';
-import { api } from './api.js';
 
 function Nav() {
   const { user, logout } = useAuth();
-  const [version, setVersion] = useState('');
-
-  useEffect(() => { api.version().then(d => setVersion(d.version)).catch(() => {}); }, []);
 
   return (
     <nav className="sidebar">
@@ -39,7 +36,7 @@ function Nav() {
         {!user?.is_readonly && <NavLink to="/users" className="sidebar-nav-btn">Users</NavLink>}
         <NavLink to="/account" className="sidebar-nav-btn">Change password</NavLink>
         <button className="sidebar-nav-btn" onClick={logout}>Sign out</button>
-        {version && <div className="sidebar-version">v{version}</div>}
+        <BuildInfo className="sidebar-version" />
       </div>
     </nav>
   );
@@ -48,10 +45,6 @@ function Nav() {
 function BottomNav() {
   const { user, logout } = useAuth();
   const [moreOpen, setMoreOpen] = useState(false);
-  const [version, setVersion] = useState('');
-
-  useEffect(() => { api.version().then(d => setVersion(d.version)).catch(() => {}); }, []);
-
   const closeMore = () => setMoreOpen(false);
 
   return (
@@ -68,7 +61,7 @@ function BottomNav() {
             <div className="sidebar-user">
               <div className="text-sm fw-600">{user?.username}</div>
               {user?.is_readonly && <div className="meta mt-2">read-only</div>}
-              {version && <div className="meta mt-2">v{version}</div>}
+              <BuildInfo className="meta mt-2" />
             </div>
             <button className="sidebar-nav-btn" onClick={logout}>Sign out</button>
           </div>
