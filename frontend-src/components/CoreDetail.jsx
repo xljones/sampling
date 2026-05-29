@@ -22,6 +22,7 @@ export default function CoreDetail() {
   const [showMap, setShowMap] = useState(false);
   const [showHistory, setShowHistory] = useState(true);
   const [history, setHistory] = useState(null);
+  const [hoveredTubeId, setHoveredTubeId] = useState(null);
 
   useEffect(() => {
     api.getCore(id).then(c => {
@@ -174,37 +175,6 @@ export default function CoreDetail() {
             </div>
 
             <div className="field">
-              <label className={editing ? 'field-label-row' : ''}>
-                Latitude
-                {editing && (
-                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowMap(v => !v)}>
-                    {showMap ? 'Hide map' : '📍 Pick on map'}
-                  </button>
-                )}
-              </label>
-              {editing
-                ? <input type="number" step="any" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="e.g. 56.82" />
-                : <span>{core.latitude ?? '—'}</span>}
-            </div>
-
-            <div className="field">
-              <label>Longitude</label>
-              {editing
-                ? <input type="number" step="any" value={form.longitude} onChange={e => set('longitude', e.target.value)} placeholder="e.g. 2.41" />
-                : <span>{core.longitude ?? '—'}</span>}
-            </div>
-
-            {editing && showMap && (
-              <div className="field span-2">
-                <MapPicker
-                  lat={form.latitude !== '' ? Number(form.latitude) : null}
-                  lng={form.longitude !== '' ? Number(form.longitude) : null}
-                  onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
-                />
-              </div>
-            )}
-
-            <div className="field">
               <label>Total depth (cm)</label>
               {editing
                 ? <input type="number" step="any" value={form.depth_cm} onChange={e => set('depth_cm', e.target.value)} placeholder="e.g. 300" />
@@ -253,8 +223,47 @@ export default function CoreDetail() {
         </form>
       </div>
 
-      {core.latitude != null && core.longitude != null && (
-        <LeafletMap points={[{ lat: core.latitude, lng: core.longitude, label: core.barcode }]} />
+
+
+      {(editing || core.latitude != null && core.longitude != null) && (
+        <div className="card mt-4">
+          <div className="card-body">
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div className="field" style={{ flex: 1 }}>
+                <label className={editing ? 'field-label-row' : ''}>
+                  Latitude
+                  {editing && (
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowMap(v => !v)}>
+                      {showMap ? 'Hide map' : '📍 Pick on map'}
+                    </button>
+                  )}
+                </label>
+                {editing
+                  ? <input type="number" step="any" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="e.g. 56.82" />
+                  : <span>{core.latitude ?? '—'}</span>}
+              </div>
+              <div className="field" style={{ flex: 1 }}>
+                <label>Longitude</label>
+                {editing
+                  ? <input type="number" step="any" value={form.longitude} onChange={e => set('longitude', e.target.value)} placeholder="e.g. 2.41" />
+                  : <span>{core.longitude ?? '—'}</span>}
+              </div>
+            </div>
+          </div>
+          {editing && showMap && (
+            <MapPicker
+              lat={form.latitude !== '' ? Number(form.latitude) : null}
+              lng={form.longitude !== '' ? Number(form.longitude) : null}
+              onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
+            />
+          )}
+          {!editing && core.latitude != null && core.longitude != null && (
+            <LeafletMap
+              points={[{ lat: core.latitude, lng: core.longitude, label: core.barcode }]}
+              className={null}
+            />
+          )}
+        </div>
       )}
 
       <div className="section-header mt-4">
@@ -275,9 +284,11 @@ export default function CoreDetail() {
                 <Link
                   key={t.id}
                   to={`/tubes/${t.id}?from=/cores/${id}`}
-                  className="core-depth-marker"
+                  className={`core-depth-marker${hoveredTubeId === t.id ? ' core-depth-marker--active' : ''}`}
                   style={{ left: `${Math.min(100, (t.depth_cm / core.depth_cm) * 100)}%` }}
-                  title={`${t.barcode} — ${t.depth_cm} cm`}
+                  data-tooltip={`${t.barcode} — ${t.depth_cm} cm`}
+                  onMouseEnter={() => setHoveredTubeId(t.id)}
+                  onMouseLeave={() => setHoveredTubeId(null)}
                 />
               ))
             }
@@ -293,12 +304,18 @@ export default function CoreDetail() {
             </thead>
             <tbody>
               {core.tubes?.map(t => (
-                <tr key={t.id} className="row-clickable" onClick={e => { if (!e.target.closest('a, button')) navigate(`/tubes/${t.id}?from=/cores/${id}`); }}>
+                <tr
+                  key={t.id}
+                  className={`row-clickable${hoveredTubeId === t.id ? ' row-selected' : ''}`}
+                  onClick={e => { if (!e.target.closest('a, button')) navigate(`/tubes/${t.id}?from=/cores/${id}`); }}
+                  onMouseEnter={() => setHoveredTubeId(t.id)}
+                  onMouseLeave={() => setHoveredTubeId(null)}
+                >
                   <td><Link to={`/tubes/${t.id}?from=/cores/${id}`}><span className="barcode">{t.barcode}</span></Link></td>
                   <td>{t.site_name || '—'}</td>
                   <td>{t.sample_type || '—'}</td>
                   <td>{t.depth_cm ?? '—'}</td>
-                  <td>{t.collection_date || '—'}</td>
+                  <td>{t.sample_date || '—'}</td>
                   <td>
                     <div className="row-actions">
                       {!ro && <Link to={`/tubes/${t.id}?edit=1&from=/cores/${id}`} className="btn btn-secondary btn-sm">Edit</Link>}

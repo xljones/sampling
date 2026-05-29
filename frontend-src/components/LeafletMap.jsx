@@ -1,4 +1,4 @@
-export default function LeafletMap({ points, height = 320 }) {
+export default function LeafletMap({ points, height = 320, className = 'card card-map mt-4' }) {
   if (!points.length) return null;
 
   const safePoints = JSON.stringify(points).replace(/<\/script>/gi, '<\\/script>');
@@ -21,15 +21,15 @@ else{map.fitBounds(L.featureGroup(markers).getBounds().pad(0.2));}
 </script>
 </body></html>`;
 
-  return (
-    <div className="card card-map mt-4">
-      <iframe
-        title="Map"
-        width="100%"
-        height={height}
-        className="iframe-clean"
-        srcDoc={html}
-      />
-    </div>
+  const iframe = (
+    <iframe
+      title="Map"
+      width="100%"
+      height={height}
+      className="iframe-clean"
+      srcDoc={html}
+    />
   );
+  if (className) return <div className={className}>{iframe}</div>;
+  return <div style={{ overflow: 'hidden', borderRadius: '0 0 var(--radius) var(--radius)' }}>{iframe}</div>;
 }

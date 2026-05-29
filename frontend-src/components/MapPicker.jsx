@@ -87,22 +87,24 @@ export default function MapPicker({ lat, lng, onChange }) {
 
   return (
     <div>
-      <div className="inline-form-sm mb-2">
-        <input
-          type="search"
-          value={search}
-          onChange={e => { setSearch(e.target.value); setNoResults(false); }}
-          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } }}
-          placeholder="Search for a location…"
-          autoComplete="off"
-          data-1p-ignore
-          className="barcode-input"
-        />
-        <button type="button" className="btn btn-secondary" disabled={searching || !search.trim()} onClick={handleSearch}>
-          {searching ? '…' : 'Search'}
-        </button>
+      <div style={{ padding: '0 16px' }}>
+        <div className="inline-form-sm mb-2">
+          <input
+            type="search"
+            value={search}
+            onChange={e => { setSearch(e.target.value); setNoResults(false); }}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } }}
+            placeholder="Search for a location…"
+            autoComplete="off"
+            data-1p-ignore
+            className="barcode-input"
+          />
+          <button type="button" className="btn btn-secondary" disabled={searching || !search.trim()} onClick={handleSearch}>
+            {searching ? '…' : 'Search'}
+          </button>
+        </div>
+        {noResults && <p className="form-error">No results found.</p>}
       </div>
-      {noResults && <p className="form-error">No results found.</p>}
       <div className="map-container">
         <iframe
           ref={iframeRef}
@@ -114,7 +116,7 @@ export default function MapPicker({ lat, lng, onChange }) {
           onLoad={handleLoad}
         />
       </div>
-      <p className="map-hint">Click the map or drag the pin to set coordinates.</p>
+      <p className="map-hint" style={{ padding: '4px 16px 8px' }}>Click the map or drag the pin to set coordinates.</p>
     </div>
   );
 }

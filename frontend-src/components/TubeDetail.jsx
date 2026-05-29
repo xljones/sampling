@@ -35,7 +35,7 @@ export default function TubeDetail() {
       if (searchParams.get('edit') === '1') {
         setForm({
           barcode: t.barcode, box_id: t.box_id ?? '', core_id: t.core_id ?? '',
-          collection_date: t.collection_date ?? '', site_name: t.site_name ?? '',
+          sample_date: t.sample_date ?? '', site_name: t.site_name ?? '',
           latitude: t.latitude ?? '', longitude: t.longitude ?? '',
           sample_type: t.sample_type ?? '', description: t.description ?? '',
           volume_ml: t.volume_ml ?? '', weight_g: t.weight_g ?? '', depth_cm: t.depth_cm ?? '',
@@ -62,7 +62,7 @@ export default function TubeDetail() {
   function startEditing() {
     setForm({
       barcode: tube.barcode, box_id: tube.box_id ?? '', core_id: tube.core_id ?? '',
-      collection_date: tube.collection_date ?? '', site_name: tube.site_name ?? '',
+      sample_date: tube.sample_date ?? '', site_name: tube.site_name ?? '',
       latitude: tube.latitude ?? '', longitude: tube.longitude ?? '',
       sample_type: tube.sample_type ?? '', description: tube.description ?? '',
       volume_ml: tube.volume_ml ?? '', weight_g: tube.weight_g ?? '', depth_cm: tube.depth_cm ?? '',
@@ -149,7 +149,7 @@ export default function TubeDetail() {
       barcode: tube.barcode,
       box_id: tube.box_id,
       core_id: tube.core_id,
-      collection_date: null, site_name: null,
+      sample_date: null, site_name: null,
       latitude: null, longitude: null,
       sample_type: null, description: null,
       volume_ml: null, weight_g: null, depth_cm: null,
@@ -193,9 +193,13 @@ export default function TubeDetail() {
     site_name:       res(tube.site_name,       tube.core_site_name),
     latitude:        res(tube.latitude,         tube.core_latitude),
     longitude:       res(tube.longitude,        tube.core_longitude),
-    collection_date: res(tube.collection_date,  tube.core_collection_date),
+    sample_date:     res(tube.sample_date,       null),
     sample_type:     res(tube.sample_type,      tube.core_sample_type),
   };
+  const inheritedFrom = tube.core_barcode
+    ? `From core: ${tube.core_barcode}${tube.core_name ? ` — ${tube.core_name}` : ''}`
+    : 'Inherited from core';
+
   const depthPct = (tube.core_total_depth != null && tube.depth_cm != null)
     ? Math.min(100, (tube.depth_cm / tube.core_total_depth) * 100) : null;
 
@@ -329,26 +333,18 @@ export default function TubeDetail() {
             </div>
 
             <div className="field">
-              <label className="field-label-row">
-                Collection date
-                {!editing && r.collection_date.inherited && <span className="badge badge-inherited">inherited</span>}
-              </label>
+              <label>Sample date</label>
               {editing ? (
-                <>
-                  <input type="date" value={form.collection_date} onChange={e => set('collection_date', e.target.value)} />
-                  {!form.collection_date && selectedCore?.collection_date && (
-                    <p className="form-hint muted">Inherits from core: {selectedCore.collection_date}</p>
-                  )}
-                </>
+                <input type="date" value={form.sample_date} onChange={e => set('sample_date', e.target.value)} />
               ) : (
-                <span>{r.collection_date.value || '—'}</span>
+                <span>{r.sample_date.value || '—'}</span>
               )}
             </div>
 
             <div className="field">
-              <label className="field-label-row">
+              <label className={editing ? 'field-label-row' : ''}>
                 Site name
-                {!editing && r.site_name.inherited && <span className="badge badge-inherited">inherited</span>}
+                {!editing && r.site_name.inherited && <span className="badge badge-inherited" data-tooltip={inheritedFrom}>inherited</span>}
               </label>
               {editing ? (
                 <>
@@ -363,9 +359,9 @@ export default function TubeDetail() {
             </div>
 
             <div className="field">
-              <label className="field-label-row">
+              <label className={editing ? 'field-label-row' : ''}>
                 Sample type
-                {!editing && r.sample_type.inherited && <span className="badge badge-inherited">inherited</span>}
+                {!editing && r.sample_type.inherited && <span className="badge badge-inherited" data-tooltip={inheritedFrom}>inherited</span>}
               </label>
               {editing ? (
                 <>
@@ -378,55 +374,6 @@ export default function TubeDetail() {
                 <span>{r.sample_type.value || '—'}</span>
               )}
             </div>
-
-            <div className="field">
-              <label className="field-label-row">
-                Latitude
-                {!editing && r.latitude.inherited && <span className="badge badge-inherited">inherited</span>}
-                {editing && (
-                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowMap(v => !v)}>
-                    {showMap ? 'Hide map' : '📍 Pick on map'}
-                  </button>
-                )}
-              </label>
-              {editing ? (
-                <>
-                  <input type="number" step="any" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="e.g. 39.0968" />
-                  {!form.latitude && selectedCore?.latitude != null && (
-                    <p className="form-hint muted">Inherits from core: {selectedCore.latitude}</p>
-                  )}
-                </>
-              ) : (
-                <span>{r.latitude.value ?? '—'}</span>
-              )}
-            </div>
-
-            <div className="field">
-              <label className="field-label-row">
-                Longitude
-                {!editing && r.longitude.inherited && <span className="badge badge-inherited">inherited</span>}
-              </label>
-              {editing ? (
-                <>
-                  <input type="number" step="any" value={form.longitude} onChange={e => set('longitude', e.target.value)} placeholder="e.g. -120.0324" />
-                  {!form.longitude && selectedCore?.longitude != null && (
-                    <p className="form-hint muted">Inherits from core: {selectedCore.longitude}</p>
-                  )}
-                </>
-              ) : (
-                <span>{r.longitude.value ?? '—'}</span>
-              )}
-            </div>
-
-            {editing && showMap && (
-              <div className="field span-2">
-                <MapPicker
-                  lat={form.latitude !== '' ? Number(form.latitude) : null}
-                  lng={form.longitude !== '' ? Number(form.longitude) : null}
-                  onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
-                />
-              </div>
-            )}
 
             <div className="field">
               <label>Depth in core (cm)</label>
@@ -487,8 +434,63 @@ export default function TubeDetail() {
         </form>
       </div>
 
-      {tube.latitude != null && tube.longitude != null && (
-        <LeafletMap points={[{ lat: tube.latitude, lng: tube.longitude, label: tube.barcode }]} />
+      {(editing || r.latitude.value != null && r.longitude.value != null) && (
+        <div className="card mt-4">
+          <div className="card-body">
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div className="field" style={{ flex: 1 }}>
+                <label className={editing ? 'field-label-row' : ''}>
+                  Latitude
+                  {!editing && r.latitude.inherited && <span className="badge badge-inherited" data-tooltip={inheritedFrom}>inherited</span>}
+                  {editing && (
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowMap(v => !v)}>
+                      {showMap ? 'Hide map' : '📍 Pick on map'}
+                    </button>
+                  )}
+                </label>
+                {editing ? (
+                  <>
+                    <input type="number" step="any" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="e.g. 39.0968" />
+                    {!form.latitude && selectedCore?.latitude != null && (
+                      <p className="form-hint muted">Inherits from core: {selectedCore.latitude}</p>
+                    )}
+                  </>
+                ) : (
+                  <span>{r.latitude.value ?? '—'}</span>
+                )}
+              </div>
+              <div className="field" style={{ flex: 1 }}>
+                <label className={editing ? 'field-label-row' : ''}>
+                  Longitude
+                  {!editing && r.longitude.inherited && <span className="badge badge-inherited" data-tooltip={inheritedFrom}>inherited</span>}
+                </label>
+                {editing ? (
+                  <>
+                    <input type="number" step="any" value={form.longitude} onChange={e => set('longitude', e.target.value)} placeholder="e.g. -120.0324" />
+                    {!form.longitude && selectedCore?.longitude != null && (
+                      <p className="form-hint muted">Inherits from core: {selectedCore.longitude}</p>
+                    )}
+                  </>
+                ) : (
+                  <span>{r.longitude.value ?? '—'}</span>
+                )}
+              </div>
+            </div>
+          </div>
+          {editing && showMap && (
+            <MapPicker
+              lat={form.latitude !== '' ? Number(form.latitude) : null}
+              lng={form.longitude !== '' ? Number(form.longitude) : null}
+              onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
+            />
+          )}
+          {!editing && r.latitude.value != null && r.longitude.value != null && (
+            <LeafletMap
+              points={[{ lat: r.latitude.value, lng: r.longitude.value, label: tube.barcode }]}
+              className={null}
+            />
+          )}
+        </div>
       )}
 
       <div className="mt-4">
@@ -519,7 +521,7 @@ export default function TubeDetail() {
                         {f('barcode', v.barcode, 'barcode')}
                         {f('box', v.box_barcode || '—', 'box_id')}
                         {f('core', v.core_barcode || '—', 'core_id')}
-                        {f('collected', v.collection_date || '—', 'collection_date')}
+                        {f('sampled', v.sample_date || '—', 'sample_date')}
                         {f('site', v.site_name || '—', 'site_name')}
                         {f('type', v.sample_type || '—', 'sample_type')}
                         {f('depth', v.depth_cm != null ? `${v.depth_cm} cm` : '—', 'depth_cm')}

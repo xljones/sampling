@@ -6,7 +6,7 @@ import BarcodeInput from './BarcodeInput.jsx';
 import MapPicker from './MapPicker.jsx';
 
 const EMPTY = {
-  barcode: '', box_id: '', core_id: '', collection_date: '', site_name: '',
+  barcode: '', box_id: '', core_id: '', sample_date: '', site_name: '',
   latitude: '', longitude: '', sample_type: '', description: '',
   volume_ml: '', weight_g: '', depth_cm: '',
 };
@@ -31,7 +31,6 @@ export default function TubeForm({ mode }) {
   const boxMatch = boxes.find(b => b.barcode.toLowerCase() === boxBarcode.toLowerCase());
   const boxNotFound = boxBarcode.length > 0 && !boxMatch;
   const coreMatch = cores.find(c => c.barcode.toLowerCase() === coreBarcode.toLowerCase());
-  const selectedCore = coreMatch || (form.core_id ? cores.find(c => String(c.id) === String(form.core_id)) : null);
   const coreNotFound = coreBarcode.length > 0 && !coreMatch;
 
   function handleBoxBarcodeChange(v) {
@@ -104,7 +103,7 @@ export default function TubeForm({ mode }) {
       api.getTube(id).then(t => {
         setForm({
           barcode: t.barcode, box_id: t.box_id ?? '', core_id: t.core_id ?? '',
-          collection_date: t.collection_date ?? '',
+          sample_date: t.sample_date ?? '',
           site_name: t.site_name ?? '', latitude: t.latitude ?? '', longitude: t.longitude ?? '',
           sample_type: t.sample_type ?? '', description: t.description ?? '',
           volume_ml: t.volume_ml ?? '', weight_g: t.weight_g ?? '', depth_cm: t.depth_cm ?? '',
@@ -244,8 +243,8 @@ export default function TubeForm({ mode }) {
             </div>
 
             <div className="field">
-              <label>Collection date</label>
-              <input type="date" value={form.collection_date} onChange={e => set('collection_date', e.target.value)} />
+              <label>Sample date</label>
+              <input type="date" value={form.sample_date} onChange={e => set('sample_date', e.target.value)} />
             </div>
 
             <div className="field">
@@ -257,31 +256,6 @@ export default function TubeForm({ mode }) {
               <label>Sample type</label>
               <input value={form.sample_type} onChange={e => set('sample_type', e.target.value)} placeholder="e.g. surface, freeze core…" />
             </div>
-
-            <div className="field">
-              <label className="field-label-row">
-                Latitude
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowMap(v => !v)}>
-                  {showMap ? 'Hide map' : '📍 Pick on map'}
-                </button>
-              </label>
-              <input type="number" step="any" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="e.g. 39.0968" />
-            </div>
-
-            <div className="field">
-              <label>Longitude</label>
-              <input type="number" step="any" value={form.longitude} onChange={e => set('longitude', e.target.value)} placeholder="e.g. -120.0324" />
-            </div>
-
-            {showMap && (
-              <div className="field span-2">
-                <MapPicker
-                  lat={form.latitude !== '' ? Number(form.latitude) : null}
-                  lng={form.longitude !== '' ? Number(form.longitude) : null}
-                  onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
-                />
-              </div>
-            )}
 
             <div className="field">
               <label>Depth in core (cm)</label>
@@ -311,6 +285,33 @@ export default function TubeForm({ mode }) {
             <button type="button" className="btn btn-secondary" onClick={() => navigate(-1)}>Cancel</button>
           </div>
         </form>
+      </div>
+
+      <div className="card mt-4">
+        <div className="card-body">
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <div className="field" style={{ flex: 1 }}>
+              <label className="field-label-row">
+                Latitude
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowMap(v => !v)}>
+                  {showMap ? 'Hide map' : '📍 Pick on map'}
+                </button>
+              </label>
+              <input type="number" step="any" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="e.g. 39.0968" />
+            </div>
+            <div className="field" style={{ flex: 1 }}>
+              <label>Longitude</label>
+              <input type="number" step="any" value={form.longitude} onChange={e => set('longitude', e.target.value)} placeholder="e.g. -120.0324" />
+            </div>
+          </div>
+        </div>
+        {showMap && (
+          <MapPicker
+            lat={form.latitude !== '' ? Number(form.latitude) : null}
+            lng={form.longitude !== '' ? Number(form.longitude) : null}
+            onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
+          />
+        )}
       </div>
     </div>
   );
