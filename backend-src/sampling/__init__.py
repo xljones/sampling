@@ -96,8 +96,8 @@ def create_app():
     @app.get("/api/version")
     def version():
         try:
-            if tomllib is None:
-                raise RuntimeError("no toml parser available")
+            if tomllib is None or _PYPROJECT is None:
+                raise RuntimeError("no toml parser or pyproject.toml not found")
             with open(_PYPROJECT, "rb") as f:
                 v = tomllib.load(f)["project"]["version"]
         except Exception:
