@@ -355,14 +355,21 @@ def cmd_reset_db(_):
     from sampling.db import get_db, run_migrations
     run_migrations()
     with get_db() as db:
-        db.execute("DELETE FROM tube_history")
-        db.execute("DELETE FROM box_history")
-        db.execute("DELETE FROM core_history")
-        db.execute("DELETE FROM tubes")
-        db.execute("DELETE FROM boxes")
-        db.execute("DELETE FROM cores")
-        db.execute("DELETE FROM locations")
-        db.execute("DELETE FROM sqlite_sequence WHERE name IN ('tubes','boxes','cores','tube_history','box_history','core_history','locations')")
+        def clear(table):
+            exists = db.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)
+            ).fetchone()
+            if exists:
+                db.execute(f"DELETE FROM {table}")
+
+        clear("tube_history")
+        clear("box_history")
+        clear("core_history")
+        clear("tubes")
+        clear("boxes")
+        clear("cores")
+        clear("locations")
+        clear("sqlite_sequence")
     print("Database reset. Users preserved.")
 
 
