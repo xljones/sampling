@@ -6,7 +6,7 @@ import BarcodeInput from './BarcodeInput.jsx';
 import MapPicker from './MapPicker.jsx';
 
 const EMPTY = {
-  barcode: '', box_id: '', collection_date: '', site_name: '',
+  barcode: '', box_id: '', core_id: '', collection_date: '', site_name: '',
   latitude: '', longitude: '', sample_type: '', description: '',
   volume_ml: '', weight_g: '', depth_cm: '',
 };
@@ -16,17 +16,23 @@ export default function TubeForm({ mode }) {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();
-  const [form, setForm] = useState({ ...EMPTY, box_id: params.get('box_id') ?? '', barcode: params.get('barcode') ?? '' });
+  const [form, setForm] = useState({ ...EMPTY, box_id: params.get('box_id') ?? '', core_id: params.get('core_id') ?? '', barcode: params.get('barcode') ?? '' });
   const [boxes, setBoxes] = useState([]);
+  const [cores, setCores] = useState([]);
   const [saving, setSaving] = useState(false);
   const [boxMode, setBoxMode] = useState('scan');
+  const [coreMode, setCoreMode] = useState('scan');
   const [showMap, setShowMap] = useState(false);
   const [boxBarcode, setBoxBarcode] = useState('');
+  const [coreBarcode, setCoreBarcode] = useState('');
   const [creatingBox, setCreatingBox] = useState(false);
   const isEdit = mode === 'edit';
 
   const boxMatch = boxes.find(b => b.barcode.toLowerCase() === boxBarcode.toLowerCase());
   const boxNotFound = boxBarcode.length > 0 && !boxMatch;
+  const coreMatch = cores.find(c => c.barcode.toLowerCase() === coreBarcode.toLowerCase());
+  const selectedCore = coreMatch || (form.core_id ? cores.find(c => String(c.id) === String(form.core_id)) : null);
+  const coreNotFound = coreBarcode.length > 0 && !coreMatch;
 
   function handleBoxBarcodeChange(v) {
     setBoxBarcode(v);
@@ -34,10 +40,22 @@ export default function TubeForm({ mode }) {
     set('box_id', match ? match.id : '');
   }
 
+  function handleCoreBarcodeChange(v) {
+    setCoreBarcode(v);
+    const match = cores.find(c => c.barcode.toLowerCase() === v.toLowerCase());
+    set('core_id', match ? match.id : '');
+  }
+
   function switchToScan() {
     const selected = boxes.find(b => String(b.id) === String(form.box_id));
     setBoxBarcode(selected?.barcode ?? '');
     setBoxMode('scan');
+  }
+
+  function switchCoreToScan() {
+    const selected = cores.find(c => String(c.id) === String(form.core_id));
+    setCoreBarcode(selected?.barcode ?? '');
+    setCoreMode('scan');
   }
 
   async function handleCreateBox() {
@@ -57,10 +75,27 @@ export default function TubeForm({ mode }) {
   useEffect(() => {
     api.getBoxes().then(bs => {
       setBoxes(bs);
-      const presetId = params.get('box_id');
-      if (presetId) {
-        const match = bs.find(b => String(b.id) === presetId);
+      const presetBoxId = params.get('box_id');
+      if (presetBoxId) {
+        const match = bs.find(b => String(b.id) === presetBoxId);
         if (match) setBoxBarcode(match.barcode);
+      }
+    });
+    api.getCores().then(cs => {
+      setCores(cs);
+      const presetCoreId = params.get('core_id');
+      if (presetCoreId) {
+        const match = cs.find(c => String(c.id) === presetCoreId);
+        if (match) {
+          setCoreBarcode(match.barcode);
+          setForm(f => ({
+            ...f,
+            core_id: match.id,
+            ...(match.latitude != null ? { latitude: match.latitude } : {}),
+            ...(match.longitude != null ? { longitude: match.longitude } : {}),
+            ...(match.site_name ? { site_name: match.site_name } : {}),
+          }));
+        }
       }
     });
   }, [params]);
@@ -68,12 +103,14 @@ export default function TubeForm({ mode }) {
     if (isEdit && id) {
       api.getTube(id).then(t => {
         setForm({
-          barcode: t.barcode, box_id: t.box_id ?? '', collection_date: t.collection_date ?? '',
+          barcode: t.barcode, box_id: t.box_id ?? '', core_id: t.core_id ?? '',
+          collection_date: t.collection_date ?? '',
           site_name: t.site_name ?? '', latitude: t.latitude ?? '', longitude: t.longitude ?? '',
           sample_type: t.sample_type ?? '', description: t.description ?? '',
           volume_ml: t.volume_ml ?? '', weight_g: t.weight_g ?? '', depth_cm: t.depth_cm ?? '',
         });
         if (t.box_barcode) setBoxBarcode(t.box_barcode);
+        if (t.core_barcode) setCoreBarcode(t.core_barcode);
       });
     }
   }, [isEdit, id]);
@@ -88,6 +125,7 @@ export default function TubeForm({ mode }) {
       const body = {
         ...form,
         box_id: form.box_id === '' ? null : Number(form.box_id),
+        core_id: form.core_id === '' ? null : Number(form.core_id),
         latitude: num(form.latitude), longitude: num(form.longitude),
         volume_ml: num(form.volume_ml), weight_g: num(form.weight_g), depth_cm: num(form.depth_cm),
       };
@@ -172,6 +210,35 @@ export default function TubeForm({ mode }) {
                       </button>
                     </p>
                   )}
+                </>
+              )}
+            </div>
+
+            <div className="field">
+              <label className="field-label-row">
+                Core
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => coreMode === 'select' ? switchCoreToScan() : setCoreMode('select')}
+                >
+                  {coreMode === 'select' ? 'Scan barcode' : 'Choose from list'}
+                </button>
+              </label>
+              {coreMode === 'select' ? (
+                <select value={form.core_id} onChange={e => set('core_id', e.target.value)}>
+                  <option value="">— None —</option>
+                  {cores.map(c => <option key={c.id} value={c.id}>{c.barcode}{c.name ? ` — ${c.name}` : ''}</option>)}
+                </select>
+              ) : (
+                <>
+                  <BarcodeInput
+                    value={coreBarcode}
+                    onChange={handleCoreBarcodeChange}
+                    placeholder="Scan or type core barcode"
+                  />
+                  {coreMatch && <p className="form-hint accent">✓ {coreMatch.barcode}{coreMatch.name ? ` — ${coreMatch.name}` : ''}</p>}
+                  {coreNotFound && <p className="form-hint muted">Core not found.</p>}
                 </>
               )}
             </div>

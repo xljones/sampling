@@ -19,8 +19,11 @@ export default function TubeDetail() {
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
   const [boxes, setBoxes] = useState([]);
+  const [cores, setCores] = useState([]);
   const [boxMode, setBoxMode] = useState('scan');
+  const [coreMode, setCoreMode] = useState('scan');
   const [boxBarcode, setBoxBarcode] = useState('');
+  const [coreBarcode, setCoreBarcode] = useState('');
   const [creatingBox, setCreatingBox] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [showHistory, setShowHistory] = useState(true);
@@ -31,32 +34,43 @@ export default function TubeDetail() {
       setTube(t);
       if (searchParams.get('edit') === '1') {
         setForm({
-          barcode: t.barcode, box_id: t.box_id ?? '',
+          barcode: t.barcode, box_id: t.box_id ?? '', core_id: t.core_id ?? '',
           collection_date: t.collection_date ?? '', site_name: t.site_name ?? '',
           latitude: t.latitude ?? '', longitude: t.longitude ?? '',
           sample_type: t.sample_type ?? '', description: t.description ?? '',
           volume_ml: t.volume_ml ?? '', weight_g: t.weight_g ?? '', depth_cm: t.depth_cm ?? '',
         });
         setBoxBarcode(t.box_barcode ?? '');
+        setCoreBarcode(t.core_barcode ?? '');
       }
     });
   }, [id, searchParams]);
   useEffect(() => { api.getTubeHistory(id).then(setHistory); }, [id]);
-  useEffect(() => { if (editing) api.getBoxes().then(setBoxes); }, [editing]);
+  useEffect(() => {
+    if (editing) {
+      api.getBoxes().then(setBoxes);
+      api.getCores().then(setCores);
+    }
+  }, [editing]);
 
   const boxMatch = boxes.find(b => b.barcode.toLowerCase() === boxBarcode.toLowerCase());
   const boxNotFound = boxBarcode.length > 0 && !boxMatch;
+  const coreMatch = cores.find(c => c.barcode.toLowerCase() === coreBarcode.toLowerCase());
+  const selectedCore = coreMatch || (form.core_id ? cores.find(c => String(c.id) === String(form.core_id)) : null);
+  const coreNotFound = coreBarcode.length > 0 && !coreMatch;
 
   function startEditing() {
     setForm({
-      barcode: tube.barcode, box_id: tube.box_id ?? '',
+      barcode: tube.barcode, box_id: tube.box_id ?? '', core_id: tube.core_id ?? '',
       collection_date: tube.collection_date ?? '', site_name: tube.site_name ?? '',
       latitude: tube.latitude ?? '', longitude: tube.longitude ?? '',
       sample_type: tube.sample_type ?? '', description: tube.description ?? '',
       volume_ml: tube.volume_ml ?? '', weight_g: tube.weight_g ?? '', depth_cm: tube.depth_cm ?? '',
     });
     setBoxBarcode(tube.box_barcode ?? '');
+    setCoreBarcode(tube.core_barcode ?? '');
     setBoxMode('scan');
+    setCoreMode('scan');
     setShowMap(false);
     setEditing(true);
   }
@@ -72,10 +86,22 @@ export default function TubeDetail() {
     setForm(f => ({ ...f, box_id: match ? match.id : '' }));
   }
 
+  function handleCoreBarcodeChange(v) {
+    setCoreBarcode(v);
+    const match = cores.find(c => c.barcode.toLowerCase() === v.toLowerCase());
+    setForm(f => ({ ...f, core_id: match ? match.id : '' }));
+  }
+
   function switchToScan() {
     const selected = boxes.find(b => String(b.id) === String(form.box_id));
     setBoxBarcode(selected?.barcode ?? '');
     setBoxMode('scan');
+  }
+
+  function switchCoreToScan() {
+    const selected = cores.find(c => String(c.id) === String(form.core_id));
+    setCoreBarcode(selected?.barcode ?? '');
+    setCoreMode('scan');
   }
 
   async function handleCreateBox() {
@@ -100,6 +126,7 @@ export default function TubeDetail() {
       const body = {
         ...form,
         box_id: form.box_id === '' ? null : Number(form.box_id),
+        core_id: form.core_id === '' ? null : Number(form.core_id),
         latitude: num(form.latitude), longitude: num(form.longitude),
         volume_ml: num(form.volume_ml), weight_g: num(form.weight_g), depth_cm: num(form.depth_cm),
       };
@@ -117,10 +144,11 @@ export default function TubeDetail() {
   }
 
   async function handleClear() {
-    if (!confirm(`Clear all details from tube ${tube.barcode}? The tube and its box assignment will be kept, but all sample data will be permanently erased.`)) return;
+    if (!confirm(`Clear all details from tube ${tube.barcode}? The tube and its box/core assignment will be kept, but all sample data will be permanently erased.`)) return;
     const updated = await api.updateTube(id, {
       barcode: tube.barcode,
       box_id: tube.box_id,
+      core_id: tube.core_id,
       collection_date: null, site_name: null,
       latitude: null, longitude: null,
       sample_type: null, description: null,
@@ -153,6 +181,23 @@ export default function TubeDetail() {
   if (!tube) return <p className="loading">Loading…</p>;
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  // Returns { value, inherited } — tube's own value takes precedence; null falls back to core.
+  function res(tubeVal, coreVal) {
+    if (tubeVal != null) return { value: tubeVal, inherited: false };
+    if (tube.core_id && coreVal != null) return { value: coreVal, inherited: true };
+    return { value: null, inherited: false };
+  }
+
+  const r = {
+    site_name:       res(tube.site_name,       tube.core_site_name),
+    latitude:        res(tube.latitude,         tube.core_latitude),
+    longitude:       res(tube.longitude,        tube.core_longitude),
+    collection_date: res(tube.collection_date,  tube.core_collection_date),
+    sample_type:     res(tube.sample_type,      tube.core_sample_type),
+  };
+  const depthPct = (tube.core_total_depth != null && tube.depth_cm != null)
+    ? Math.min(100, (tube.depth_cm / tube.core_total_depth) * 100) : null;
 
   return (
     <div>
@@ -242,45 +287,135 @@ export default function TubeDetail() {
             </div>
 
             <div className="field">
-              <label>Collection date</label>
-              {editing
-                ? <input type="date" value={form.collection_date} onChange={e => set('collection_date', e.target.value)} />
-                : <span>{tube.collection_date || '—'}</span>}
-            </div>
-
-            <div className="field">
-              <label>Site name</label>
-              {editing
-                ? <input value={form.site_name} onChange={e => set('site_name', e.target.value)} placeholder="e.g. Lake Tahoe core 3" />
-                : <span>{tube.site_name || '—'}</span>}
-            </div>
-
-            <div className="field">
-              <label>Sample type</label>
-              {editing
-                ? <input value={form.sample_type} onChange={e => set('sample_type', e.target.value)} placeholder="e.g. surface, freeze core…" />
-                : <span>{tube.sample_type || '—'}</span>}
-            </div>
-
-            <div className="field">
               <label className={editing ? 'field-label-row' : ''}>
+                Core
+                {editing && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => coreMode === 'select' ? switchCoreToScan() : setCoreMode('select')}
+                  >
+                    {coreMode === 'select' ? 'Scan barcode' : 'Choose from list'}
+                  </button>
+                )}
+              </label>
+              {editing ? (
+                <>
+                  {coreMode === 'select' ? (
+                    <select value={form.core_id} onChange={e => set('core_id', e.target.value)}>
+                      <option value="">— None —</option>
+                      {cores.map(c => <option key={c.id} value={c.id}>{c.barcode}{c.name ? ` — ${c.name}` : ''}</option>)}
+                    </select>
+                  ) : (
+                    <>
+                      <BarcodeInput value={coreBarcode} onChange={handleCoreBarcodeChange} placeholder="Scan or type core barcode" />
+                      {coreMatch && <p className="form-hint accent">✓ {coreMatch.barcode}{coreMatch.name ? ` — ${coreMatch.name}` : ''}</p>}
+                      {coreNotFound && <p className="form-hint muted">Core not found.</p>}
+                    </>
+                  )}
+                </>
+              ) : (
+                tube.core_id ? (
+                  <>
+                    <Link to={`/cores/${tube.core_id}`}>
+                      <span className="barcode">{tube.core_barcode}</span>{tube.core_name ? ` — ${tube.core_name}` : ''}
+                    </Link>
+                    {tube.core_location_name && (
+                      <div className="meta">{tube.core_location_name}</div>
+                    )}
+                  </>
+                ) : <span>—</span>
+              )}
+            </div>
+
+            <div className="field">
+              <label className="field-label-row">
+                Collection date
+                {!editing && r.collection_date.inherited && <span className="badge badge-inherited">inherited</span>}
+              </label>
+              {editing ? (
+                <>
+                  <input type="date" value={form.collection_date} onChange={e => set('collection_date', e.target.value)} />
+                  {!form.collection_date && selectedCore?.collection_date && (
+                    <p className="form-hint muted">Inherits from core: {selectedCore.collection_date}</p>
+                  )}
+                </>
+              ) : (
+                <span>{r.collection_date.value || '—'}</span>
+              )}
+            </div>
+
+            <div className="field">
+              <label className="field-label-row">
+                Site name
+                {!editing && r.site_name.inherited && <span className="badge badge-inherited">inherited</span>}
+              </label>
+              {editing ? (
+                <>
+                  <input value={form.site_name} onChange={e => set('site_name', e.target.value)} placeholder="e.g. Lake Tahoe core 3" />
+                  {!form.site_name && selectedCore?.site_name && (
+                    <p className="form-hint muted">Inherits from core: {selectedCore.site_name}</p>
+                  )}
+                </>
+              ) : (
+                <span>{r.site_name.value || '—'}</span>
+              )}
+            </div>
+
+            <div className="field">
+              <label className="field-label-row">
+                Sample type
+                {!editing && r.sample_type.inherited && <span className="badge badge-inherited">inherited</span>}
+              </label>
+              {editing ? (
+                <>
+                  <input value={form.sample_type} onChange={e => set('sample_type', e.target.value)} placeholder="e.g. surface, freeze core…" />
+                  {!form.sample_type && selectedCore?.sample_type && (
+                    <p className="form-hint muted">Inherits from core: {selectedCore.sample_type}</p>
+                  )}
+                </>
+              ) : (
+                <span>{r.sample_type.value || '—'}</span>
+              )}
+            </div>
+
+            <div className="field">
+              <label className="field-label-row">
                 Latitude
+                {!editing && r.latitude.inherited && <span className="badge badge-inherited">inherited</span>}
                 {editing && (
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowMap(v => !v)}>
                     {showMap ? 'Hide map' : '📍 Pick on map'}
                   </button>
                 )}
               </label>
-              {editing
-                ? <input type="number" step="any" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="e.g. 39.0968" />
-                : <span>{tube.latitude ?? '—'}</span>}
+              {editing ? (
+                <>
+                  <input type="number" step="any" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="e.g. 39.0968" />
+                  {!form.latitude && selectedCore?.latitude != null && (
+                    <p className="form-hint muted">Inherits from core: {selectedCore.latitude}</p>
+                  )}
+                </>
+              ) : (
+                <span>{r.latitude.value ?? '—'}</span>
+              )}
             </div>
 
             <div className="field">
-              <label>Longitude</label>
-              {editing
-                ? <input type="number" step="any" value={form.longitude} onChange={e => set('longitude', e.target.value)} placeholder="e.g. -120.0324" />
-                : <span>{tube.longitude ?? '—'}</span>}
+              <label className="field-label-row">
+                Longitude
+                {!editing && r.longitude.inherited && <span className="badge badge-inherited">inherited</span>}
+              </label>
+              {editing ? (
+                <>
+                  <input type="number" step="any" value={form.longitude} onChange={e => set('longitude', e.target.value)} placeholder="e.g. -120.0324" />
+                  {!form.longitude && selectedCore?.longitude != null && (
+                    <p className="form-hint muted">Inherits from core: {selectedCore.longitude}</p>
+                  )}
+                </>
+              ) : (
+                <span>{r.longitude.value ?? '—'}</span>
+              )}
             </div>
 
             {editing && showMap && (
@@ -322,6 +457,21 @@ export default function TubeDetail() {
                 ? <textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Any additional notes…" />
                 : <span className="pre-wrap">{tube.description || '—'}</span>}
             </div>
+
+            {!editing && tube.core_id && tube.depth_cm != null && (
+              <div className="field span-2">
+                <label>Position in core</label>
+                <div className="core-depth-ends">
+                  <span>Top (0 cm)</span>
+                  <span>{tube.core_total_depth != null ? `Bottom (${tube.core_total_depth} cm)` : 'Bottom'}</span>
+                </div>
+                <div className="core-depth-track">
+                  {depthPct != null && <div className="core-depth-fill" style={{ width: `${depthPct}%` }} />}
+                  <div className="core-depth-marker" style={{ left: depthPct != null ? `${depthPct}%` : '0%' }} />
+                </div>
+                <div className="core-depth-label">{tube.depth_cm} cm depth</div>
+              </div>
+            )}
 
             <div className="field">
               <label>Created (UTC)</label>
@@ -368,6 +518,7 @@ export default function TubeDetail() {
                       <div className="history-fields">
                         {f('barcode', v.barcode, 'barcode')}
                         {f('box', v.box_barcode || '—', 'box_id')}
+                        {f('core', v.core_barcode || '—', 'core_id')}
                         {f('collected', v.collection_date || '—', 'collection_date')}
                         {f('site', v.site_name || '—', 'site_name')}
                         {f('type', v.sample_type || '—', 'sample_type')}
