@@ -347,30 +347,29 @@ def cmd_delete_user(args):
     print(f"User '{username}' deleted.")
 
 
-def cmd_reset_db(_):
-    confirm = input("This will delete all boxes, tubes, locations, and history (users kept). Type YES to confirm: ")
+def cmd_reset_db(args):
+    drop_all = "all" in args
+    if drop_all:
+        msg = "This will drop ALL tables including users. Type YES to confirm: "
+    else:
+        msg = "This will drop all tables except users. Type YES to confirm: "
+    confirm = input(msg)
     if confirm.strip() != "YES":
         print("Aborted.")
         sys.exit(0)
-    from sampling.db import get_db, run_migrations
-    run_migrations()
+    from sampling.db import get_db
     with get_db() as db:
-        def clear(table):
-            exists = db.execute(
-                "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)
-            ).fetchone()
-            if exists:
-                db.execute(f"DELETE FROM {table}")
-
-        clear("tube_history")
-        clear("box_history")
-        clear("core_history")
-        clear("tubes")
-        clear("boxes")
-        clear("cores")
-        clear("locations")
-        clear("sqlite_sequence")
-    print("Database reset. Users preserved.")
+        tables = [
+            "tube_history", "box_history", "core_history",
+            "tubes", "boxes", "cores", "locations",
+            "schema_migrations",
+        ]
+        if drop_all:
+            tables.append("users")
+        for table in tables:
+            db.execute(f"DROP TABLE IF EXISTS {table}")
+    suffix = "" if drop_all else " Users preserved."
+    print(f"Tables dropped.{suffix} Run seed to repopulate.")
 
 
 COMMANDS = {
