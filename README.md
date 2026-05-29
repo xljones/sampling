@@ -3,7 +3,7 @@
 [![CI](https://github.com/xljones/sampling/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/xljones/sampling/actions/workflows/ci.yml)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-A local web app for cataloguing sediment samples. Samples are stored in tubes, tubes are stored in boxes, and both are identified by barcodes.
+A local web app for cataloguing sediment samples. Tubes are stored in boxes; cores are standalone sediment column samples. All entities are identified by barcodes.
 
 ## Features
 
@@ -55,7 +55,7 @@ backend-src/           Python backend
     migrations/        Versioned SQL files
     domain/            Box, Tube, User dataclasses
     repositories/      All SQL per entity
-    routes/            Flask Blueprints (boxes, tubes, scan, export, auth)
+    routes/            Flask Blueprints (boxes, cores, tubes, scan, export, auth, locations, users)
 
 frontend-src/          React + Vite frontend
   App.jsx              Router and auth shell

@@ -20,9 +20,9 @@ sampling/
   __init__.py        create_app() factory; registers blueprints, before_request auth guard
   db.py              get_db(), run_migrations() — migration runner reads migrations/*.sql
   migrations/        Numbered SQL files (001_initial.sql, 002_add_users.sql, …)
-  domain/            Plain dataclasses: Box, Tube, User, Location
-  repositories/      BoxRepository, TubeRepository, UserRepository, LocationRepository — own all SQL
-  routes/            Flask Blueprints: boxes, tubes, scan, export, auth, locations
+  domain/            Plain dataclasses: Box, Core, Tube, User, Location
+  repositories/      BoxRepository, CoreRepository, TubeRepository, UserRepository, LocationRepository — own all SQL
+  routes/            Flask Blueprints: boxes, cores, tubes, scan, export, auth, locations, users
 ```
 
 - **Adding a schema change:** drop a new `NNN_description.sql` in `migrations/`. It runs automatically on next startup and is recorded in `schema_migrations`.
@@ -35,9 +35,11 @@ sampling/
 App.jsx              Shell: checks auth state, renders LoginPage or the main layout
 AuthContext.jsx      Provides user, login(), logout() via React context
 api.js               Thin fetch wrapper; all calls use credentials: 'include'
-components/          One file per page: Dashboard, BoxList, BoxDetail, TubeList,
-                     TubeDetail, TubeForm, ScanPage, LoginPage, LocationList
-                     Shared: BarcodeInput, CameraScanner, Toast
+components/          Pages: Dashboard, BoxList, BoxDetail, TubeList, TubeDetail,
+                     TubeForm, CoreList, CoreDetail, ScanPage, LoginPage,
+                     LocationList, LocationDetail, AccountPage, UserList
+                     Shared: BarcodeInput, CameraScanner, LeafletMap, MapPicker,
+                     BuildInfo, Toast
 ```
 
 - **BarcodeInput** — composes manual text input + camera toggle; USB scanners work natively as keyboard wedge.
@@ -53,7 +55,7 @@ make build        # rebuild images (needed after requirements.txt or Dockerfile 
 make create-user username=x password=y
 make list-users
 make seed         # populate with sample data (~15 boxes, ~53 tubes)
-make reset-db     # delete all boxes, tubes, locations, and history (users kept)
+make reset-db     # delete all boxes, cores, tubes, locations, and history (users kept)
 ```
 
 The database is at `data/samples.db` (bind-mounted into the backend container).

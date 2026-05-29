@@ -21,7 +21,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Create your user account
+### 3. Create your user account
 
 ```bash
 make create-user username=<username> password=<password>
@@ -33,7 +33,7 @@ To list existing users at any time:
 make list-users
 ```
 
-### 5. Create the `.env` file
+### 4. Create the `.env` file
 
 ```bash
 echo "SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_hex(32))')" > .env
@@ -42,7 +42,7 @@ echo "FLASK_DEBUG=0" >> .env
 
 This file is gitignored and will not be overwritten by `make deploy-pa`.
 
-### 6. Configure the web app
+### 5. Configure the web app
 
 In the **PythonAnywhere Web tab**:
 
@@ -54,7 +54,7 @@ In the **PythonAnywhere Web tab**:
 
 **WSGI configuration file** — replace the entire contents with the contents of `pa_wsgi.py` from the repo.
 
-### 7. Reload
+### 6. Reload
 
 Hit **Reload** in the Web tab. The app will be live at `https://<you>.pythonanywhere.com`.
 
@@ -82,7 +82,7 @@ All commands below work on both PythonAnywhere and locally — they auto-detect 
 
 ```bash
 make seed         # populate with sample data (~15 boxes, ~53 tubes)
-make reset-db     # delete all boxes, tubes, and history (users kept)
+make reset-db     # delete all boxes, cores, tubes, locations, and history (users kept)
 make create-user username=x password=y
 make list-users
 ```
