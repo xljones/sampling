@@ -8,7 +8,13 @@ export default function LeafletMap({ points, height = 320, className = 'card car
 <html><head>
 <meta charset="utf-8"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<style>body{margin:0}#map{height:100vh;width:100%}</style>
+<style>
+body{margin:0}
+#map{height:100vh;width:100%}
+.legend{position:absolute;bottom:20px;right:10px;background:white;padding:6px 10px;border-radius:4px;box-shadow:0 1px 5px rgba(0,0,0,.4);font-size:12px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;z-index:1000;line-height:1.8}
+.legend-row{display:flex;align-items:center;gap:6px}
+.legend-dot{width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 0 0 1px rgba(0,0,0,.25);flex-shrink:0}
+</style>
 </head><body>
 <div id="map"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -26,8 +32,8 @@ if(pts.length===1){map.setView([pts[0].lat,pts[0].lng],13);}
 else{map.fitBounds(L.featureGroup(markers).getBounds().pad(0.2));}
 if(legend.length>1){
   const div=document.createElement('div');
-  div.style.cssText='position:absolute;bottom:20px;right:10px;background:white;padding:6px 10px;border-radius:4px;box-shadow:0 1px 5px rgba(0,0,0,.4);font-size:12px;z-index:1000;line-height:1.8';
-  div.innerHTML=legend.map(l=>'<div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;border-radius:50%;background:'+l.color+';border:2px solid white;box-shadow:0 0 0 1px rgba(0,0,0,.25);flex-shrink:0"></div>'+l.label+'</div>').join('');
+  div.className='legend';
+  div.innerHTML=legend.map(l=>'<div class="legend-row"><div class="legend-dot" style="background:'+l.color+'"></div>'+l.label+'</div>').join('');
   document.body.appendChild(div);
 }
 </script>
