@@ -19,6 +19,7 @@ export default function Dashboard() {
 
   const CORE_COLOR = '#f97316';
   const TUBE_COLOR = '#3b82f6';
+  const TUBE_OWN_COLOR = '#22c55e';
 
   const mappable = [
     ...cores
@@ -27,11 +28,15 @@ export default function Dashboard() {
     ...tubes
       .filter(t => t.core_id == null && t.latitude != null && t.longitude != null)
       .map(t => ({ lat: t.latitude, lng: t.longitude, label: t.barcode + (t.site_name ? ` — ${t.site_name}` : ''), url: `/tubes/${t.id}`, color: TUBE_COLOR })),
+    ...tubes
+      .filter(t => t.core_id != null && t.latitude != null && t.longitude != null)
+      .map(t => ({ lat: t.latitude, lng: t.longitude, label: t.barcode + (t.site_name ? ` — ${t.site_name}` : ''), url: `/tubes/${t.id}`, color: TUBE_OWN_COLOR })),
   ];
 
   const legend = [
     ...(cores.some(c => c.latitude != null) ? [{ color: CORE_COLOR, label: 'Cores' }] : []),
     ...(tubes.some(t => t.core_id == null && t.latitude != null) ? [{ color: TUBE_COLOR, label: 'Tubes (no core)' }] : []),
+    ...(tubes.some(t => t.core_id != null && t.latitude != null) ? [{ color: TUBE_OWN_COLOR, label: 'Tubes (own coords)' }] : []),
   ];
 
   return (
