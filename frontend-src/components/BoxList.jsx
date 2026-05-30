@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
+import RelativeTime from './RelativeTime.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 
 export default function BoxList() {
@@ -133,7 +134,7 @@ export default function BoxList() {
                   <td>{b.name || '—'}</td>
                   <td>{b.location_name || '—'}</td>
                   <td>{b.tube_count}</td>
-                  <td className="col-mobile-hide text-muted">{b.updated_at?.slice(0, 10)}</td>
+                  <td className="col-mobile-hide text-muted"><RelativeTime value={b.updated_at} /></td>
                   <td className="col-shrink">
                     <div className="row-actions">
                       {!ro && <Link to={`/boxes/${b.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>}

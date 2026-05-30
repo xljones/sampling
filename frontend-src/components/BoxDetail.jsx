@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
+import RelativeTime from './RelativeTime.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 import LeafletMap from './LeafletMap.jsx';
 
@@ -157,12 +158,12 @@ export default function BoxDetail() {
                 : <span>{box.notes || '—'}</span>}
             </div>
             <div className="field">
-              <label>Created (UTC)</label>
-              <span>{box.created_at}</span>
+              <label>Created</label>
+              <span><RelativeTime value={box.created_at} /></span>
             </div>
             <div className="field">
-              <label>Updated (UTC)</label>
-              <span>{box.updated_at}</span>
+              <label>Updated</label>
+              <span><RelativeTime value={box.updated_at} /></span>
             </div>
           </div>
         </form>

@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
+import RelativeTime from './RelativeTime.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 import CoordCard from './CoordCard.jsx';
 
@@ -416,13 +417,13 @@ export default function TubeDetail() {
             )}
 
             <div className="field">
-              <label>Created (UTC)</label>
-              <span>{tube.created_at}</span>
+              <label>Created</label>
+              <span><RelativeTime value={tube.created_at} /></span>
             </div>
 
             <div className="field">
-              <label>Updated (UTC)</label>
-              <span>{tube.updated_at}</span>
+              <label>Updated</label>
+              <span><RelativeTime value={tube.updated_at} /></span>
             </div>
 
           </div>

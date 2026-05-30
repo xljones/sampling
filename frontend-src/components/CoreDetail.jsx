@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
+import RelativeTime from './RelativeTime.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 import CoordCard from './CoordCard.jsx';
 
@@ -205,13 +206,13 @@ export default function CoreDetail() {
             </div>
 
             <div className="field">
-              <label>Created (UTC)</label>
-              <span>{core.created_at}</span>
+              <label>Created</label>
+              <span><RelativeTime value={core.created_at} /></span>
             </div>
 
             <div className="field">
-              <label>Updated (UTC)</label>
-              <span>{core.updated_at}</span>
+              <label>Updated</label>
+              <span><RelativeTime value={core.updated_at} /></span>
             </div>
 
           </div>

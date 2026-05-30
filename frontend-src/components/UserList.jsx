@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
+import RelativeTime from './RelativeTime.jsx';
 
 function statusLabel(u) {
   if (!u.is_readonly) return null;
@@ -113,7 +114,7 @@ export default function UserList() {
                     <td className={isExpired ? 'text-danger text-sm' : 'text-muted text-sm'}>
                       {expiry || '—'}
                     </td>
-                    <td className="meta">{u.created_at?.slice(0, 10)}</td>
+                    <td className="meta"><RelativeTime value={u.created_at} /></td>
                     <td className="col-shrink">
                       {!!u.is_readonly && u.id !== me?.id && (
                         <button className="btn btn-danger btn-sm" onClick={() => handleDelete(u)}>Delete</button>

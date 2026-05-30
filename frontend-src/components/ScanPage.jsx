@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api.js';
 import BarcodeInput from './BarcodeInput.jsx';
+import RelativeTime from './RelativeTime.jsx';
 
 export default function ScanPage() {
   const [barcode, setBarcode] = useState('');
@@ -73,7 +74,7 @@ export default function ScanPage() {
               <Field label="Name" value={result.data.name} />
               <Field label="Location" value={result.data.location} />
               <Field label="Notes" value={result.data.notes} />
-              <Field label="Created (UTC)" value={result.data.created_at?.slice(0,10)} />
+              <Field label="Created" value={<RelativeTime value={result.data.created_at} />} />
             </div>
           )}
 

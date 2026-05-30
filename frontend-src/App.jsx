@@ -23,13 +23,15 @@ function Nav() {
 
   return (
     <nav className="sidebar">
+      <pre className="sidebar-logo">{`  ·~·~·~·~·\n  ─ ─ ─ ─ ─\n  · · · · ·\n  ═════════\n  ▓▓▓▓▓▓▓▓▓`}</pre>
       <div className="sidebar-title">Dirt Nap</div>
       <div className="sidebar-tagline">The samples are at rest</div>
       <NavLink to="/" end>Overview</NavLink>
       <NavLink to="/scan">Scan barcode</NavLink>
+      <hr className="sidebar-divider" />
+      <NavLink to="/cores">Cores</NavLink>
       <NavLink to="/boxes">Boxes</NavLink>
       <NavLink to="/tubes">Tubes</NavLink>
-      <NavLink to="/cores">Cores</NavLink>
       <NavLink to="/locations">Locations</NavLink>
       <div className="mt-auto">
         <div className="sidebar-user">
