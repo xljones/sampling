@@ -41,7 +41,13 @@ class UserRepository:
             "INSERT INTO users (username, password_hash, is_readonly, expires_at) VALUES (?,?,?,?)",
             (username, generate_password_hash(password), int(is_readonly), expires_at),
         )
-        return self.get_by_id(cur.lastrowid)
+        row_id = cur.lastrowid
+        if row_id is None:
+            raise RuntimeError("INSERT returned no row ID")
+        user = self.get_by_id(row_id)
+        if user is None:
+            raise RuntimeError(f"Row {row_id} not found after INSERT")
+        return user
 
     def rename(self, user_id: int, new_username: str) -> None:
         self.db.execute("UPDATE users SET username=? WHERE id=?", (new_username, user_id))

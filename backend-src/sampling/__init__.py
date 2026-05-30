@@ -77,7 +77,7 @@ def create_app() -> Flask:
     @app.before_request
     def enforce_auth() -> ResponseReturnValue | None:
         if not current_user.is_authenticated:
-            return
+            return None
         if current_user.expires_at:
             try:
                 if datetime.now(timezone.utc) >= datetime.fromisoformat(current_user.expires_at):
@@ -91,6 +91,7 @@ def create_app() -> Flask:
             and request.path != "/api/auth/password"
         ):
             return jsonify(error="Read-only access"), 403
+        return None
 
     for bp in (auth.bp, boxes.bp, cores.bp, tubes.bp, scan.bp, export.bp, locations.bp, users.bp):
         app.register_blueprint(bp)

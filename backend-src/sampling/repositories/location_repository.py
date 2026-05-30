@@ -37,7 +37,13 @@ class LocationRepository(BaseRepository):
 
     def create(self, name: str) -> dict[str, Any]:
         cur = self.db.execute("INSERT INTO locations (name) VALUES (?)", (name,))
-        return self.get_by_id(cur.lastrowid)
+        row_id = cur.lastrowid
+        if row_id is None:
+            raise RuntimeError("INSERT returned no row ID")
+        loc = self.get_by_id(row_id)
+        if loc is None:
+            raise RuntimeError(f"Row {row_id} not found after INSERT")
+        return loc
 
     def update(self, loc_id: int, name: str) -> dict[str, Any] | None:
         self.db.execute("UPDATE locations SET name=? WHERE id=?", (name, loc_id))

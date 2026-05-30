@@ -64,7 +64,12 @@ class BoxRepository(BaseRepository):
             "INSERT INTO boxes (barcode, name, location_id, notes) VALUES (?,?,?,?)",
             (barcode, name, location_id, notes),
         )
-        box = self.get_by_id(cur.lastrowid)
+        row_id = cur.lastrowid
+        if row_id is None:
+            raise RuntimeError("INSERT returned no row ID")
+        box = self.get_by_id(row_id)
+        if box is None:
+            raise RuntimeError(f"Row {row_id} not found after INSERT")
         self._record_history(box, changed_by)
         return box
 
@@ -83,7 +88,8 @@ class BoxRepository(BaseRepository):
             (barcode, name, location_id, notes, box_id),
         )
         box = self.get_by_id(box_id)
-        self._record_history(box, changed_by)
+        if box is not None:
+            self._record_history(box, changed_by)
         return box
 
     def get_history(self, box_id: int) -> list[dict[str, Any]]:

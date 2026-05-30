@@ -103,7 +103,12 @@ class TubeRepository(BaseRepository):
                 depth_cm,
             ),
         )
-        tube = self.get_by_id(cur.lastrowid)
+        row_id = cur.lastrowid
+        if row_id is None:
+            raise RuntimeError("INSERT returned no row ID")
+        tube = self.get_by_id(row_id)
+        if tube is None:
+            raise RuntimeError(f"Row {row_id} not found after INSERT")
         self._record_history(tube, changed_by)
         return tube
 
@@ -149,7 +154,8 @@ class TubeRepository(BaseRepository):
             ),
         )
         tube = self.get_by_id(tube_id)
-        self._record_history(tube, changed_by)
+        if tube is not None:
+            self._record_history(tube, changed_by)
         return tube
 
     def get_history(self, tube_id: int) -> list[dict[str, Any]]:

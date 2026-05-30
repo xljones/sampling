@@ -79,7 +79,12 @@ class CoreRepository(BaseRepository):
                 site_name, collection_date, depth_cm, collector, sample_type, owner, notes,
             ),
         )
-        core = self.get_by_id(cur.lastrowid)
+        row_id = cur.lastrowid
+        if row_id is None:
+            raise RuntimeError("INSERT returned no row ID")
+        core = self.get_by_id(row_id)
+        if core is None:
+            raise RuntimeError(f"Row {row_id} not found after INSERT")
         self._record_history(core, changed_by)
         return core
 
@@ -115,7 +120,8 @@ class CoreRepository(BaseRepository):
             ),
         )
         core = self.get_by_id(core_id)
-        self._record_history(core, changed_by)
+        if core is not None:
+            self._record_history(core, changed_by)
         return core
 
     def get_history(self, core_id: int) -> list[dict[str, Any]]:
