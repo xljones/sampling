@@ -4,8 +4,7 @@ import { api } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
-import MapPicker from './MapPicker.jsx';
-import LeafletMap from './LeafletMap.jsx';
+import CoordCard from './CoordCard.jsx';
 
 export default function CoreDetail() {
   const { user } = useAuth();
@@ -221,39 +220,13 @@ export default function CoreDetail() {
 
 
 
-      {(editing || core.latitude != null && core.longitude != null) && (
-        <div className="card mt-4">
-          <div className="card-body">
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div className="field" style={{ flex: 1 }}>
-                <label>Latitude</label>
-                {editing
-                  ? <input type="number" step="any" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="e.g. 56.82" />
-                  : <span>{core.latitude ?? '—'}</span>}
-              </div>
-              <div className="field" style={{ flex: 1 }}>
-                <label>Longitude</label>
-                {editing
-                  ? <input type="number" step="any" value={form.longitude} onChange={e => set('longitude', e.target.value)} placeholder="e.g. 2.41" />
-                  : <span>{core.longitude ?? '—'}</span>}
-              </div>
-            </div>
-          </div>
-          {editing && (
-            <MapPicker
-              lat={form.latitude !== '' ? Number(form.latitude) : null}
-              lng={form.longitude !== '' ? Number(form.longitude) : null}
-              onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
-            />
-          )}
-          {!editing && core.latitude != null && core.longitude != null && (
-            <LeafletMap
-              points={[{ lat: core.latitude, lng: core.longitude, label: core.barcode }]}
-              className={null}
-            />
-          )}
-        </div>
-      )}
+      <CoordCard
+        editing={editing}
+        lat={editing ? form.latitude : core.latitude}
+        lng={editing ? form.longitude : core.longitude}
+        onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
+        mapLabel={core.barcode}
+      />
 
       <div className="section-header mt-4">
         <h2 className="section-title">Tubes ({core.tubes?.length ?? 0})</h2>

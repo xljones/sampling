@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { api } from '../api.js';
 import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
-import MapPicker from './MapPicker.jsx';
+import CoordCard from './CoordCard.jsx';
 
 const EMPTY = {
   barcode: '', box_id: '', core_id: '', sample_date: '', site_name: '',
@@ -286,25 +286,12 @@ export default function TubeForm({ mode }) {
         </form>
       </div>
 
-      <div className="card mt-4">
-        <div className="card-body">
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <div className="field" style={{ flex: 1 }}>
-              <label>Latitude</label>
-              <input type="number" step="any" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="e.g. 39.0968" />
-            </div>
-            <div className="field" style={{ flex: 1 }}>
-              <label>Longitude</label>
-              <input type="number" step="any" value={form.longitude} onChange={e => set('longitude', e.target.value)} placeholder="e.g. -120.0324" />
-            </div>
-          </div>
-        </div>
-        <MapPicker
-          lat={form.latitude !== '' ? Number(form.latitude) : null}
-          lng={form.longitude !== '' ? Number(form.longitude) : null}
-          onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
-        />
-      </div>
+      <CoordCard
+        editing
+        lat={form.latitude}
+        lng={form.longitude}
+        onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
+      />
     </div>
   );
 }

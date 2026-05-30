@@ -4,8 +4,7 @@ import { api } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
-import MapPicker from './MapPicker.jsx';
-import LeafletMap from './LeafletMap.jsx';
+import CoordCard from './CoordCard.jsx';
 
 export default function TubeDetail() {
   const { user } = useAuth();
@@ -25,7 +24,6 @@ export default function TubeDetail() {
   const [boxBarcode, setBoxBarcode] = useState('');
   const [coreBarcode, setCoreBarcode] = useState('');
   const [creatingBox, setCreatingBox] = useState(false);
-  const [showMap, setShowMap] = useState(false);
   const [showHistory, setShowHistory] = useState(true);
   const [history, setHistory] = useState(null);
 
@@ -71,13 +69,11 @@ export default function TubeDetail() {
     setCoreBarcode(tube.core_barcode ?? '');
     setBoxMode('scan');
     setCoreMode('scan');
-    setShowMap(false);
     setEditing(true);
   }
 
   function cancelEditing() {
     setEditing(false);
-    setShowMap(false);
   }
 
   function handleBoxBarcodeChange(v) {
@@ -133,8 +129,7 @@ export default function TubeDetail() {
       const updated = await api.updateTube(id, body);
       setTube(t => ({ ...t, ...updated }));
       setEditing(false);
-      setShowMap(false);
-      api.getTubeHistory(id).then(setHistory);
+        api.getTubeHistory(id).then(setHistory);
       toast('Tube updated');
     } catch (err) {
       toast(err.message, 'error');
@@ -434,64 +429,17 @@ export default function TubeDetail() {
         </form>
       </div>
 
-      {(editing || r.latitude.value != null && r.longitude.value != null) && (
-        <div className="card mt-4">
-          <div className="card-body">
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div className="field" style={{ flex: 1 }}>
-                <label className={editing ? 'field-label-row' : ''}>
-                  Latitude
-                  {!editing && r.latitude.inherited && <span className="badge badge-inherited" data-tooltip={inheritedFrom}>inherited</span>}
-                  {editing && (
-                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowMap(v => !v)}>
-                      {showMap ? 'Hide map' : '📍 Pick on map'}
-                    </button>
-                  )}
-                </label>
-                {editing ? (
-                  <>
-                    <input type="number" step="any" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="e.g. 39.0968" />
-                    {!form.latitude && selectedCore?.latitude != null && (
-                      <p className="form-hint muted">Inherits from core: {selectedCore.latitude}</p>
-                    )}
-                  </>
-                ) : (
-                  <span>{r.latitude.value ?? '—'}</span>
-                )}
-              </div>
-              <div className="field" style={{ flex: 1 }}>
-                <label className={editing ? 'field-label-row' : ''}>
-                  Longitude
-                  {!editing && r.longitude.inherited && <span className="badge badge-inherited" data-tooltip={inheritedFrom}>inherited</span>}
-                </label>
-                {editing ? (
-                  <>
-                    <input type="number" step="any" value={form.longitude} onChange={e => set('longitude', e.target.value)} placeholder="e.g. -120.0324" />
-                    {!form.longitude && selectedCore?.longitude != null && (
-                      <p className="form-hint muted">Inherits from core: {selectedCore.longitude}</p>
-                    )}
-                  </>
-                ) : (
-                  <span>{r.longitude.value ?? '—'}</span>
-                )}
-              </div>
-            </div>
-          </div>
-          {editing && showMap && (
-            <MapPicker
-              lat={form.latitude !== '' ? Number(form.latitude) : null}
-              lng={form.longitude !== '' ? Number(form.longitude) : null}
-              onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
-            />
-          )}
-          {!editing && r.latitude.value != null && r.longitude.value != null && (
-            <LeafletMap
-              points={[{ lat: r.latitude.value, lng: r.longitude.value, label: tube.barcode }]}
-              className={null}
-            />
-          )}
-        </div>
-      )}
+      <CoordCard
+        editing={editing}
+        lat={editing ? form.latitude : r.latitude.value}
+        lng={editing ? form.longitude : r.longitude.value}
+        onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
+        mapLabel={tube.barcode}
+        latBadge={!editing && r.latitude.inherited && <span className="badge badge-inherited" data-tooltip={inheritedFrom}>inherited</span>}
+        lngBadge={!editing && r.longitude.inherited && <span className="badge badge-inherited" data-tooltip={inheritedFrom}>inherited</span>}
+        latHint={!form.latitude && selectedCore?.latitude != null ? `Inherits from core: ${selectedCore.latitude}` : null}
+        lngHint={!form.longitude && selectedCore?.longitude != null ? `Inherits from core: ${selectedCore.longitude}` : null}
+      />
 
       <div className="mt-4">
         <button className="btn btn-secondary btn-sm" onClick={toggleHistory}>
