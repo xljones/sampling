@@ -176,13 +176,18 @@ def cmd_seed(_: list[str]) -> None:
         ("T-0051", "BX-015", "CR-004", "2020-09-20", "Sediment", "Pale grey silty clay",             44.0,  96.5,  98.0),
         ("T-0052", "BX-015", "CR-004", "2020-09-20", "Sand",     "Shelly coarse sand",               37.0,  87.2, 100.0),
         ("T-0053", "BX-015", "CR-004", "2020-09-21", "Sediment", "Grey silty clay",                  45.0,  98.1, 103.0),
+        # Alpine surface samples — no core, no box (standalone field tubes)
+        ("T-0054", None, None, "2024-06-12", "Sediment", "Glacier forefield till, Mer de Glace", 30.0, 62.1, 10.0),
+        ("T-0055", None, None, "2024-07-03", "Sediment", "Proglacial outwash, Ötztal",            28.0, 58.4,  8.0),
     ]
 
     # Tubes that carry their own coordinates (overriding core inheritance)
-    TUBE_COORD_OVERRIDES = {
+    TUBE_COORD_OVERRIDES: dict[str, tuple[float, float]] = {
         "T-0007": (56.835, 2.447),   # IRD sand — slightly offset sample position
         "T-0021": (51.548, 0.598),   # Buried saltmarsh peat — precise peat outcrop
         "T-0047": (56.472, -5.231),  # Event sand layer — deeper basin sample point
+        "T-0054": (45.897,  6.937),  # Mer de Glace, Mont Blanc massif, France
+        "T-0055": (46.869, 10.847),  # Ötztal Alps, Austria/Italy border
     }
 
     with get_db() as db:
@@ -231,12 +236,8 @@ def cmd_seed(_: list[str]) -> None:
             if tube_repo.get_by_barcode(barcode):
                 print(f"  skip tube {barcode} (already exists)")
                 continue
-            box_id = box_ids.get(box_bc) or (
-                (box_repo.get_by_barcode(box_bc) or {}).get("id")
-            )
-            core_id = core_ids.get(core_bc) or (
-                (core_repo.get_by_barcode(core_bc) or {}).get("id")
-            )
+            box_id = (box_ids.get(box_bc) or (box_repo.get_by_barcode(box_bc) or {}).get("id")) if box_bc else None
+            core_id = (core_ids.get(core_bc) or (core_repo.get_by_barcode(core_bc) or {}).get("id")) if core_bc else None
             lat, lon = TUBE_COORD_OVERRIDES.get(barcode, (None, None))
             tube_repo.create(
                 barcode, box_id=box_id, core_id=core_id,
@@ -244,7 +245,8 @@ def cmd_seed(_: list[str]) -> None:
                 latitude=lat, longitude=lon,
                 volume_ml=vol, weight_g=wt, depth_cm=depth,
             )
-            print(f"  tube {barcode} — core {core_bc} @ {depth}cm")
+            core_ref = f"core {core_bc}" if core_bc else "no core"
+            print(f"  tube {barcode} — {core_ref} @ {depth}cm")
 
     print(f"\nDone. {len(BOXES)} boxes, {len(CORES)} cores, {len(TUBES)} tubes.")
 
