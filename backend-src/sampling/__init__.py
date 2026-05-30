@@ -1,14 +1,6 @@
 import os
-from pathlib import Path
-
-try:
-    import tomllib
-except ModuleNotFoundError:
-    try:
-        import tomli as tomllib  # type: ignore[no-redef]
-    except ModuleNotFoundError:
-        tomllib = None  # type: ignore[assignment]
 from datetime import datetime, timezone
+from pathlib import Path
 
 from flask import Flask, Response, jsonify, request, send_from_directory
 from flask.typing import ResponseReturnValue
@@ -18,19 +10,6 @@ from flask_login import LoginManager, current_user, logout_user
 from sampling.domain.user import User
 
 _DIST_DIR = str(Path(__file__).parent.parent.parent / "dist")
-
-
-def _find_pyproject() -> Path | None:
-    p = Path(__file__).resolve().parent
-    for _ in range(5):
-        candidate = p / "pyproject.toml"
-        if candidate.exists():
-            return candidate
-        p = p.parent
-    return None
-
-
-_PYPROJECT = _find_pyproject()
 
 login_manager = LoginManager()
 
@@ -95,17 +74,6 @@ def create_app() -> Flask:
 
     for bp in (auth.bp, boxes.bp, cores.bp, tubes.bp, scan.bp, export.bp, locations.bp, users.bp):
         app.register_blueprint(bp)
-
-    @app.get("/api/version")
-    def version() -> Response:
-        try:
-            if tomllib is None or _PYPROJECT is None:
-                raise RuntimeError("no toml parser or pyproject.toml not found")
-            with open(_PYPROJECT, "rb") as f:
-                v = tomllib.load(f)["project"]["version"]
-        except Exception:
-            v = "unknown"
-        return jsonify(version=v)
 
     @app.get("/", defaults={"path": ""})
     @app.get("/<path:path>")

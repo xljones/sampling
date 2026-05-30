@@ -64,5 +64,4 @@ export const api = {
   // Utilities
   scan:    (barcode) => req('GET', `/scan/${encodeURIComponent(barcode)}`),
   search:  (q)       => req('GET', `/search?q=${encodeURIComponent(q)}`),
-  version: ()        => req('GET', '/version'),
 };
