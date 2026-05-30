@@ -22,7 +22,6 @@ export default function TubeForm({ mode }) {
   const [saving, setSaving] = useState(false);
   const [boxMode, setBoxMode] = useState('scan');
   const [coreMode, setCoreMode] = useState('scan');
-  const [showMap, setShowMap] = useState(false);
   const [boxBarcode, setBoxBarcode] = useState('');
   const [coreBarcode, setCoreBarcode] = useState('');
   const [creatingBox, setCreatingBox] = useState(false);
@@ -291,12 +290,7 @@ export default function TubeForm({ mode }) {
         <div className="card-body">
           <div style={{ display: 'flex', gap: '12px' }}>
             <div className="field" style={{ flex: 1 }}>
-              <label className="field-label-row">
-                Latitude
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowMap(v => !v)}>
-                  {showMap ? 'Hide map' : '📍 Pick on map'}
-                </button>
-              </label>
+              <label>Latitude</label>
               <input type="number" step="any" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="e.g. 39.0968" />
             </div>
             <div className="field" style={{ flex: 1 }}>
@@ -305,13 +299,11 @@ export default function TubeForm({ mode }) {
             </div>
           </div>
         </div>
-        {showMap && (
-          <MapPicker
-            lat={form.latitude !== '' ? Number(form.latitude) : null}
-            lng={form.longitude !== '' ? Number(form.longitude) : null}
-            onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
-          />
-        )}
+        <MapPicker
+          lat={form.latitude !== '' ? Number(form.latitude) : null}
+          lng={form.longitude !== '' ? Number(form.longitude) : null}
+          onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
+        />
       </div>
     </div>
   );

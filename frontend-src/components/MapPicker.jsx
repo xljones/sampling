@@ -29,6 +29,9 @@ window.addEventListener('message', e => {
     map.setView([e.data.lat, e.data.lng], 13);
     setMarker(e.data.lat, e.data.lng);
   }
+  if (e.data?.type === 'setMarker') {
+    setMarker(e.data.lat, e.data.lng);
+  }
 });
 </script>
 </body></html>`;
@@ -37,6 +40,7 @@ export default function MapPicker({ lat, lng, onChange }) {
   const iframeRef = useRef(null);
   const onChangeRef = useRef(onChange);
   const initialRef = useRef({ lat, lng });
+  const skipRef = useRef(false);
   const [search, setSearch] = useState('');
   const [searching, setSearching] = useState(false);
   const [noResults, setNoResults] = useState(false);
@@ -45,11 +49,23 @@ export default function MapPicker({ lat, lng, onChange }) {
 
   useEffect(() => {
     function onMessage(e) {
-      if (e.data?.type === 'coords') onChangeRef.current(e.data.lat, e.data.lng);
+      if (e.data?.type === 'coords') {
+        skipRef.current = true;
+        onChangeRef.current(e.data.lat, e.data.lng);
+      }
     }
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
   }, []);
+
+  useEffect(() => {
+    if (skipRef.current) { skipRef.current = false; return; }
+    if (lat != null && lat !== '' && lng != null && lng !== '') {
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: 'setMarker', lat: Number(lat), lng: Number(lng) }, '*'
+      );
+    }
+  }, [lat, lng]);
 
   function handleLoad() {
     const { lat: initLat, lng: initLng } = initialRef.current;

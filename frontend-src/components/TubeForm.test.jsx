@@ -85,24 +85,8 @@ describe('TubeForm — box scan mode', () => {
 });
 
 describe('TubeForm — map picker', () => {
-  it('map picker is hidden by default', async () => {
+  it('map picker is always visible', async () => {
     renderNew();
-    await waitFor(() => screen.getByText(/pick on map/i));
-    expect(screen.queryByTestId('map-picker')).not.toBeInTheDocument();
-  });
-
-  it('shows map picker when "Pick on map" is clicked', async () => {
-    renderNew();
-    await waitFor(() => screen.getByText(/pick on map/i));
-    fireEvent.click(screen.getByText(/pick on map/i));
-    expect(screen.getByTestId('map-picker')).toBeInTheDocument();
-  });
-
-  it('hides map picker when "Hide map" is clicked', async () => {
-    renderNew();
-    await waitFor(() => screen.getByText(/pick on map/i));
-    fireEvent.click(screen.getByText(/pick on map/i));
-    fireEvent.click(screen.getByText(/hide map/i));
-    expect(screen.queryByTestId('map-picker')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('map-picker')).toBeInTheDocument());
   });
 });

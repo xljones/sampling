@@ -19,7 +19,6 @@ export default function CoreDetail() {
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
   const [locations, setLocations] = useState([]);
-  const [showMap, setShowMap] = useState(false);
   const [showHistory, setShowHistory] = useState(true);
   const [history, setHistory] = useState(null);
   const [hoveredTubeId, setHoveredTubeId] = useState(null);
@@ -52,14 +51,12 @@ export default function CoreDetail() {
 
   function startEditing() {
     populateForm(core);
-    setShowMap(false);
-    setEditing(true);
+        setEditing(true);
   }
 
   function cancelEditing() {
     setEditing(false);
-    setShowMap(false);
-  }
+      }
 
   async function handleSave(e) {
     e.preventDefault();
@@ -76,8 +73,7 @@ export default function CoreDetail() {
       const updated = await api.updateCore(id, body);
       setCore(c => ({ ...c, ...updated }));
       setEditing(false);
-      setShowMap(false);
-      api.getCoreHistory(id).then(setHistory);
+            api.getCoreHistory(id).then(setHistory);
       toast('Core updated');
     } catch (err) {
       toast(err.message, 'error');
@@ -230,14 +226,7 @@ export default function CoreDetail() {
           <div className="card-body">
             <div style={{ display: 'flex', gap: '12px' }}>
               <div className="field" style={{ flex: 1 }}>
-                <label className={editing ? 'field-label-row' : ''}>
-                  Latitude
-                  {editing && (
-                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowMap(v => !v)}>
-                      {showMap ? 'Hide map' : '📍 Pick on map'}
-                    </button>
-                  )}
-                </label>
+                <label>Latitude</label>
                 {editing
                   ? <input type="number" step="any" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="e.g. 56.82" />
                   : <span>{core.latitude ?? '—'}</span>}
@@ -250,7 +239,7 @@ export default function CoreDetail() {
               </div>
             </div>
           </div>
-          {editing && showMap && (
+          {editing && (
             <MapPicker
               lat={form.latitude !== '' ? Number(form.latitude) : null}
               lng={form.longitude !== '' ? Number(form.longitude) : null}
