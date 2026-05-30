@@ -23,7 +23,7 @@ function Nav() {
 
   return (
     <nav className="sidebar">
-      <pre className="sidebar-logo">{`  ·~·~·~·~·\n  ─ ─ ─ ─ ─\n  · · · · ·\n  ═════════\n  ▓▓▓▓▓▓▓▓▓`}</pre>
+      <pre className="sidebar-logo">{`  ╲ A─T ╱\n  ╱ G─C ╲\n  ╲ C─G ╱\n  ╱ T─A ╲\n  ────────`}</pre>
       <div className="sidebar-title">Dirt Nap</div>
       <div className="sidebar-tagline">The samples are at rest</div>
       <NavLink to="/" end>Overview</NavLink>
@@ -42,6 +42,9 @@ function Nav() {
         <NavLink to="/account" className="sidebar-nav-btn">Change password</NavLink>
         <button className="sidebar-nav-btn text-danger" onClick={logout}>Sign out</button>
         <BuildInfo className="sidebar-version" />
+        <div className="sidebar-grass" aria-hidden="true">
+          <span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/>
+        </div>
       </div>
     </nav>
   );
