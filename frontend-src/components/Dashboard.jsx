@@ -16,9 +16,23 @@ export default function Dashboard() {
 
   const navigate = useNavigate();
   const unassigned = tubes.filter(t => !t.box_id).length;
-  const mappable = tubes
-    .filter(t => t.latitude != null && t.longitude != null)
-    .map(t => ({ lat: t.latitude, lng: t.longitude, label: t.barcode + (t.site_name ? ` — ${t.site_name}` : ''), url: `/tubes/${t.id}` }));
+
+  const CORE_COLOR = '#f97316';
+  const TUBE_COLOR = '#3b82f6';
+
+  const mappable = [
+    ...cores
+      .filter(c => c.latitude != null && c.longitude != null)
+      .map(c => ({ lat: c.latitude, lng: c.longitude, label: c.barcode + (c.site_name ? ` — ${c.site_name}` : ''), url: `/cores/${c.id}`, color: CORE_COLOR })),
+    ...tubes
+      .filter(t => t.core_id == null && t.latitude != null && t.longitude != null)
+      .map(t => ({ lat: t.latitude, lng: t.longitude, label: t.barcode + (t.site_name ? ` — ${t.site_name}` : ''), url: `/tubes/${t.id}`, color: TUBE_COLOR })),
+  ];
+
+  const legend = [
+    ...(cores.some(c => c.latitude != null) ? [{ color: CORE_COLOR, label: 'Cores' }] : []),
+    ...(tubes.some(t => t.core_id == null && t.latitude != null) ? [{ color: TUBE_COLOR, label: 'Tubes (no core)' }] : []),
+  ];
 
   return (
     <div>
@@ -44,7 +58,7 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      <LeafletMap points={mappable} height={360} />
+      <LeafletMap points={mappable} height={360} legend={legend} />
 
       <h2 className={`section-title mb-3${mappable.length ? ' mt-6' : ''}`}>Recent cores</h2>
       <div className="card mb-6">
