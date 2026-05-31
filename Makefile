@@ -98,7 +98,7 @@ typecheck:
 .PHONY: test-backend
 # run Python backend tests with pytest
 test-backend:
-	docker compose run --rm backend pytest tests/ -v
+	docker compose run --rm backend pytest tests/ -v --cov=sampling --cov-fail-under=100 --cov-report=term-missing
 
 .PHONY: lint-frontend
 # lint the frontend with eslint
