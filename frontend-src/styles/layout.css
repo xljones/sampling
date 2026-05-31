@@ -22,8 +22,8 @@
 .sidebar-grass {
   width: 100%; aspect-ratio: 666.95 / 440.7;
   background: linear-gradient(to bottom, #8bc99a, var(--success));
-  -webkit-mask-image: url('/grass4.svg');
-  mask-image: url('/grass4.svg');
+  -webkit-mask-image: url('/grass.svg');
+  mask-image: url('/grass.svg');
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
   -webkit-mask-repeat: no-repeat;
