@@ -5,6 +5,7 @@ from sampling.repositories.base import BaseRepository
 
 class CoreRepository(BaseRepository):
     def list_all(self) -> list[dict[str, Any]]:
+        """Return all cores with location name, tube count, and distinct box count, ordered by creation date descending."""
         return self._rows(
             self.db.execute("""
             SELECT c.*, l.name AS location_name,
@@ -18,6 +19,7 @@ class CoreRepository(BaseRepository):
         )
 
     def get_by_id(self, core_id: int) -> dict[str, Any] | None:
+        """Return a single core by its primary key, including location name, or None if not found."""
         return self._row(
             self.db.execute(
                 """
@@ -30,6 +32,7 @@ class CoreRepository(BaseRepository):
         )
 
     def get_with_tubes(self, core_id: int) -> dict[str, Any] | None:
+        """Return a core with its tubes list attached (including box barcode/name), or None if not found."""
         core = self.get_by_id(core_id)
         if not core:
             return None
@@ -46,6 +49,7 @@ class CoreRepository(BaseRepository):
         return core
 
     def get_by_barcode(self, barcode: str) -> dict[str, Any] | None:
+        """Return a core by its barcode, including location name, or None if not found."""
         return self._row(
             self.db.execute(
                 """
@@ -73,6 +77,7 @@ class CoreRepository(BaseRepository):
         notes: str | None = None,
         changed_by: int | None = None,
     ) -> dict[str, Any]:
+        """Insert a new core and record its initial history snapshot; return the created core."""
         cur = self.db.execute(
             """
             INSERT INTO cores (barcode, name, location_id, latitude, longitude,
@@ -120,6 +125,7 @@ class CoreRepository(BaseRepository):
         notes: str | None = None,
         changed_by: int | None = None,
     ) -> dict[str, Any] | None:
+        """Update all fields of an existing core, record a history snapshot, and return the updated core."""
         self.db.execute(
             """
             UPDATE cores
@@ -150,6 +156,7 @@ class CoreRepository(BaseRepository):
         return core
 
     def get_history(self, core_id: int) -> list[dict[str, Any]]:
+        """Return the full audit history for a core, newest first, with username and location name joined in."""
         return self._rows(
             self.db.execute(
                 """
@@ -170,6 +177,7 @@ class CoreRepository(BaseRepository):
         version_id: int,
         changed_by: int | None = None,
     ) -> dict[str, Any] | None:
+        """Restore a core to the field values captured in a specific history record; return None if that record doesn't exist."""
         h = self._row(
             self.db.execute(
                 "SELECT * FROM core_history WHERE id=? AND core_id=?", (version_id, core_id)
@@ -195,6 +203,7 @@ class CoreRepository(BaseRepository):
         )
 
     def _record_history(self, core: dict[str, Any], changed_by: int | None) -> None:
+        """Write a snapshot of the core's current field values to core_history."""
         self.db.execute(
             """
             INSERT INTO core_history
@@ -221,9 +230,11 @@ class CoreRepository(BaseRepository):
         )
 
     def delete(self, core_id: int) -> bool:
+        """Delete a core by its primary key; return True if a row was removed."""
         return self.db.execute("DELETE FROM cores WHERE id=?", (core_id,)).rowcount > 0
 
     def search(self, query: str) -> list[dict[str, Any]]:
+        """Return up to 10 cores whose barcode, name, or site name matches the query substring."""
         q = f"%{query}%"
         return self._rows(
             self.db.execute(
@@ -240,6 +251,7 @@ class CoreRepository(BaseRepository):
     def export_flat(
         self, core_id: int | None = None, ids: list[int] | None = None
     ) -> list[dict[str, Any]]:
+        """Return flat export rows for cores, optionally filtered to a single core or a list of core IDs."""
         where: str
         params: tuple
         if core_id is not None:
@@ -270,6 +282,7 @@ class CoreRepository(BaseRepository):
         )
 
     def export_tubes_for_cores(self, core_ids: list[int]) -> list[dict[str, Any]]:
+        """Return all tubes belonging to the given core IDs, with box info joined in, ordered by box then depth."""
         if not core_ids:
             return []
         placeholders = ",".join("?" * len(core_ids))

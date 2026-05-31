@@ -5,6 +5,7 @@ from sampling.repositories.base import BaseRepository
 
 class BoxRepository(BaseRepository):
     def list_all(self) -> list[dict[str, Any]]:
+        """Return all boxes with their location name and tube count, ordered by creation date descending."""
         return self._rows(
             self.db.execute("""
             SELECT b.*, l.name AS location_name, COUNT(t.id) AS tube_count
@@ -16,6 +17,7 @@ class BoxRepository(BaseRepository):
         )
 
     def get_by_id(self, box_id: int) -> dict[str, Any] | None:
+        """Return a single box by its primary key, including location name, or None if not found."""
         return self._row(
             self.db.execute(
                 """
@@ -28,6 +30,7 @@ class BoxRepository(BaseRepository):
         )
 
     def get_with_tubes(self, box_id: int) -> dict[str, Any] | None:
+        """Return a box with its tubes list attached, ordered by depth then creation date, or None if not found."""
         box = self.get_by_id(box_id)
         if not box:
             return None
@@ -40,6 +43,7 @@ class BoxRepository(BaseRepository):
         return box
 
     def get_by_barcode(self, barcode: str) -> dict[str, Any] | None:
+        """Return a box by its barcode, including location name, or None if not found."""
         return self._row(
             self.db.execute(
                 """
@@ -59,6 +63,7 @@ class BoxRepository(BaseRepository):
         notes: str | None = None,
         changed_by: int | None = None,
     ) -> dict[str, Any]:
+        """Insert a new box and record its initial history snapshot; return the created box."""
         cur = self.db.execute(
             "INSERT INTO boxes (barcode, name, location_id, notes) VALUES (?,?,?,?)",
             (barcode, name, location_id, notes),
@@ -81,6 +86,7 @@ class BoxRepository(BaseRepository):
         notes: str | None = None,
         changed_by: int | None = None,
     ) -> dict[str, Any] | None:
+        """Update all fields of an existing box, record a history snapshot, and return the updated box."""
         self.db.execute(
             "UPDATE boxes SET barcode=?, name=?, location_id=?, notes=?,"
             " updated_at=CURRENT_TIMESTAMP WHERE id=?",
@@ -92,6 +98,7 @@ class BoxRepository(BaseRepository):
         return box
 
     def get_history(self, box_id: int) -> list[dict[str, Any]]:
+        """Return the full audit history for a box, newest first, with username and location name joined in."""
         return self._rows(
             self.db.execute(
                 """
@@ -112,6 +119,7 @@ class BoxRepository(BaseRepository):
         version_id: int,
         changed_by: int | None = None,
     ) -> dict[str, Any] | None:
+        """Restore a box to the field values captured in a specific history record; return None if that record doesn't exist."""
         h = self._row(
             self.db.execute(
                 "SELECT * FROM box_history WHERE id=? AND box_id=?", (version_id, box_id)
@@ -129,6 +137,7 @@ class BoxRepository(BaseRepository):
         )
 
     def _record_history(self, box: dict[str, Any], changed_by: int | None) -> None:
+        """Write a snapshot of the box's current field values to box_history."""
         self.db.execute(
             """
             INSERT INTO box_history (box_id, changed_by, barcode, name, location_id, notes)
@@ -145,12 +154,15 @@ class BoxRepository(BaseRepository):
         )
 
     def empty(self, box_id: int) -> None:
+        """Unassign all tubes from a box by setting their box_id to NULL."""
         self.db.execute("UPDATE tubes SET box_id=NULL WHERE box_id=?", (box_id,))
 
     def delete(self, box_id: int) -> bool:
+        """Delete a box by its primary key; return True if a row was removed."""
         return self.db.execute("DELETE FROM boxes WHERE id=?", (box_id,)).rowcount > 0
 
     def search(self, query: str) -> list[dict[str, Any]]:
+        """Return up to 10 boxes whose barcode, name, or location name matches the query substring."""
         q = f"%{query}%"
         return self._rows(
             self.db.execute(
@@ -167,6 +179,7 @@ class BoxRepository(BaseRepository):
     def export_flat(
         self, box_id: int | None = None, ids: list[int] | None = None
     ) -> list[dict[str, Any]]:
+        """Return flat export rows for boxes, optionally filtered to a single box or a list of box IDs."""
         where: str
         params: tuple
         if box_id is not None:
@@ -193,6 +206,7 @@ class BoxRepository(BaseRepository):
         )
 
     def export_tubes_for_boxes(self, box_ids: list[int]) -> list[dict[str, Any]]:
+        """Return all tubes belonging to the given box IDs, ordered by depth then creation date."""
         if not box_ids:
             return []
         placeholders = ",".join("?" * len(box_ids))
