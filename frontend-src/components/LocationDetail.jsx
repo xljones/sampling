@@ -22,6 +22,33 @@ export default function LocationDetail() {
         </div>
       </div>
 
+      <div className="section-header mt-4">
+        <h2 className="section-title">Cores</h2>
+      </div>
+      <div className="card">
+        <div className="table-wrap">
+          <table>
+            <thead><tr><th>Barcode</th><th>Name</th><th>Tubes</th><th>Notes</th></tr></thead>
+            <tbody>
+              {loc.cores.map(c => (
+                <tr key={c.id} className="row-clickable" onClick={() => navigate(`/cores/${c.id}?from=/locations/${id}`)}>
+                  <td><Link to={`/cores/${c.id}?from=/locations/${id}`} onClick={e => e.stopPropagation()}><span className="barcode">{c.barcode}</span></Link></td>
+                  <td>{c.name || '—'}</td>
+                  <td>{c.tube_count}</td>
+                  <td className="text-muted text-sm">{c.notes || '—'}</td>
+                </tr>
+              ))}
+              {loc.cores.length === 0 && (
+                <tr><td colSpan={4} className="empty">No cores at this location</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="section-header mt-4">
+        <h2 className="section-title">Boxes</h2>
+      </div>
       <div className="card">
         <div className="table-wrap">
           <table>

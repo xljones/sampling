@@ -21,7 +21,7 @@ def list_locations() -> Response:
 @login_required
 def get_location(loc_id: int) -> ResponseReturnValue:
     with get_db() as db:
-        loc = LocationRepository(db).get_with_boxes(loc_id)
+        loc = LocationRepository(db).get_with_items(loc_id)
     if not loc:
         return jsonify(error="Not found"), 404
     return jsonify(loc)

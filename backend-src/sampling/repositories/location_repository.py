@@ -21,8 +21,8 @@ class LocationRepository(BaseRepository):
         r = self.db.execute("SELECT * FROM locations WHERE id=?", (loc_id,)).fetchone()
         return dict(r) if r else None
 
-    def get_with_boxes(self, loc_id: int) -> dict[str, Any] | None:
-        """Return a location with its boxes list (with tube counts), or None if not found."""
+    def get_with_items(self, loc_id: int) -> dict[str, Any] | None:
+        """Return a location with its boxes and cores lists, or None if not found."""
         loc = self.get_by_id(loc_id)
         if not loc:
             return None
@@ -33,6 +33,17 @@ class LocationRepository(BaseRepository):
             FROM boxes b LEFT JOIN tubes t ON t.box_id = b.id
             WHERE b.location_id = ?
             GROUP BY b.id ORDER BY b.name ASC, b.barcode ASC
+        """,
+                (loc_id,),
+            ).fetchall()
+        )
+        loc["cores"] = self._rows(
+            self.db.execute(
+                """
+            SELECT c.id, c.barcode, c.name, c.notes, COUNT(t.id) AS tube_count
+            FROM cores c LEFT JOIN tubes t ON t.core_id = c.id
+            WHERE c.location_id = ?
+            GROUP BY c.id ORDER BY c.name ASC, c.barcode ASC
         """,
                 (loc_id,),
             ).fetchall()
