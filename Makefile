@@ -96,9 +96,9 @@ typecheck:
 	docker compose run --rm backend mypy sampling/
 
 .PHONY: test-backend
-# run Python backend tests with pytest
+# run Python backend tests with pytest (coverage config in pyproject.toml)
 test-backend:
-	docker compose run --rm backend pytest tests/ -v --cov=sampling --cov-fail-under=100 --cov-report=term-missing
+	docker compose run --rm backend pytest tests/ -v
 
 .PHONY: lint-frontend
 # lint the frontend with eslint
@@ -110,13 +110,9 @@ lint-frontend:
 test-frontend:
 	docker compose run --rm frontend npm run test
 
-.PHONY: lint
-# lint backend and frontend
-lint: lint-backend lint-frontend
-
 .PHONY: test
-# test backend and frontend
-test: test-backend test-frontend
+# lint, typecheck, and test backend and frontend (mirrors CI)
+test: lint-backend typecheck test-backend lint-frontend test-frontend
 
 # ── PythonAnywhere deployment ────────────────────────────────────────────────
 # Run from a PythonAnywhere Bash console inside ~/sampling
