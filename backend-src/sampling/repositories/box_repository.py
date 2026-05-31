@@ -167,6 +167,8 @@ class BoxRepository(BaseRepository):
     def export_flat(
         self, box_id: int | None = None, ids: list[int] | None = None
     ) -> list[dict[str, Any]]:
+        where: str
+        params: tuple
         if box_id is not None:
             where, params = "WHERE b.id = ?", (box_id,)
         elif ids is not None:

@@ -240,6 +240,8 @@ class CoreRepository(BaseRepository):
     def export_flat(
         self, core_id: int | None = None, ids: list[int] | None = None
     ) -> list[dict[str, Any]]:
+        where: str
+        params: tuple
         if core_id is not None:
             where, params = "WHERE c.id = ?", (core_id,)
         elif ids is not None:
