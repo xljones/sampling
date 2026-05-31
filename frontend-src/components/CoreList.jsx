@@ -132,6 +132,7 @@ export default function CoreList() {
                   <th>Storage</th>
                   <th>Tubes</th>
                   <th>Boxes</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -149,10 +150,15 @@ export default function CoreList() {
                     <td>{c.location_name || '—'}</td>
                     <td>{c.tube_count}</td>
                     <td>{c.box_count || '—'}</td>
+                    <td>
+                      <div className="row-actions">
+                        {!ro && <Link to={`/cores/${c.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>}
+                      </div>
+                    </td>
                   </tr>
                 ))}
                 {visible.length === 0 && q && (
-                  <tr><td colSpan={8} className="empty">No matches</td></tr>
+                  <tr><td colSpan={9} className="empty">No matches</td></tr>
                 )}
               </tbody>
             </table>

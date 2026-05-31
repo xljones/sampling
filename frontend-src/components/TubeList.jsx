@@ -260,10 +260,9 @@ export default function TubeList() {
                   <td>{t.sample_type || '—'}</td>
                   <td className="col-mobile-hide">{t.depth_cm ?? '—'}</td>
                   <td className="col-mobile-hide">{t.sample_date || '—'}</td>
-                  <td>
+                  <td className="col-shrink">
                     <div className="row-actions">
                       {!ro && <Link to={`/tubes/${t.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>}
-                      {!ro && <button className="btn btn-danger btn-sm" onClick={() => handleDelete(t.id)}>Delete</button>}
                     </div>
                   </td>
                 </tr>

@@ -297,7 +297,7 @@ export default function BoxDetail() {
                   <td>{t.sample_type || '—'}</td>
                   <td>{t.depth_cm ?? '—'}</td>
                   <td>{t.sample_date || '—'}</td>
-                  <td>
+                  <td className="col-shrink">
                     <div className="row-actions">
                       {!ro && <Link to={`/tubes/${t.id}?edit=1&from=/boxes/${id}`} className="btn btn-secondary btn-sm">Edit</Link>}
                       {!ro && <button className="btn btn-danger btn-sm" onClick={() => handleRemoveTube(t.id)}>Remove</button>}

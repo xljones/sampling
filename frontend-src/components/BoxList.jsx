@@ -161,7 +161,6 @@ export default function BoxList() {
                   <td className="col-shrink">
                     <div className="row-actions">
                       {!ro && <Link to={`/boxes/${b.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>}
-                      {!ro && <button className="btn btn-danger btn-sm" onClick={() => handleDelete(b.id)}>Delete</button>}
                     </div>
                   </td>
                 </tr>
