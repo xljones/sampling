@@ -9,6 +9,7 @@ class UserRepository:
         self.db = db
 
     def get_by_id(self, user_id: int) -> dict[str, Any] | None:
+        """Return a user by their primary key (excluding password_hash), or None if not found."""
         r = self.db.execute(
             "SELECT id, username, is_readonly, expires_at, created_at FROM users WHERE id=?",
             (user_id,),
@@ -20,12 +21,14 @@ class UserRepository:
         return None
 
     def get_by_username(self, username: str) -> dict[str, Any] | None:
+        """Return a user by username (case-insensitive) including password_hash, or None."""
         r = self.db.execute(
             "SELECT * FROM users WHERE username = ? COLLATE NOCASE", (username,)
         ).fetchone()
         return dict(r) if r else None
 
     def list_all(self) -> list[dict[str, Any]]:
+        """Return all users (excluding password_hash), ordered by creation date ascending."""
         rows = self.db.execute(
             "SELECT id, username, is_readonly, expires_at, created_at "
             "FROM users ORDER BY created_at"
@@ -39,6 +42,7 @@ class UserRepository:
         is_readonly: bool = False,
         expires_at: str | None = None,
     ) -> dict[str, Any]:
+        """Insert a new user with a hashed password and return the created user (no hash)."""
         cur = self.db.execute(
             "INSERT INTO users (username, password_hash, is_readonly, expires_at) VALUES (?,?,?,?)",
             (username, generate_password_hash(password), int(is_readonly), expires_at),
@@ -52,12 +56,15 @@ class UserRepository:
         return user
 
     def rename(self, user_id: int, new_username: str) -> None:
+        """Update a user's username."""
         self.db.execute("UPDATE users SET username=? WHERE id=?", (new_username, user_id))
 
     def delete(self, user_id: int) -> bool:
+        """Delete a user by their primary key; return True if a row was removed."""
         return self.db.execute("DELETE FROM users WHERE id=?", (user_id,)).rowcount > 0
 
     def verify_password(self, username: str, password: str) -> dict[str, Any] | None:
+        """Return the user if username and password match, or None if authentication fails."""
         user = self.get_by_username(username)
         if user and check_password_hash(user["password_hash"], password):
             return user
@@ -69,6 +76,7 @@ class UserRepository:
         current_password: str,
         new_password: str,
     ) -> bool:
+        """Verify current_password, update to new_password; return False if wrong."""
         row = self.db.execute("SELECT password_hash FROM users WHERE id=?", (user_id,)).fetchone()
         if not row or not check_password_hash(row["password_hash"], current_password):
             return False

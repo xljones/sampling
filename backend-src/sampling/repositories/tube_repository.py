@@ -4,7 +4,25 @@ from sampling.repositories.base import BaseRepository
 
 
 class TubeRepository(BaseRepository):
+    EXPORT_FIELDS: list[str] = [
+        "barcode",
+        "box_barcode",
+        "box_name",
+        "sample_date",
+        "site_name",
+        "latitude",
+        "longitude",
+        "sample_type",
+        "description",
+        "volume_ml",
+        "weight_g",
+        "depth_cm",
+        "created_at",
+        "updated_at",
+    ]
+
     def list_all(self) -> list[dict[str, Any]]:
+        """Return all tubes with joined box, location, and core fields, newest first."""
         return self._rows(
             self.db.execute("""
             SELECT t.*, b.name AS box_name, b.barcode AS box_barcode,
@@ -23,6 +41,7 @@ class TubeRepository(BaseRepository):
         )
 
     def get_by_id(self, tube_id: int) -> dict[str, Any] | None:
+        """Return a tube by primary key with joined box, location, and core fields, or None."""
         return self._row(
             self.db.execute(
                 """
@@ -44,6 +63,7 @@ class TubeRepository(BaseRepository):
         )
 
     def get_by_barcode(self, barcode: str) -> dict[str, Any] | None:
+        """Return a tube by barcode with joined box, location, and core fields, or None."""
         return self._row(
             self.db.execute(
                 """
@@ -80,6 +100,7 @@ class TubeRepository(BaseRepository):
         depth_cm: float | None = None,
         changed_by: int | None = None,
     ) -> dict[str, Any]:
+        """Insert a new tube, record initial history, and return it with joined fields."""
         cur = self.db.execute(
             """
             INSERT INTO tubes (
@@ -128,6 +149,7 @@ class TubeRepository(BaseRepository):
         depth_cm: float | None = None,
         changed_by: int | None = None,
     ) -> dict[str, Any] | None:
+        """Update tube fields, record a history snapshot, and return the updated tube."""
         self.db.execute(
             """
             UPDATE tubes
@@ -158,6 +180,7 @@ class TubeRepository(BaseRepository):
         return tube
 
     def get_history(self, tube_id: int) -> list[dict[str, Any]]:
+        """Return full audit history for a tube, newest first, with username and barcodes."""
         return self._rows(
             self.db.execute(
                 """
@@ -180,6 +203,7 @@ class TubeRepository(BaseRepository):
         version_id: int,
         changed_by: int | None = None,
     ) -> dict[str, Any] | None:
+        """Restore a tube from a history record; return None if the record doesn't exist."""
         h = self._row(
             self.db.execute(
                 "SELECT * FROM tube_history WHERE id=? AND tube_id=?", (version_id, tube_id)
@@ -205,6 +229,7 @@ class TubeRepository(BaseRepository):
         )
 
     def _record_history(self, tube: dict[str, Any], changed_by: int | None) -> None:
+        """Write a snapshot of the tube's current field values to tube_history."""
         self.db.execute(
             """
             INSERT INTO tube_history
@@ -236,6 +261,7 @@ class TubeRepository(BaseRepository):
         box_id: int,
         changed_by: int | None = None,
     ) -> int:
+        """Bulk-assign tubes to a box, record history for each, and return the count."""
         if not tube_ids:  # pragma: no cover
             return 0
         placeholders = ",".join("?" * len(tube_ids))
@@ -250,9 +276,11 @@ class TubeRepository(BaseRepository):
         return len(tube_ids)
 
     def delete(self, tube_id: int) -> bool:
+        """Delete a tube by its primary key; return True if a row was removed."""
         return self.db.execute("DELETE FROM tubes WHERE id=?", (tube_id,)).rowcount > 0
 
     def search(self, query: str) -> list[dict[str, Any]]:
+        """Return up to 10 tubes matching the query against barcode, site, or sample type."""
         q = f"%{query}%"
         return self._rows(
             self.db.execute(
@@ -264,6 +292,7 @@ class TubeRepository(BaseRepository):
         )
 
     def export_all(self) -> list[dict[str, Any]]:
+        """Return all tubes for export with joined box and core fields, newest first."""
         return self._rows(
             self.db.execute("""
             SELECT t.barcode, b.barcode AS box_barcode, b.name AS box_name,

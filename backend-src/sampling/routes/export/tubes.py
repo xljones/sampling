@@ -5,7 +5,6 @@ from sampling.db import get_db
 from sampling.repositories.tube_repository import TubeRepository
 
 from ._blueprint import bp
-from ._fields import TUBE_FIELDS
 from ._responses import json_response, respond
 
 
@@ -16,5 +15,7 @@ def export_tubes() -> Response:
     with get_db() as db:
         data = TubeRepository(db).export_all()
     if fmt == "json":
-        return json_response([{f: r.get(f) for f in TUBE_FIELDS} for r in data], "tubes")
-    return respond(data, TUBE_FIELDS, "tubes")
+        return json_response(
+            [{f: r.get(f) for f in TubeRepository.EXPORT_FIELDS} for r in data], "tubes"
+        )
+    return respond(data, TubeRepository.EXPORT_FIELDS, "tubes")

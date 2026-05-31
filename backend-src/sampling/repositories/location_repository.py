@@ -5,6 +5,7 @@ from sampling.repositories.base import BaseRepository
 
 class LocationRepository(BaseRepository):
     def list_all(self) -> list[dict[str, Any]]:
+        """Return all locations with their box and core counts, ordered alphabetically by name."""
         return self._rows(
             self.db.execute("""
             SELECT l.*,
@@ -16,10 +17,12 @@ class LocationRepository(BaseRepository):
         )
 
     def get_by_id(self, loc_id: int) -> dict[str, Any] | None:
+        """Return a single location by its primary key, or None if not found."""
         r = self.db.execute("SELECT * FROM locations WHERE id=?", (loc_id,)).fetchone()
         return dict(r) if r else None
 
     def get_with_boxes(self, loc_id: int) -> dict[str, Any] | None:
+        """Return a location with its boxes list (with tube counts), or None if not found."""
         loc = self.get_by_id(loc_id)
         if not loc:
             return None
@@ -37,6 +40,7 @@ class LocationRepository(BaseRepository):
         return loc
 
     def create(self, name: str) -> dict[str, Any]:
+        """Insert a new location with the given name and return the created record."""
         cur = self.db.execute("INSERT INTO locations (name) VALUES (?)", (name,))
         row_id = cur.lastrowid
         if row_id is None:  # pragma: no cover
@@ -47,10 +51,12 @@ class LocationRepository(BaseRepository):
         return loc
 
     def update(self, loc_id: int, name: str) -> dict[str, Any] | None:
+        """Rename a location and return the updated record, or None if not found."""
         self.db.execute("UPDATE locations SET name=? WHERE id=?", (name, loc_id))
         return self.get_by_id(loc_id)
 
     def delete(self, loc_id: int) -> tuple[bool, str | None]:
+        """Delete a location; return (False, msg) if boxes reference it, else (True, None)."""
         count = self.db.execute(
             "SELECT COUNT(*) FROM boxes WHERE location_id=?", (loc_id,)
         ).fetchone()[0]

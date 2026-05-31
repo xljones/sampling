@@ -1,11 +1,64 @@
+from collections import defaultdict
 from typing import Any
 
 from sampling.repositories.base import BaseRepository
 
 
 class CoreRepository(BaseRepository):
+    FLAT_FIELDS: list[str] = [
+        "barcode",
+        "name",
+        "location",
+        "site_name",
+        "latitude",
+        "longitude",
+        "collection_date",
+        "depth_cm",
+        "collector",
+        "sample_type",
+        "owner",
+        "notes",
+        "tube_count",
+        "box_count",
+        "created_at",
+        "updated_at",
+    ]
+    WITH_TUBES_FIELDS: list[str] = [
+        "row_type",
+        "core_barcode",
+        "core_name",
+        "core_location",
+        "core_site_name",
+        "core_latitude",
+        "core_longitude",
+        "core_collection_date",
+        "core_depth_cm",
+        "core_collector",
+        "core_sample_type",
+        "core_owner",
+        "core_notes",
+        "core_tube_count",
+        "core_box_count",
+        "core_created_at",
+        "core_updated_at",
+        "box_barcode",
+        "box_name",
+        "tube_barcode",
+        "tube_sample_date",
+        "tube_site_name",
+        "tube_latitude",
+        "tube_longitude",
+        "tube_sample_type",
+        "tube_description",
+        "tube_volume_ml",
+        "tube_weight_g",
+        "tube_depth_cm",
+        "tube_created_at",
+        "tube_updated_at",
+    ]
+
     def list_all(self) -> list[dict[str, Any]]:
-        """Return all cores with location name, tube count, and distinct box count, ordered by creation date descending."""
+        """Return all cores with location name, tube count, and box count, newest first."""
         return self._rows(
             self.db.execute("""
             SELECT c.*, l.name AS location_name,
@@ -19,7 +72,7 @@ class CoreRepository(BaseRepository):
         )
 
     def get_by_id(self, core_id: int) -> dict[str, Any] | None:
-        """Return a single core by its primary key, including location name, or None if not found."""
+        """Return a core by primary key, including location name, or None if not found."""
         return self._row(
             self.db.execute(
                 """
@@ -32,7 +85,7 @@ class CoreRepository(BaseRepository):
         )
 
     def get_with_tubes(self, core_id: int) -> dict[str, Any] | None:
-        """Return a core with its tubes list attached (including box barcode/name), or None if not found."""
+        """Return a core with its tubes list (with box info), or None if not found."""
         core = self.get_by_id(core_id)
         if not core:
             return None
@@ -125,7 +178,7 @@ class CoreRepository(BaseRepository):
         notes: str | None = None,
         changed_by: int | None = None,
     ) -> dict[str, Any] | None:
-        """Update all fields of an existing core, record a history snapshot, and return the updated core."""
+        """Update core fields, record a history snapshot, and return the updated core."""
         self.db.execute(
             """
             UPDATE cores
@@ -156,7 +209,7 @@ class CoreRepository(BaseRepository):
         return core
 
     def get_history(self, core_id: int) -> list[dict[str, Any]]:
-        """Return the full audit history for a core, newest first, with username and location name joined in."""
+        """Return full audit history for a core, newest first, with username and location."""
         return self._rows(
             self.db.execute(
                 """
@@ -177,7 +230,7 @@ class CoreRepository(BaseRepository):
         version_id: int,
         changed_by: int | None = None,
     ) -> dict[str, Any] | None:
-        """Restore a core to the field values captured in a specific history record; return None if that record doesn't exist."""
+        """Restore a core from a history record; return None if the record doesn't exist."""
         h = self._row(
             self.db.execute(
                 "SELECT * FROM core_history WHERE id=? AND core_id=?", (version_id, core_id)
@@ -251,7 +304,7 @@ class CoreRepository(BaseRepository):
     def export_flat(
         self, core_id: int | None = None, ids: list[int] | None = None
     ) -> list[dict[str, Any]]:
-        """Return flat export rows for cores, optionally filtered to a single core or a list of core IDs."""
+        """Return flat export rows for cores, optionally filtered by core_id or id list."""
         where: str
         params: tuple
         if core_id is not None:
@@ -282,8 +335,8 @@ class CoreRepository(BaseRepository):
         )
 
     def export_tubes_for_cores(self, core_ids: list[int]) -> list[dict[str, Any]]:
-        """Return all tubes belonging to the given core IDs, with box info joined in, ordered by box then depth."""
-        if not core_ids:
+        """Return tubes for the given core IDs with box info joined, ordered by box then depth."""
+        if not core_ids:  # pragma: no cover
             return []
         placeholders = ",".join("?" * len(core_ids))
         return self._rows(
@@ -302,3 +355,135 @@ class CoreRepository(BaseRepository):
                 tuple(core_ids),
             ).fetchall()
         )
+
+    def build_with_tubes_rows(
+        self, core_id: int | None = None, ids: list[int] | None = None
+    ) -> list[dict[str, Any]]:
+        """Return hierarchical export rows (core header, box header, tube rows) for CSV/TSV."""
+        cores = self.export_flat(core_id=core_id, ids=ids)
+        if not cores:
+            return []
+        tubes = self.export_tubes_for_cores([c["id"] for c in cores])
+        tubes_by_core: dict[int, list] = defaultdict(list)
+        for t in tubes:
+            tubes_by_core[t["core_id"]].append(t)
+        _null: dict[str, Any] = {f: None for f in self.WITH_TUBES_FIELDS}
+        result = []
+        for core in cores:
+            row = dict(_null)
+            row.update(
+                row_type="core",
+                core_barcode=core["barcode"],
+                core_name=core["name"],
+                core_location=core["location"],
+                core_site_name=core["site_name"],
+                core_latitude=core["latitude"],
+                core_longitude=core["longitude"],
+                core_collection_date=core["collection_date"],
+                core_depth_cm=core["depth_cm"],
+                core_collector=core["collector"],
+                core_sample_type=core["sample_type"],
+                core_owner=core["owner"],
+                core_notes=core["notes"],
+                core_tube_count=core["tube_count"],
+                core_box_count=core["box_count"],
+                core_created_at=core["created_at"],
+                core_updated_at=core["updated_at"],
+            )
+            result.append(row)
+            by_box: dict[int | None, list] = {}
+            for t in tubes_by_core[core["id"]]:
+                key = t["box_id"]
+                if key not in by_box:
+                    by_box[key] = []
+                by_box[key].append(t)
+            for box_id_key, box_tubes in by_box.items():
+                first = box_tubes[0]
+                if box_id_key is not None:
+                    row = dict(_null)
+                    row.update(
+                        row_type="box",
+                        core_barcode=core["barcode"],
+                        box_barcode=first["box_barcode"],
+                        box_name=first["box_name"],
+                    )
+                    result.append(row)
+                for t in box_tubes:
+                    row = dict(_null)
+                    row.update(
+                        row_type="tube",
+                        core_barcode=core["barcode"],
+                        box_barcode=t["box_barcode"],
+                        tube_barcode=t["barcode"],
+                        tube_sample_date=t["sample_date"],
+                        tube_site_name=t["site_name"],
+                        tube_latitude=t["latitude"],
+                        tube_longitude=t["longitude"],
+                        tube_sample_type=t["sample_type"],
+                        tube_description=t["description"],
+                        tube_volume_ml=t["volume_ml"],
+                        tube_weight_g=t["weight_g"],
+                        tube_depth_cm=t["depth_cm"],
+                        tube_created_at=t["created_at"],
+                        tube_updated_at=t["updated_at"],
+                    )
+                    result.append(row)
+        return result
+
+    def build_json(
+        self, core_id: int | None = None, ids: list[int] | None = None
+    ) -> list[dict[str, Any]]:
+        """Return nested JSON export structure: each core with its boxes and unboxed tubes."""
+        cores = self.export_flat(core_id=core_id, ids=ids)
+        if not cores:
+            return []
+        tubes = self.export_tubes_for_cores([c["id"] for c in cores])
+        tubes_by_core: dict[int, list] = defaultdict(list)
+        for t in tubes:
+            tubes_by_core[t["core_id"]].append(t)
+        result = []
+        for core in cores:
+            by_box: dict[int | None, dict] = {}
+            for t in tubes_by_core[core["id"]]:
+                key = t["box_id"]
+                if key not in by_box:
+                    by_box[key] = {"barcode": t["box_barcode"], "name": t["box_name"], "tubes": []}
+                by_box[key]["tubes"].append(
+                    {
+                        "barcode": t["barcode"],
+                        "sample_date": t["sample_date"],
+                        "site_name": t["site_name"],
+                        "latitude": t["latitude"],
+                        "longitude": t["longitude"],
+                        "sample_type": t["sample_type"],
+                        "description": t["description"],
+                        "volume_ml": t["volume_ml"],
+                        "weight_g": t["weight_g"],
+                        "depth_cm": t["depth_cm"],
+                        "created_at": t["created_at"],
+                        "updated_at": t["updated_at"],
+                    }
+                )
+            result.append(
+                {
+                    "barcode": core["barcode"],
+                    "name": core["name"],
+                    "location": core["location"],
+                    "site_name": core["site_name"],
+                    "latitude": core["latitude"],
+                    "longitude": core["longitude"],
+                    "collection_date": core["collection_date"],
+                    "depth_cm": core["depth_cm"],
+                    "collector": core["collector"],
+                    "sample_type": core["sample_type"],
+                    "owner": core["owner"],
+                    "notes": core["notes"],
+                    "tube_count": core["tube_count"],
+                    "box_count": core["box_count"],
+                    "created_at": core["created_at"],
+                    "updated_at": core["updated_at"],
+                    "boxes": [v for k, v in by_box.items() if k is not None],
+                    "unboxed_tubes": by_box[None]["tubes"] if None in by_box else [],
+                }
+            )
+        return result

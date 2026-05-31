@@ -1,11 +1,42 @@
+from collections import defaultdict
 from typing import Any
 
 from sampling.repositories.base import BaseRepository
 
 
 class BoxRepository(BaseRepository):
+    FLAT_FIELDS: list[str] = [
+        "barcode",
+        "name",
+        "location",
+        "notes",
+        "tube_count",
+        "created_at",
+    ]
+    WITH_TUBES_FIELDS: list[str] = [
+        "row_type",
+        "box_barcode",
+        "box_name",
+        "box_location",
+        "box_notes",
+        "box_tube_count",
+        "box_created_at",
+        "tube_barcode",
+        "tube_sample_date",
+        "tube_site_name",
+        "tube_latitude",
+        "tube_longitude",
+        "tube_sample_type",
+        "tube_description",
+        "tube_volume_ml",
+        "tube_weight_g",
+        "tube_depth_cm",
+        "tube_created_at",
+        "tube_updated_at",
+    ]
+
     def list_all(self) -> list[dict[str, Any]]:
-        """Return all boxes with their location name and tube count, ordered by creation date descending."""
+        """Return all boxes with location name and tube count, newest first."""
         return self._rows(
             self.db.execute("""
             SELECT b.*, l.name AS location_name, COUNT(t.id) AS tube_count
@@ -30,7 +61,7 @@ class BoxRepository(BaseRepository):
         )
 
     def get_with_tubes(self, box_id: int) -> dict[str, Any] | None:
-        """Return a box with its tubes list attached, ordered by depth then creation date, or None if not found."""
+        """Return a box with its depth-ordered tubes list, or None if not found."""
         box = self.get_by_id(box_id)
         if not box:
             return None
@@ -86,7 +117,7 @@ class BoxRepository(BaseRepository):
         notes: str | None = None,
         changed_by: int | None = None,
     ) -> dict[str, Any] | None:
-        """Update all fields of an existing box, record a history snapshot, and return the updated box."""
+        """Update box fields, record a history snapshot, and return the updated box."""
         self.db.execute(
             "UPDATE boxes SET barcode=?, name=?, location_id=?, notes=?,"
             " updated_at=CURRENT_TIMESTAMP WHERE id=?",
@@ -98,7 +129,7 @@ class BoxRepository(BaseRepository):
         return box
 
     def get_history(self, box_id: int) -> list[dict[str, Any]]:
-        """Return the full audit history for a box, newest first, with username and location name joined in."""
+        """Return full audit history for a box, newest first, with username and location."""
         return self._rows(
             self.db.execute(
                 """
@@ -119,7 +150,7 @@ class BoxRepository(BaseRepository):
         version_id: int,
         changed_by: int | None = None,
     ) -> dict[str, Any] | None:
-        """Restore a box to the field values captured in a specific history record; return None if that record doesn't exist."""
+        """Restore a box from a history record; return None if the record doesn't exist."""
         h = self._row(
             self.db.execute(
                 "SELECT * FROM box_history WHERE id=? AND box_id=?", (version_id, box_id)
@@ -162,7 +193,7 @@ class BoxRepository(BaseRepository):
         return self.db.execute("DELETE FROM boxes WHERE id=?", (box_id,)).rowcount > 0
 
     def search(self, query: str) -> list[dict[str, Any]]:
-        """Return up to 10 boxes whose barcode, name, or location name matches the query substring."""
+        """Return up to 10 boxes matching the query against barcode, name, or location."""
         q = f"%{query}%"
         return self._rows(
             self.db.execute(
@@ -179,7 +210,7 @@ class BoxRepository(BaseRepository):
     def export_flat(
         self, box_id: int | None = None, ids: list[int] | None = None
     ) -> list[dict[str, Any]]:
-        """Return flat export rows for boxes, optionally filtered to a single box or a list of box IDs."""
+        """Return flat export rows for boxes, optionally filtered by box_id or id list."""
         where: str
         params: tuple
         if box_id is not None:
@@ -207,7 +238,7 @@ class BoxRepository(BaseRepository):
 
     def export_tubes_for_boxes(self, box_ids: list[int]) -> list[dict[str, Any]]:
         """Return all tubes belonging to the given box IDs, ordered by depth then creation date."""
-        if not box_ids:
+        if not box_ids:  # pragma: no cover
             return []
         placeholders = ",".join("?" * len(box_ids))
         return self._rows(
@@ -222,3 +253,73 @@ class BoxRepository(BaseRepository):
                 tuple(box_ids),
             ).fetchall()
         )
+
+    def build_with_tubes_rows(
+        self, box_id: int | None = None, ids: list[int] | None = None
+    ) -> list[dict[str, Any]]:
+        """Return hierarchical export rows (one box header row + one row per tube) for CSV/TSV."""
+        boxes = self.export_flat(box_id=box_id, ids=ids)
+        if not boxes:
+            return []
+        tubes = self.export_tubes_for_boxes([b["id"] for b in boxes])
+        tubes_by_box: dict[int, list] = defaultdict(list)
+        for t in tubes:
+            tubes_by_box[t["box_id"]].append(t)
+        _null: dict[str, Any] = {f: None for f in self.WITH_TUBES_FIELDS}
+        result = []
+        for box in boxes:
+            row = dict(_null)
+            row.update(
+                row_type="box",
+                box_barcode=box["barcode"],
+                box_name=box["name"],
+                box_location=box["location"],
+                box_notes=box["notes"],
+                box_tube_count=box["tube_count"],
+                box_created_at=box["created_at"],
+            )
+            result.append(row)
+            for t in tubes_by_box[box["id"]]:
+                row = dict(_null)
+                row.update(
+                    row_type="tube",
+                    box_barcode=box["barcode"],
+                    tube_barcode=t["barcode"],
+                    tube_sample_date=t["sample_date"],
+                    tube_site_name=t["site_name"],
+                    tube_latitude=t["latitude"],
+                    tube_longitude=t["longitude"],
+                    tube_sample_type=t["sample_type"],
+                    tube_description=t["description"],
+                    tube_volume_ml=t["volume_ml"],
+                    tube_weight_g=t["weight_g"],
+                    tube_depth_cm=t["depth_cm"],
+                    tube_created_at=t["created_at"],
+                    tube_updated_at=t["updated_at"],
+                )
+                result.append(row)
+        return result
+
+    def build_json(
+        self, box_id: int | None = None, ids: list[int] | None = None
+    ) -> list[dict[str, Any]]:
+        """Return nested JSON export structure: each box with its tubes list."""
+        boxes = self.export_flat(box_id=box_id, ids=ids)
+        if not boxes:
+            return []
+        tubes = self.export_tubes_for_boxes([b["id"] for b in boxes])
+        tubes_by_box: dict[int, list] = defaultdict(list)
+        for t in tubes:
+            tubes_by_box[t["box_id"]].append({k: v for k, v in t.items() if k != "box_id"})
+        return [
+            {
+                "barcode": b["barcode"],
+                "name": b["name"],
+                "location": b["location"],
+                "notes": b["notes"],
+                "tube_count": b["tube_count"],
+                "created_at": b["created_at"],
+                "tubes": tubes_by_box[b["id"]],
+            }
+            for b in boxes
+        ]

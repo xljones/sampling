@@ -7,6 +7,15 @@ from typing import Any
 from flask import Response, request
 
 
+def parse_ids(raw: str) -> list[int] | None:
+    if not raw:
+        return None
+    try:
+        return [int(x) for x in raw.split(",") if x.strip()]
+    except ValueError:
+        return None
+
+
 def _safe(value: str) -> str:
     """Sanitise a value for use in a filename."""
     return "".join(c if c.isalnum() or c in "-_." else "_" for c in str(value))

@@ -378,13 +378,13 @@ def test_export_cores_ids_multiple(auth_client: FlaskClient) -> None:
 # ── _safe helper (direct unit test) ──────────────────────────────────────────
 
 def test_safe_keeps_alnum_and_allowed() -> None:
-    from sampling.routes.export import _safe
+    from sampling.routes.export._responses import _safe
     assert _safe("CORE-001") == "CORE-001"
     assert _safe("core_001.csv") == "core_001.csv"
 
 
 def test_safe_replaces_special_chars() -> None:
-    from sampling.routes.export import _safe
+    from sampling.routes.export._responses import _safe
     assert _safe("BOX 001") == "BOX_001"
     assert _safe("A/B:C") == "A_B_C"
 
