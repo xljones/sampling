@@ -157,6 +157,7 @@ export default function TubeList() {
               { label: 'Tab separated values (.tsv)', onClick: () => { if (anyFilter) exportTubesToTsv(visible); else window.location.href = '/api/export/tubes?format=tsv'; } },
               { label: 'JSON (.json)', onClick: () => { if (anyFilter) exportTubesToJson(visible); else window.location.href = '/api/export/tubes?format=json'; } },
               { label: 'GeoJSON (.geojson)', onClick: () => { if (anyFilter) exportTubesToGeoJson(visible); else window.location.href = '/api/export/tubes?format=geojson'; } },
+              { label: 'Excel (.xlsx)', onClick: () => { window.location.href = anyFilter ? `/api/export/tubes?format=xlsx&ids=${visible.map(t => t.id).join(',')}` : '/api/export/tubes?format=xlsx'; } },
             ]}
           />
           {!ro && <Link to="/tubes/new" className="btn btn-primary">+ New tube</Link>}

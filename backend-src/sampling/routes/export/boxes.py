@@ -5,9 +5,26 @@ from flask_login import login_required
 
 from sampling.db import get_db
 from sampling.repositories.box_repository import BoxRepository
+from sampling.repositories.tube_repository import TubeRepository
 
 from ._blueprint import bp
-from ._responses import _safe, json_response, parse_ids, respond
+from ._responses import _safe, json_response, parse_ids, respond, xlsx_response
+
+
+def _boxes_xlsx(box_rows: list, db) -> Response:
+    box_ids = [r["id"] for r in box_rows]
+    tube_repo = TubeRepository(db)
+    return xlsx_response(
+        [
+            {"name": "Boxes", "fields": BoxRepository.FLAT_FIELDS, "rows": box_rows},
+            {
+                "name": "Tubes",
+                "fields": TubeRepository.EXPORT_FIELDS,
+                "rows": tube_repo.export_for_boxes(box_ids),
+            },
+        ],
+        "boxes",
+    )
 
 
 @bp.get("/api/export/boxes")
@@ -18,6 +35,8 @@ def export_boxes() -> Response:
     ids = parse_ids(request.args.get("ids", ""))
     with get_db() as db:
         repo = BoxRepository(db)
+        if fmt == "xlsx":
+            return _boxes_xlsx(repo.export_flat(ids=ids), db)
         if fmt == "json":
             if flat:
                 rows: list[dict[str, Any]] = [
@@ -41,6 +60,8 @@ def export_box(box_id: int) -> Response:
     flat = request.args.get("flat", "").lower() in ("1", "true", "yes")
     with get_db() as db:
         repo = BoxRepository(db)
+        if fmt == "xlsx":
+            return _boxes_xlsx(repo.export_flat(box_id=box_id), db)
         if fmt == "json":
             if flat:
                 data = repo.export_flat(box_id=box_id)

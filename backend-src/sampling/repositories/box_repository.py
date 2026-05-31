@@ -236,6 +236,29 @@ class BoxRepository(BaseRepository):
             ).fetchall()
         )
 
+    def export_flat_for_cores(self, core_ids: list[int]) -> list[dict[str, Any]]:
+        """Return flat box rows for boxes that contain tubes from the given core IDs."""
+        if not core_ids:  # pragma: no cover
+            return []
+        placeholders = ",".join("?" * len(core_ids))
+        return self._rows(
+            self.db.execute(
+                f"""
+            SELECT b.id, b.barcode, b.name, l.name AS location, b.notes,
+                   (SELECT COUNT(*) FROM tubes WHERE box_id = b.id) AS tube_count,
+                   b.created_at
+            FROM boxes b
+            LEFT JOIN locations l ON l.id = b.location_id
+            WHERE b.id IN (
+                SELECT DISTINCT box_id FROM tubes
+                WHERE core_id IN ({placeholders}) AND box_id IS NOT NULL
+            )
+            ORDER BY b.created_at DESC
+        """,
+                tuple(core_ids),
+            ).fetchall()
+        )
+
     def export_tubes_for_boxes(self, box_ids: list[int]) -> list[dict[str, Any]]:
         """Return all tubes belonging to the given box IDs, ordered by depth then creation date."""
         if not box_ids:  # pragma: no cover

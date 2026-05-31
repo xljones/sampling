@@ -291,22 +291,70 @@ class TubeRepository(BaseRepository):
             ).fetchall()
         )
 
-    def export_all(self) -> list[dict[str, Any]]:
-        """Return all tubes for export with joined box and core fields, newest first."""
+    def export_all(self, ids: list[int] | None = None) -> list[dict[str, Any]]:
+        """Return tubes for export with joined box fields, newest first; filter by ids if given."""
+        if ids is not None:
+            if not ids:  # pragma: no cover
+                return []
+            placeholders = ",".join("?" * len(ids))
+            where = f"WHERE t.id IN ({placeholders})"
+            params: tuple = tuple(ids)
+        else:
+            where, params = "", ()
         return self._rows(
-            self.db.execute("""
+            self.db.execute(
+                f"""
             SELECT t.barcode, b.barcode AS box_barcode, b.name AS box_name,
-                   c.barcode AS core_barcode, c.name AS core_name, cl.name AS core_location_name,
-                   c.site_name AS core_site_name, c.latitude AS core_latitude,
-                   c.longitude AS core_longitude, c.collection_date AS core_collection_date,
-                   c.sample_type AS core_sample_type, c.depth_cm AS core_total_depth,
                    t.sample_date, t.site_name, t.latitude, t.longitude,
                    t.sample_type, t.description, t.volume_ml, t.weight_g, t.depth_cm,
                    t.created_at, t.updated_at
             FROM tubes t
             LEFT JOIN boxes b ON b.id = t.box_id
-            LEFT JOIN cores c ON c.id = t.core_id
-            LEFT JOIN locations cl ON cl.id = c.location_id
+            {where}
             ORDER BY t.created_at DESC
-        """).fetchall()
+        """,
+                params,
+            ).fetchall()
+        )
+
+    def export_for_cores(self, core_ids: list[int]) -> list[dict[str, Any]]:
+        """Return flat tube export rows for tubes belonging to the given core IDs."""
+        if not core_ids:  # pragma: no cover
+            return []
+        placeholders = ",".join("?" * len(core_ids))
+        return self._rows(
+            self.db.execute(
+                f"""
+            SELECT t.barcode, b.barcode AS box_barcode, b.name AS box_name,
+                   t.sample_date, t.site_name, t.latitude, t.longitude,
+                   t.sample_type, t.description, t.volume_ml, t.weight_g, t.depth_cm,
+                   t.created_at, t.updated_at
+            FROM tubes t
+            LEFT JOIN boxes b ON b.id = t.box_id
+            WHERE t.core_id IN ({placeholders})
+            ORDER BY t.depth_cm ASC, t.created_at ASC
+        """,
+                tuple(core_ids),
+            ).fetchall()
+        )
+
+    def export_for_boxes(self, box_ids: list[int]) -> list[dict[str, Any]]:
+        """Return flat tube export rows for tubes belonging to the given box IDs."""
+        if not box_ids:  # pragma: no cover
+            return []
+        placeholders = ",".join("?" * len(box_ids))
+        return self._rows(
+            self.db.execute(
+                f"""
+            SELECT t.barcode, b.barcode AS box_barcode, b.name AS box_name,
+                   t.sample_date, t.site_name, t.latitude, t.longitude,
+                   t.sample_type, t.description, t.volume_ml, t.weight_g, t.depth_cm,
+                   t.created_at, t.updated_at
+            FROM tubes t
+            LEFT JOIN boxes b ON b.id = t.box_id
+            WHERE t.box_id IN ({placeholders})
+            ORDER BY t.depth_cm ASC, t.created_at ASC
+        """,
+                tuple(box_ids),
+            ).fetchall()
         )

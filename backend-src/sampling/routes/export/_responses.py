@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timezone
 from typing import Any
 
+import openpyxl
 from flask import Response, request
 
 
@@ -83,6 +84,27 @@ def json_response(
         json.dumps(data, indent=2, default=str),
         mimetype="application/json",
         headers={"Content-Disposition": f'attachment; filename="{basename}-{ts}.json"'},
+    )
+
+
+def xlsx_response(
+    sheets: list[dict[str, Any]],
+    basename: str,
+) -> Response:
+    wb = openpyxl.Workbook()
+    wb.remove(wb.active)
+    for sheet in sheets:
+        ws = wb.create_sheet(title=sheet["name"])
+        ws.append(sheet["fields"])
+        for row in sheet["rows"]:
+            ws.append([row.get(f) for f in sheet["fields"]])
+    buf = io.BytesIO()
+    wb.save(buf)
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%S")
+    return Response(
+        buf.getvalue(),
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{basename}-{ts}.xlsx"'},
     )
 
 

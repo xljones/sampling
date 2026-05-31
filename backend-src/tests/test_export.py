@@ -661,3 +661,98 @@ def test_export_single_core_flat_geojson(auth_client: FlaskClient) -> None:
     assert r.status_code == 200
     fc = json.loads(r.data)
     assert len(fc["features"]) == 1
+
+
+# ── xlsx format ───────────────────────────────────────────────────────────────
+
+def _sheet_values(wb, sheet_name: str) -> list[list]:
+    ws = wb[sheet_name]
+    return [[cell.value for cell in row] for row in ws.iter_rows()]
+
+
+def test_export_tubes_xlsx(auth_client: FlaskClient) -> None:
+    import io
+    import openpyxl
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001", "site_name": "River A"})
+    r = auth_client.get("/api/export/tubes?format=xlsx")
+    assert r.status_code == 200
+    assert "spreadsheetml" in r.content_type
+    assert re.search(rf'filename="tubes-{TS_RE}\.xlsx"', r.headers["Content-Disposition"])
+    wb = openpyxl.load_workbook(io.BytesIO(r.data))
+    assert wb.sheetnames == ["Tubes"]
+    rows = _sheet_values(wb, "Tubes")
+    assert rows[0][0] == "barcode"
+    assert any("TUBE001" in str(c) for c in rows[1])
+
+
+def test_export_tubes_xlsx_with_ids(auth_client: FlaskClient) -> None:
+    import io
+    import openpyxl
+    t1 = auth_client.post("/api/tubes", json={"barcode": "TUBE001"}).json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE002"})
+    r = auth_client.get(f"/api/export/tubes?format=xlsx&ids={t1['id']}")
+    assert r.status_code == 200
+    wb = openpyxl.load_workbook(io.BytesIO(r.data))
+    rows = _sheet_values(wb, "Tubes")
+    barcodes = [r[0] for r in rows[1:]]
+    assert "TUBE001" in barcodes
+    assert "TUBE002" not in barcodes
+
+
+def test_export_boxes_xlsx(auth_client: FlaskClient) -> None:
+    import io
+    import openpyxl
+    box = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001", "box_id": box["id"]})
+    r = auth_client.get("/api/export/boxes?format=xlsx")
+    assert r.status_code == 200
+    assert "spreadsheetml" in r.content_type
+    assert re.search(rf'filename="boxes-{TS_RE}\.xlsx"', r.headers["Content-Disposition"])
+    wb = openpyxl.load_workbook(io.BytesIO(r.data))
+    assert wb.sheetnames == ["Boxes", "Tubes"]
+    box_rows = _sheet_values(wb, "Boxes")
+    assert box_rows[0][0] == "barcode"
+    assert any("BOX001" in str(c) for c in box_rows[1])
+    tube_rows = _sheet_values(wb, "Tubes")
+    assert any("TUBE001" in str(c) for c in tube_rows[1])
+
+
+def test_export_single_box_xlsx(auth_client: FlaskClient) -> None:
+    import io
+    import openpyxl
+    box = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    r = auth_client.get(f"/api/export/boxes/{box['id']}?format=xlsx")
+    assert r.status_code == 200
+    wb = openpyxl.load_workbook(io.BytesIO(r.data))
+    assert wb.sheetnames == ["Boxes", "Tubes"]
+    assert any("BOX001" in str(c) for c in _sheet_values(wb, "Boxes")[1])
+
+
+def test_export_cores_xlsx(auth_client: FlaskClient) -> None:
+    import io
+    import openpyxl
+    core = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    box = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001", "core_id": core["id"], "box_id": box["id"]})
+    r = auth_client.get("/api/export/cores?format=xlsx")
+    assert r.status_code == 200
+    assert "spreadsheetml" in r.content_type
+    assert re.search(rf'filename="cores-{TS_RE}\.xlsx"', r.headers["Content-Disposition"])
+    wb = openpyxl.load_workbook(io.BytesIO(r.data))
+    assert wb.sheetnames == ["Cores", "Boxes", "Tubes"]
+    assert any("CORE001" in str(c) for c in _sheet_values(wb, "Cores")[1])
+    assert any("BOX001" in str(c) for c in _sheet_values(wb, "Boxes")[1])
+    assert any("TUBE001" in str(c) for c in _sheet_values(wb, "Tubes")[1])
+
+
+def test_export_single_core_xlsx(auth_client: FlaskClient) -> None:
+    import io
+    import openpyxl
+    core = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001", "core_id": core["id"]})
+    r = auth_client.get(f"/api/export/cores/{core['id']}?format=xlsx")
+    assert r.status_code == 200
+    wb = openpyxl.load_workbook(io.BytesIO(r.data))
+    assert wb.sheetnames == ["Cores", "Boxes", "Tubes"]
+    assert any("CORE001" in str(c) for c in _sheet_values(wb, "Cores")[1])
+    assert any("TUBE001" in str(c) for c in _sheet_values(wb, "Tubes")[1])

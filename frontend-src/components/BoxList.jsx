@@ -88,6 +88,7 @@ export default function BoxList() {
               { label: 'Comma separated values (.csv)', onClick: () => { window.location.href = _boxExportUrl(withTubes, 'csv', q ? visible : null); } },
               { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = _boxExportUrl(withTubes, 'tsv', q ? visible : null); } },
               { label: 'JSON (.json)', onClick: () => { window.location.href = _boxExportUrl(withTubes, 'json', q ? visible : null); } },
+              { label: 'Excel (.xlsx)', note: 'Boxes & tubes', onClick: () => { window.location.href = _boxExportUrl(false, 'xlsx', q ? visible : null); } },
             ]}
           />
           {!ro && <button className="btn btn-primary" onClick={() => setShowAdd(v => !v)}>+ New box</button>}

@@ -144,6 +144,7 @@ export default function BoxDetail() {
               { label: 'Comma separated values (.csv)', onClick: () => { window.location.href = withTubes ? `/api/export/boxes/${id}` : `/api/export/boxes/${id}?flat=1`; } },
               { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = withTubes ? `/api/export/boxes/${id}?format=tsv` : `/api/export/boxes/${id}?flat=1&format=tsv`; } },
               { label: 'JSON (.json)', onClick: () => { window.location.href = withTubes ? `/api/export/boxes/${id}?format=json` : `/api/export/boxes/${id}?flat=1&format=json`; } },
+              { label: 'Excel (.xlsx)', note: 'Boxes & tubes', onClick: () => { window.location.href = `/api/export/boxes/${id}?format=xlsx`; } },
             ]}
           />
           {editing && (

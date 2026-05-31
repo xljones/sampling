@@ -2,10 +2,34 @@ from flask import Response, request
 from flask_login import login_required
 
 from sampling.db import get_db
+from sampling.repositories.box_repository import BoxRepository
 from sampling.repositories.core_repository import CoreRepository
+from sampling.repositories.tube_repository import TubeRepository
 
 from ._blueprint import bp
-from ._responses import _safe, json_response, parse_ids, respond
+from ._responses import _safe, json_response, parse_ids, respond, xlsx_response
+
+
+def _cores_xlsx(core_rows: list, db) -> Response:
+    core_ids = [r["id"] for r in core_rows]
+    box_repo = BoxRepository(db)
+    tube_repo = TubeRepository(db)
+    return xlsx_response(
+        [
+            {"name": "Cores", "fields": CoreRepository.FLAT_FIELDS, "rows": core_rows},
+            {
+                "name": "Boxes",
+                "fields": BoxRepository.FLAT_FIELDS,
+                "rows": box_repo.export_flat_for_cores(core_ids),
+            },
+            {
+                "name": "Tubes",
+                "fields": TubeRepository.EXPORT_FIELDS,
+                "rows": tube_repo.export_for_cores(core_ids),
+            },
+        ],
+        "cores",
+    )
 
 
 @bp.get("/api/export/cores")
@@ -16,6 +40,8 @@ def export_cores() -> Response:
     ids = parse_ids(request.args.get("ids", ""))
     with get_db() as db:
         repo = CoreRepository(db)
+        if fmt == "xlsx":
+            return _cores_xlsx(repo.export_flat(ids=ids), db)
         if fmt == "json":
             if flat:
                 rows = [
@@ -39,6 +65,8 @@ def export_core(core_id: int) -> Response:
     flat = request.args.get("flat", "").lower() in ("1", "true", "yes")
     with get_db() as db:
         repo = CoreRepository(db)
+        if fmt == "xlsx":
+            return _cores_xlsx(repo.export_flat(core_id=core_id), db)
         if fmt == "json":
             if flat:
                 data = repo.export_flat(core_id=core_id)

@@ -130,6 +130,7 @@ export default function CoreDetail() {
               { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = withSubData ? `/api/export/cores/${id}?format=tsv` : `/api/export/cores/${id}?flat=1&format=tsv`; } },
               { label: 'JSON (.json)', onClick: () => { window.location.href = withSubData ? `/api/export/cores/${id}?format=json` : `/api/export/cores/${id}?flat=1&format=json`; } },
               { label: 'GeoJSON (.geojson)', note: 'Core location only — sub-data not included', onClick: () => { window.location.href = `/api/export/cores/${id}?flat=1&format=geojson`; } },
+              { label: 'Excel (.xlsx)', note: 'Cores, boxes & tubes', onClick: () => { window.location.href = `/api/export/cores/${id}?format=xlsx`; } },
             ]}
           />
           {editing && (
