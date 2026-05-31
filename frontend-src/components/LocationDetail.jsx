@@ -28,8 +28,8 @@ export default function LocationDetail() {
             <thead><tr><th>Barcode</th><th>Name</th><th>Tubes</th><th>Notes</th></tr></thead>
             <tbody>
               {loc.boxes.map(b => (
-                <tr key={b.id} className="row-clickable" onClick={() => navigate(`/boxes/${b.id}`)}>
-                  <td><Link to={`/boxes/${b.id}`} onClick={e => e.stopPropagation()}><span className="barcode">{b.barcode}</span></Link></td>
+                <tr key={b.id} className="row-clickable" onClick={() => navigate(`/boxes/${b.id}?from=/locations/${id}`)}>
+                  <td><Link to={`/boxes/${b.id}?from=/locations/${id}`} onClick={e => e.stopPropagation()}><span className="barcode">{b.barcode}</span></Link></td>
                   <td>{b.name || '—'}</td>
                   <td>{b.tube_count}</td>
                   <td className="text-muted text-sm">{b.notes || '—'}</td>

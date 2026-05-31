@@ -11,12 +11,23 @@ export default function CoordCard({
   lngBadge,
   latHint,
   lngHint,
+  extraPoints = [],
 }) {
   const latNum = lat !== '' && lat != null ? Number(lat) : null;
   const lngNum = lng !== '' && lng != null ? Number(lng) : null;
   const hasCoords = latNum != null && lngNum != null;
 
-  if (!editing && !hasCoords) return null;
+  if (!editing && !hasCoords && extraPoints.length === 0) return null;
+
+  const allPoints = [
+    ...(hasCoords ? [{ lat: latNum, lng: lngNum, label: mapLabel }] : []),
+    ...extraPoints,
+  ];
+
+  const legend = [
+    ...(hasCoords ? [{ color: '#3388ff', label: mapLabel || 'Location' }] : []),
+    ...(extraPoints.length > 0 ? [{ color: '#22c55e', label: 'Tubes (own coords)' }] : []),
+  ];
 
   return (
     <div className="card mt-4">
@@ -61,9 +72,10 @@ export default function CoordCard({
       {editing && (
         <MapPicker lat={latNum} lng={lngNum} onChange={onChange} />
       )}
-      {!editing && hasCoords && (
+      {!editing && allPoints.length > 0 && (
         <LeafletMap
-          points={[{ lat: latNum, lng: lngNum, label: mapLabel }]}
+          points={allPoints}
+          legend={legend}
           className={null}
         />
       )}

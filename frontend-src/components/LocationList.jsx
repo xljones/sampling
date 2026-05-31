@@ -8,6 +8,7 @@ export default function LocationList() {
   const { user } = useAuth();
   const ro = user?.is_readonly;
   const [locations, setLocations] = useState([]);
+  const [filter, setFilter] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -17,6 +18,9 @@ export default function LocationList() {
   const navigate = useNavigate();
 
   useEffect(() => { api.getLocations().then(setLocations); }, []);
+
+  const q = filter.toLowerCase();
+  const visible = q ? locations.filter(l => l.name.toLowerCase().includes(q)) : locations;
 
   async function handleAdd(e) {
     e.preventDefault();
@@ -90,19 +94,29 @@ export default function LocationList() {
         </div>
       )}
 
+      <div className="mb-4">
+        <input
+          type="search"
+          value={filter}
+          onChange={e => setFilter(e.target.value)}
+          placeholder="Filter by name…"
+          className="search-input"
+        />
+      </div>
+
       <div className="card">
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Name</th><th>Boxes</th><th></th></tr></thead>
+            <thead><tr><th>Name</th><th>Boxes</th><th>Cores</th><th></th></tr></thead>
             <tbody>
-              {locations.map(loc => (
+              {visible.map(loc => (
                 <tr
                   key={loc.id}
                   className={editId === loc.id ? '' : 'row-clickable'}
                   onClick={e => { if (editId === loc.id || e.target.closest('a, button, input, form')) return; navigate(`/locations/${loc.id}`); }}
                 >
                   {editId === loc.id ? (
-                    <td colSpan={3}>
+                    <td colSpan={4}>
                       <form onSubmit={handleEdit} className="inline-form">
                         <input value={editName} onChange={e => setEditName(e.target.value)} autoFocus className="input-sm" />
                         <button className="btn btn-success btn-sm" disabled={saving || !editName.trim()}>Save</button>
@@ -113,6 +127,7 @@ export default function LocationList() {
                     <>
                       <td>{loc.name}</td>
                       <td className="text-muted">{loc.box_count}</td>
+                      <td className="text-muted">{loc.core_count}</td>
                       <td className="col-shrink">
                         {!ro && (
                           <div className="row-actions">
@@ -125,7 +140,7 @@ export default function LocationList() {
                   )}
                 </tr>
               ))}
-              {locations.length === 0 && <tr><td colSpan={3} className="empty">No locations yet</td></tr>}
+              {visible.length === 0 && <tr><td colSpan={4} className="empty">{q ? 'No matches' : 'No locations yet'}</td></tr>}
             </tbody>
           </table>
         </div>

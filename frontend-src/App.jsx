@@ -42,9 +42,7 @@ function Nav() {
         <NavLink to="/account" className="sidebar-nav-btn">Change password</NavLink>
         <button className="sidebar-nav-btn text-danger" onClick={logout}>Sign out</button>
         <BuildInfo className="sidebar-version" />
-        <div className="sidebar-grass" aria-hidden="true">
-          <span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/>
-        </div>
+        <div className="sidebar-grass" aria-hidden="true" />
       </div>
     </nav>
   );

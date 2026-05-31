@@ -25,7 +25,7 @@ export default function TubeDetail() {
   const [boxBarcode, setBoxBarcode] = useState('');
   const [coreBarcode, setCoreBarcode] = useState('');
   const [creatingBox, setCreatingBox] = useState(false);
-  const [showHistory, setShowHistory] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState(null);
 
   useEffect(() => {
@@ -204,7 +204,13 @@ export default function TubeDetail() {
       <div className="page-header">
         <div>
           <div className="back-link">
-            <Link to={searchParams.get('from') ?? '/tubes'}>← {searchParams.get('from')?.startsWith('/boxes/') ? `Box ${tube.box_barcode}` : 'Tubes'}</Link>
+            <Link to={searchParams.get('from') ?? '/tubes'}>
+              ← {searchParams.get('from')?.startsWith('/boxes/')
+                ? `Box ${tube.box_barcode}${tube.box_name ? ` — ${tube.box_name}` : ''}`
+                : searchParams.get('from')?.startsWith('/cores/')
+                ? `Core ${tube.core_barcode}${tube.core_name ? ` — ${tube.core_name}` : ''}`
+                : 'Tubes'}
+            </Link>
           </div>
           <h1 className="page-title"><span className="barcode barcode-lg">{tube.barcode}</span></h1>
         </div>
@@ -275,7 +281,7 @@ export default function TubeDetail() {
               ) : (
                 tube.box_id ? (
                   <>
-                    <Link to={`/boxes/${tube.box_id}`}>
+                    <Link to={`/boxes/${tube.box_id}?from=/tubes/${id}`}>
                       <span className="barcode">{tube.box_barcode}</span>{tube.box_name ? ` — ${tube.box_name}` : ''}
                     </Link>
                     {tube.box_location_name && (
@@ -317,7 +323,7 @@ export default function TubeDetail() {
               ) : (
                 tube.core_id ? (
                   <>
-                    <Link to={`/cores/${tube.core_id}`}>
+                    <Link to={`/cores/${tube.core_id}?from=/tubes/${id}`}>
                       <span className="barcode">{tube.core_barcode}</span>{tube.core_name ? ` — ${tube.core_name}` : ''}
                     </Link>
                     {tube.core_location_name && (
