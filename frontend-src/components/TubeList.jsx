@@ -4,6 +4,41 @@ import { api } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
+import ExportDropdown from './ExportDropdown.jsx';
+
+const TUBE_EXPORT_FIELDS = [
+  'barcode', 'box_barcode', 'box_name', 'sample_date', 'site_name',
+  'latitude', 'longitude', 'sample_type', 'description', 'volume_ml',
+  'weight_g', 'depth_cm', 'created_at', 'updated_at',
+];
+
+function downloadBlob(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const ts = new Date().toISOString().replace(/\.\d+Z$/, '').replace(/:/g, '-');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename.replace('{ts}', ts);
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function exportTubesToCsv(rows) {
+  const escape = v => v == null ? '' : `"${String(v).replace(/"/g, '""')}"`;
+  const lines = [
+    TUBE_EXPORT_FIELDS.join(','),
+    ...rows.map(r => TUBE_EXPORT_FIELDS.map(f => escape(r[f])).join(',')),
+  ];
+  downloadBlob(lines.join('\r\n'), 'tubes-{ts}.csv', 'text/csv');
+}
+
+function exportTubesToTsv(rows) {
+  const escape = v => v == null ? '' : String(v).replace(/\t/g, ' ').replace(/\r?\n/g, ' ');
+  const lines = [
+    TUBE_EXPORT_FIELDS.join('\t'),
+    ...rows.map(r => TUBE_EXPORT_FIELDS.map(f => escape(r[f])).join('\t')),
+  ];
+  downloadBlob(lines.join('\r\n'), 'tubes-{ts}.tsv', 'text/tab-separated-values');
+}
 
 export default function TubeList() {
   const { user } = useAuth();
@@ -26,6 +61,7 @@ export default function TubeList() {
   useEffect(() => { api.getBoxes().then(setBoxes); }, []);
 
   const q = filter.toLowerCase();
+  const anyFilter = !!q || unassignedOnly;
   const visible = tubes
     .filter(t => !unassignedOnly || !t.box_id)
     .filter(t => !q || (
@@ -95,7 +131,14 @@ export default function TubeList() {
       <div className="page-header">
         <h1 className="page-title">{unassignedOnly ? 'Unassigned tubes' : 'Tubes'}</h1>
         <div className="btn-group">
-          <a href="/api/export/tubes" className="btn btn-secondary" download>Export CSV</a>
+          <ExportDropdown
+            label={anyFilter ? `Export (${visible.length} rows)` : 'Export'}
+            disabled={visible.length === 0}
+            options={[
+              { label: 'Comma separated values (.csv)', onClick: () => { if (anyFilter) exportTubesToCsv(visible); else window.location.href = '/api/export/tubes'; } },
+              { label: 'Tab separated values (.tsv)', onClick: () => { if (anyFilter) exportTubesToTsv(visible); else window.location.href = '/api/export/tubes?format=tsv'; } },
+            ]}
+          />
           {!ro && <Link to="/tubes/new" className="btn btn-primary">+ New tube</Link>}
         </div>
       </div>

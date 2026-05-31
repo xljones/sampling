@@ -5,6 +5,8 @@ import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
 import RelativeTime from './RelativeTime.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
+import ExportDropdown from './ExportDropdown.jsx';
+
 
 export default function BoxList() {
   const { user } = useAuth();
@@ -67,7 +69,14 @@ export default function BoxList() {
       <div className="page-header">
         <h1 className="page-title">Boxes</h1>
         <div className="btn-group">
-          <a href="/api/export/boxes" className="btn btn-secondary" download>Export CSV</a>
+          <ExportDropdown
+            label={q ? `Export (${visible.length} rows)` : 'Export'}
+            disabled={visible.length === 0}
+            options={[
+              { label: 'Comma separated values (.csv)', onClick: () => { window.location.href = '/api/export/boxes'; } },
+              { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = '/api/export/boxes?format=tsv'; } },
+            ]}
+          />
           {!ro && <button className="btn btn-primary" onClick={() => setShowAdd(v => !v)}>+ New box</button>}
         </div>
       </div>

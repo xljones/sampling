@@ -4,6 +4,8 @@ import { api } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
+import ExportDropdown from './ExportDropdown.jsx';
+
 
 export default function CoreList() {
   const { user } = useAuth();
@@ -11,11 +13,25 @@ export default function CoreList() {
   const navigate = useNavigate();
   const toast = useToast();
   const [cores, setCores] = useState(null);
+  const [filter, setFilter] = useState('');
   const [adding, setAdding] = useState(false);
   const [newBarcode, setNewBarcode] = useState('');
   const [creating, setCreating] = useState(false);
 
   useEffect(() => { api.getCores().then(setCores); }, []);
+
+  const q = filter.toLowerCase();
+  const anyFilter = !!q;
+
+  const visible = cores
+    ? cores.filter(c => !q || (
+        c.barcode.toLowerCase().includes(q) ||
+        (c.name ?? '').toLowerCase().includes(q) ||
+        (c.site_name ?? '').toLowerCase().includes(q) ||
+        (c.location_name ?? '').toLowerCase().includes(q) ||
+        (c.sample_type ?? '').toLowerCase().includes(q)
+      ))
+    : [];
 
   async function handleCreate(e) {
     e.preventDefault();
@@ -36,11 +52,21 @@ export default function CoreList() {
     <div>
       <div className="page-header">
         <h1 className="page-title">Cores</h1>
-        {!ro && (
-          <button className="btn btn-primary" onClick={() => setAdding(v => !v)}>
-            {adding ? 'Cancel' : '+ New core'}
-          </button>
-        )}
+        <div className="btn-group">
+          <ExportDropdown
+            label={anyFilter ? `Export (${visible.length} rows)` : 'Export'}
+            disabled={visible.length === 0}
+            options={[
+              { label: 'Comma separated values (.csv)', onClick: () => { window.location.href = '/api/export/cores'; } },
+              { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = '/api/export/cores?format=tsv'; } },
+            ]}
+          />
+          {!ro && (
+            <button className="btn btn-primary" onClick={() => setAdding(v => !v)}>
+              {adding ? 'Cancel' : '+ New core'}
+            </button>
+          )}
+        </div>
       </div>
 
       {adding && (
@@ -65,6 +91,16 @@ export default function CoreList() {
         </div>
       )}
 
+      <div className="mb-4">
+        <input
+          type="search"
+          value={filter}
+          onChange={e => setFilter(e.target.value)}
+          placeholder="Filter by barcode, name, site, location, type…"
+          className="search-input"
+        />
+      </div>
+
       <div className="card">
         {cores === null && <p className="card-message">Loading…</p>}
         {cores?.length === 0 && <p className="card-message">No cores yet.</p>}
@@ -80,10 +116,11 @@ export default function CoreList() {
                   <th>Type</th>
                   <th>Storage</th>
                   <th>Tubes</th>
+                  <th>Boxes</th>
                 </tr>
               </thead>
               <tbody>
-                {cores.map(c => (
+                {visible.map(c => (
                   <tr key={c.id} className="row-clickable" onClick={() => navigate(`/cores/${c.id}`)}>
                     <td>
                       <Link to={`/cores/${c.id}`} onClick={e => e.stopPropagation()}>
@@ -96,8 +133,12 @@ export default function CoreList() {
                     <td>{c.sample_type || '—'}</td>
                     <td>{c.location_name || '—'}</td>
                     <td>{c.tube_count}</td>
+                    <td>{c.box_count || '—'}</td>
                   </tr>
                 ))}
+                {visible.length === 0 && q && (
+                  <tr><td colSpan={8} className="empty">No matches</td></tr>
+                )}
               </tbody>
             </table>
           </div>
