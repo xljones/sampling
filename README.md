@@ -12,7 +12,7 @@ A local web app for cataloguing sediment samples. Tubes are stored in boxes; cor
 - **Barcode input** — USB scanner (keyboard wedge), camera scan, or manual entry
 - **Camera scanner** — auto-detects front/rear camera and corrects mirroring
 - **GPS & map** — latitude/longitude on tubes with a pick-on-map tool and Leaflet map view
-- **Export** — CSV and TSV export; boxes and cores export hierarchically with their tubes; single-item export from detail pages
+- **Export** — CSV, TSV, JSON, and GeoJSON export; boxes and cores export hierarchically with their tubes; single-item export from detail pages
 - **Search** — filter by barcode, site, type, or location
 - **Authentication** — session-based login; users stored in SQLite
 
@@ -53,7 +53,7 @@ backend-src/           Python backend
     __init__.py        App factory
     db.py              Connection + migration runner
     migrations/        Versioned SQL files
-    domain/            Box, Tube, User dataclasses
+    domain/            Box, Core, Tube, User, Location dataclasses
     repositories/      All SQL per entity
     routes/            Flask Blueprints (boxes, cores, tubes, scan, export, auth, locations, users)
 
