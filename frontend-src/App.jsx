@@ -23,7 +23,7 @@ function Nav() {
 
   return (
     <nav className="sidebar">
-      <pre className="sidebar-logo">{`  ╲ A─T ╱\n  ╱ G─C ╲\n  ╲ C─G ╱\n  ╱ T─A ╲\n  ────────`}</pre>
+      <img src="/dna-icon.svg" className="sidebar-logo" alt="DNA icon" />
       <div className="sidebar-title">Dirt Nap</div>
       <div className="sidebar-tagline">The samples are at rest</div>
       <NavLink to="/" end>Overview</NavLink>

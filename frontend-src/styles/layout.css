@@ -6,9 +6,8 @@
   height: 100vh; position: sticky; top: 0; overflow-y: auto;
 }
 .sidebar-logo {
-  font-family: monospace; font-size: 11px; line-height: 1.4;
-  color: var(--text2); padding: 16px 16px 8px;
-  white-space: pre; letter-spacing: 0; opacity: 0.65;
+  width: 56px; height: 56px; display: block;
+  margin: 16px 16px 8px; opacity: 0.65;
 }
 .sidebar-grass-wrap {
   position: relative; flex-shrink: 0;
