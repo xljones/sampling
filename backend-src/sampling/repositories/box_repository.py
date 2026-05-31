@@ -163,3 +163,46 @@ class BoxRepository(BaseRepository):
                 (q, q, q),
             ).fetchall()
         )
+
+    def export_flat(
+        self, box_id: int | None = None, ids: list[int] | None = None
+    ) -> list[dict[str, Any]]:
+        if box_id is not None:
+            where, params = "WHERE b.id = ?", (box_id,)
+        elif ids is not None:
+            if not ids:
+                return []
+            where, params = f"WHERE b.id IN ({','.join('?' * len(ids))})", tuple(ids)
+        else:
+            where, params = "", ()
+        return self._rows(
+            self.db.execute(
+                f"""
+            SELECT b.id, b.barcode, b.name, l.name AS location, b.notes,
+                   COUNT(t.id) AS tube_count, b.created_at
+            FROM boxes b
+            LEFT JOIN locations l ON l.id = b.location_id
+            LEFT JOIN tubes t ON t.box_id = b.id
+            {where}
+            GROUP BY b.id ORDER BY b.created_at DESC
+        """,
+                params,
+            ).fetchall()
+        )
+
+    def export_tubes_for_boxes(self, box_ids: list[int]) -> list[dict[str, Any]]:
+        if not box_ids:
+            return []
+        placeholders = ",".join("?" * len(box_ids))
+        return self._rows(
+            self.db.execute(
+                f"""
+            SELECT box_id, barcode, sample_date, site_name, latitude, longitude,
+                   sample_type, description, volume_ml, weight_g, depth_cm,
+                   created_at, updated_at
+            FROM tubes WHERE box_id IN ({placeholders})
+            ORDER BY depth_cm ASC, created_at ASC
+        """,
+                tuple(box_ids),
+            ).fetchall()
+        )

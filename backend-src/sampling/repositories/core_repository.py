@@ -236,3 +236,54 @@ class CoreRepository(BaseRepository):
                 (q, q, q),
             ).fetchall()
         )
+
+    def export_flat(
+        self, core_id: int | None = None, ids: list[int] | None = None
+    ) -> list[dict[str, Any]]:
+        if core_id is not None:
+            where, params = "WHERE c.id = ?", (core_id,)
+        elif ids is not None:
+            if not ids:
+                return []
+            where, params = f"WHERE c.id IN ({','.join('?' * len(ids))})", tuple(ids)
+        else:
+            where, params = "", ()
+        return self._rows(
+            self.db.execute(
+                f"""
+            SELECT c.id, c.barcode, c.name, l.name AS location, c.site_name,
+                   c.latitude, c.longitude, c.collection_date, c.depth_cm,
+                   c.collector, c.sample_type, c.owner, c.notes,
+                   COUNT(t.id) AS tube_count,
+                   COUNT(DISTINCT CASE WHEN t.box_id IS NOT NULL THEN t.box_id END) AS box_count,
+                   c.created_at, c.updated_at
+            FROM cores c
+            LEFT JOIN locations l ON l.id = c.location_id
+            LEFT JOIN tubes t ON t.core_id = c.id
+            {where}
+            GROUP BY c.id ORDER BY c.created_at DESC
+        """,
+                params,
+            ).fetchall()
+        )
+
+    def export_tubes_for_cores(self, core_ids: list[int]) -> list[dict[str, Any]]:
+        if not core_ids:
+            return []
+        placeholders = ",".join("?" * len(core_ids))
+        return self._rows(
+            self.db.execute(
+                f"""
+            SELECT t.core_id, t.box_id, b.barcode AS box_barcode, b.name AS box_name,
+                   t.barcode, t.sample_date, t.site_name, t.latitude, t.longitude,
+                   t.sample_type, t.description, t.volume_ml, t.weight_g, t.depth_cm,
+                   t.created_at, t.updated_at
+            FROM tubes t
+            LEFT JOIN boxes b ON b.id = t.box_id
+            WHERE t.core_id IN ({placeholders})
+            ORDER BY CASE WHEN t.box_id IS NULL THEN 1 ELSE 0 END,
+                     t.box_id, t.depth_cm ASC, t.created_at ASC
+        """,
+                tuple(core_ids),
+            ).fetchall()
+        )
