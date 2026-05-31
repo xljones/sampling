@@ -3,34 +3,70 @@ import re
 from flask.testing import FlaskClient
 
 
+# ── helpers ──────────────────────────────────────────────────────────────────
+
+TS_RE = r"\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}"
+
+
+def _lines(r) -> list[str]:
+    return r.data.decode().strip().splitlines()
+
+
+def _header(r) -> list[str]:
+    return _lines(r)[0].split(",")
+
+
+# ── auth guards ───────────────────────────────────────────────────────────────
+
 def test_export_tubes_requires_auth(client: FlaskClient) -> None:
-    r = client.get("/api/export/tubes")
-    assert r.status_code == 401
+    assert client.get("/api/export/tubes").status_code == 401
 
 
 def test_export_boxes_requires_auth(client: FlaskClient) -> None:
-    r = client.get("/api/export/boxes")
-    assert r.status_code == 401
+    assert client.get("/api/export/boxes").status_code == 401
 
+
+def test_export_cores_requires_auth(client: FlaskClient) -> None:
+    assert client.get("/api/export/cores").status_code == 401
+
+
+def test_export_single_box_requires_auth(client: FlaskClient) -> None:
+    assert client.get("/api/export/boxes/1").status_code == 401
+
+
+def test_export_single_core_requires_auth(client: FlaskClient) -> None:
+    assert client.get("/api/export/cores/1").status_code == 401
+
+
+# ── tubes ─────────────────────────────────────────────────────────────────────
 
 def test_export_tubes_csv(auth_client: FlaskClient) -> None:
     auth_client.post("/api/tubes", json={"barcode": "TUBE001", "site_name": "River A"})
     r = auth_client.get("/api/export/tubes")
     assert r.status_code == 200
     assert "text/csv" in r.content_type
-    disposition = r.headers["Content-Disposition"]
-    assert re.search(r'filename="tubes-\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.csv"', disposition)
+    assert re.search(rf'filename="tubes-{TS_RE}\.csv"', r.headers["Content-Disposition"])
     text = r.data.decode()
     assert "barcode" in text
     assert "TUBE001" in text
     assert "River A" in text
 
 
+def test_export_tubes_tsv(auth_client: FlaskClient) -> None:
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001", "site_name": "River A"})
+    r = auth_client.get("/api/export/tubes?format=tsv")
+    assert r.status_code == 200
+    assert "tab-separated" in r.content_type
+    assert re.search(rf'filename="tubes-{TS_RE}\.tsv"', r.headers["Content-Disposition"])
+    text = r.data.decode()
+    assert "\t" in text
+    assert "TUBE001" in text
+
+
 def test_export_tubes_includes_box_info(auth_client: FlaskClient) -> None:
     box = auth_client.post("/api/boxes", json={"barcode": "BOX001", "name": "Shelf A"}).json
     auth_client.post("/api/tubes", json={"barcode": "TUBE001", "box_id": box["id"]})
-    r = auth_client.get("/api/export/tubes")
-    text = r.data.decode()
+    text = auth_client.get("/api/export/tubes").data.decode()
     assert "BOX001" in text
     assert "Shelf A" in text
 
@@ -38,27 +74,176 @@ def test_export_tubes_includes_box_info(auth_client: FlaskClient) -> None:
 def test_export_tubes_empty(auth_client: FlaskClient) -> None:
     r = auth_client.get("/api/export/tubes")
     assert r.status_code == 200
-    lines = r.data.decode().strip().splitlines()
-    assert len(lines) == 1  # header only
+    assert len(_lines(r)) == 1  # header only
 
+
+# ── boxes (hierarchical) ──────────────────────────────────────────────────────
 
 def test_export_boxes_csv(auth_client: FlaskClient) -> None:
-    auth_client.post("/api/boxes", json={"barcode": "BOX001", "name": "Shelf A", "location": "Freezer 2"})
+    auth_client.post("/api/boxes", json={"barcode": "BOX001", "name": "Shelf A"})
     r = auth_client.get("/api/export/boxes")
     assert r.status_code == 200
     assert "text/csv" in r.content_type
-    disposition = r.headers["Content-Disposition"]
-    assert re.search(r'filename="boxes-\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.csv"', disposition)
+    assert re.search(rf'filename="boxes-{TS_RE}\.csv"', r.headers["Content-Disposition"])
     text = r.data.decode()
-    assert "barcode" in text
+    assert "row_type" in text
     assert "BOX001" in text
-    assert "Shelf A" in text
+
+
+def test_export_boxes_tsv(auth_client: FlaskClient) -> None:
+    auth_client.post("/api/boxes", json={"barcode": "BOX001"})
+    r = auth_client.get("/api/export/boxes?format=tsv")
+    assert r.status_code == 200
+    assert "tab-separated" in r.content_type
+    assert re.search(rf'filename="boxes-{TS_RE}\.tsv"', r.headers["Content-Disposition"])
+    assert "\t" in r.data.decode()
+
+
+def test_export_boxes_includes_tube_rows(auth_client: FlaskClient) -> None:
+    box = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001", "box_id": box["id"], "site_name": "Lake"})
+    text = auth_client.get("/api/export/boxes").data.decode()
+    assert "box" in text
+    assert "tube" in text
+    assert "TUBE001" in text
+    assert "Lake" in text
 
 
 def test_export_boxes_tube_count(auth_client: FlaskClient) -> None:
     box = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
     auth_client.post("/api/tubes", json={"barcode": "TUBE001", "box_id": box["id"]})
     auth_client.post("/api/tubes", json={"barcode": "TUBE002", "box_id": box["id"]})
-    r = auth_client.get("/api/export/boxes")
-    text = r.data.decode()
+    text = auth_client.get("/api/export/boxes").data.decode()
     assert "2" in text
+
+
+def test_export_boxes_empty(auth_client: FlaskClient) -> None:
+    r = auth_client.get("/api/export/boxes")
+    assert r.status_code == 200
+    assert len(_lines(r)) == 1  # header only
+
+
+# ── single box ────────────────────────────────────────────────────────────────
+
+def test_export_single_box_csv(auth_client: FlaskClient) -> None:
+    box = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    r = auth_client.get(f"/api/export/boxes/{box['id']}")
+    assert r.status_code == 200
+    assert "text/csv" in r.content_type
+    text = r.data.decode()
+    assert "BOX001" in text
+
+
+def test_export_single_box_tsv(auth_client: FlaskClient) -> None:
+    box = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    r = auth_client.get(f"/api/export/boxes/{box['id']}?format=tsv")
+    assert r.status_code == 200
+    assert "tab-separated" in r.content_type
+
+
+def test_export_single_box_filename_contains_barcode(auth_client: FlaskClient) -> None:
+    box = auth_client.post("/api/boxes", json={"barcode": "BOX-001"}).json
+    r = auth_client.get(f"/api/export/boxes/{box['id']}")
+    assert "BOX-001" in r.headers["Content-Disposition"]
+
+
+def test_export_single_box_special_chars_sanitized(auth_client: FlaskClient) -> None:
+    box = auth_client.post("/api/boxes", json={"barcode": "BOX 001"}).json
+    r = auth_client.get(f"/api/export/boxes/{box['id']}")
+    assert "BOX_001" in r.headers["Content-Disposition"]
+
+
+def test_export_single_box_not_found_returns_empty(auth_client: FlaskClient) -> None:
+    r = auth_client.get("/api/export/boxes/9999")
+    assert r.status_code == 200
+    assert len(_lines(r)) == 1  # header only, uses fallback name "box"
+
+
+# ── cores (hierarchical) ──────────────────────────────────────────────────────
+
+def test_export_cores_csv(auth_client: FlaskClient) -> None:
+    auth_client.post("/api/cores", json={"barcode": "CORE001"})
+    r = auth_client.get("/api/export/cores")
+    assert r.status_code == 200
+    assert "text/csv" in r.content_type
+    assert re.search(rf'filename="cores-{TS_RE}\.csv"', r.headers["Content-Disposition"])
+    text = r.data.decode()
+    assert "row_type" in text
+    assert "CORE001" in text
+
+
+def test_export_cores_tsv(auth_client: FlaskClient) -> None:
+    auth_client.post("/api/cores", json={"barcode": "CORE001"})
+    r = auth_client.get("/api/export/cores?format=tsv")
+    assert r.status_code == 200
+    assert "tab-separated" in r.content_type
+    assert re.search(rf'filename="cores-{TS_RE}\.tsv"', r.headers["Content-Disposition"])
+
+
+def test_export_cores_with_tubes_in_box(auth_client: FlaskClient) -> None:
+    core = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    box = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    auth_client.post("/api/tubes", json={
+        "barcode": "TUBE001", "core_id": core["id"], "box_id": box["id"]
+    })
+    text = auth_client.get("/api/export/cores").data.decode()
+    assert "core" in text
+    assert "box" in text
+    assert "tube" in text
+    assert "TUBE001" in text
+
+
+def test_export_cores_with_unboxed_tubes(auth_client: FlaskClient) -> None:
+    core = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001", "core_id": core["id"]})
+    text = auth_client.get("/api/export/cores").data.decode()
+    assert "TUBE001" in text
+
+
+def test_export_cores_empty(auth_client: FlaskClient) -> None:
+    r = auth_client.get("/api/export/cores")
+    assert r.status_code == 200
+    assert len(_lines(r)) == 1  # header only
+
+
+# ── single core ───────────────────────────────────────────────────────────────
+
+def test_export_single_core_csv(auth_client: FlaskClient) -> None:
+    core = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    r = auth_client.get(f"/api/export/cores/{core['id']}")
+    assert r.status_code == 200
+    assert "text/csv" in r.content_type
+    assert "CORE001" in r.data.decode()
+
+
+def test_export_single_core_tsv(auth_client: FlaskClient) -> None:
+    core = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    r = auth_client.get(f"/api/export/cores/{core['id']}?format=tsv")
+    assert r.status_code == 200
+    assert "tab-separated" in r.content_type
+
+
+def test_export_single_core_filename_contains_barcode(auth_client: FlaskClient) -> None:
+    core = auth_client.post("/api/cores", json={"barcode": "CORE-A1"}).json
+    r = auth_client.get(f"/api/export/cores/{core['id']}")
+    assert "CORE-A1" in r.headers["Content-Disposition"]
+
+
+def test_export_single_core_not_found_returns_empty(auth_client: FlaskClient) -> None:
+    r = auth_client.get("/api/export/cores/9999")
+    assert r.status_code == 200
+    assert len(_lines(r)) == 1  # header only
+
+
+# ── _safe helper (direct unit test) ──────────────────────────────────────────
+
+def test_safe_keeps_alnum_and_allowed() -> None:
+    from sampling.routes.export import _safe
+    assert _safe("CORE-001") == "CORE-001"
+    assert _safe("core_001.csv") == "core_001.csv"
+
+
+def test_safe_replaces_special_chars() -> None:
+    from sampling.routes.export import _safe
+    assert _safe("BOX 001") == "BOX_001"
+    assert _safe("A/B:C") == "A_B_C"
