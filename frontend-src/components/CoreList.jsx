@@ -72,7 +72,7 @@ export default function CoreList() {
               { label: 'Comma separated values (.csv)', onClick: () => { window.location.href = _coreExportUrl(withSubData, 'csv', anyFilter ? visible : null); } },
               { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = _coreExportUrl(withSubData, 'tsv', anyFilter ? visible : null); } },
               { label: 'JSON (.json)', onClick: () => { window.location.href = _coreExportUrl(withSubData, 'json', anyFilter ? visible : null); } },
-              { label: 'GeoJSON (.geojson)', onClick: () => { window.location.href = _coreExportUrl(false, 'geojson', anyFilter ? visible : null); } },
+              { label: 'GeoJSON (.geojson)', note: 'Core locations only — sub-data not included', onClick: () => { window.location.href = _coreExportUrl(false, 'geojson', anyFilter ? visible : null); } },
             ]}
           />
           {!ro && (

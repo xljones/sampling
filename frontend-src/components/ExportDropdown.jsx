@@ -40,6 +40,7 @@ export default function ExportDropdown({ label, disabled, options }) {
                 onClick={() => { opt.onClick(); setOpen(false); }}
               >
                 {opt.label}
+                {opt.note && <span className="export-dropdown-note">{opt.note}</span>}
               </button>
             );
           })}
