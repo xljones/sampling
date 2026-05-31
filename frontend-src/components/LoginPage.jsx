@@ -25,6 +25,7 @@ export default function LoginPage() {
   return (
     <div className="auth-wrap">
       <div className="card card-body auth-card">
+        <img src="/dna-icon.svg" className="auth-logo" alt="DNA icon" />
         <h1 className="auth-title">Dirt Nap</h1>
         <p className="auth-tagline">The samples are at rest</p>
         <form onSubmit={handleSubmit}>
