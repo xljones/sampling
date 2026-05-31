@@ -167,7 +167,7 @@ def _build_box_with_tubes_rows(db: Any, box_id: int | None = None) -> list[dict[
     for t in tube_rows:
         tubes_by_box[t["box_id"]].append(t)
 
-    _null = {f: None for f in _BOX_WITH_TUBES_FIELDS}
+    _null: dict[str, Any] = {f: None for f in _BOX_WITH_TUBES_FIELDS}
     result = []
     for box in boxes:
         row = dict(_null)
@@ -252,7 +252,7 @@ def _build_core_with_tubes_rows(db: Any, core_id: int | None = None) -> list[dic
     for t in tube_rows:
         tubes_by_core[t["core_id"]].append(t)
 
-    _null = {f: None for f in _CORE_WITH_TUBES_FIELDS}
+    _null: dict[str, Any] = {f: None for f in _CORE_WITH_TUBES_FIELDS}
     result = []
     for core in cores:
         row = dict(_null)
