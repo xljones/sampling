@@ -13,6 +13,10 @@ class User(UserMixin):
     expires_at: str | None = None
 
     @property
+    def is_authenticated(self) -> bool:
+        return True
+
+    @property
     def is_active(self) -> bool:
         if self.expires_at:
             try:
