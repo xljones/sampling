@@ -12,7 +12,7 @@ A local web app for cataloguing sediment samples. Tubes are stored in boxes; cor
 - **Barcode input** — USB scanner (keyboard wedge), camera scan, or manual entry
 - **Camera scanner** — auto-detects front/rear camera and corrects mirroring
 - **GPS & map** — latitude/longitude on tubes with a pick-on-map tool and Leaflet map view
-- **CSV export** — export all boxes or tubes to CSV
+- **Export** — CSV and TSV export; boxes and cores export hierarchically with their tubes; single-item export from detail pages
 - **Search** — filter by barcode, site, type, or location
 - **Authentication** — session-based login; users stored in SQLite
 

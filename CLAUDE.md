@@ -38,8 +38,8 @@ api.js               Thin fetch wrapper; all calls use credentials: 'include'
 components/          Pages: Dashboard, BoxList, BoxDetail, TubeList, TubeDetail,
                      TubeForm, CoreList, CoreDetail, ScanPage, LoginPage,
                      LocationList, LocationDetail, AccountPage, UserList
-                     Shared: BarcodeInput, CameraScanner, LeafletMap, MapPicker,
-                     BuildInfo, Toast
+                     Shared: BarcodeInput, CameraScanner, CoordCard, ExportDropdown,
+                     LeafletMap, MapPicker, RelativeTime, BuildInfo, Toast
 ```
 
 - **BarcodeInput** — composes manual text input + camera toggle; USB scanners work natively as keyboard wedge.
