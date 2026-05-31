@@ -104,10 +104,10 @@ class TubeRepository(BaseRepository):
             ),
         )
         row_id = cur.lastrowid
-        if row_id is None:
+        if row_id is None:  # pragma: no cover
             raise RuntimeError("INSERT returned no row ID")
         tube = self.get_by_id(row_id)
-        if tube is None:
+        if tube is None:  # pragma: no cover
             raise RuntimeError(f"Row {row_id} not found after INSERT")
         self._record_history(tube, changed_by)
         return tube
@@ -169,7 +169,7 @@ class TubeRepository(BaseRepository):
             LEFT JOIN boxes b ON b.id = th.box_id
             LEFT JOIN cores c ON c.id = th.core_id
             WHERE th.tube_id = ?
-            ORDER BY th.changed_at DESC
+            ORDER BY th.changed_at DESC, th.id DESC
         """,
                 (tube_id,),
             ).fetchall()
@@ -237,7 +237,7 @@ class TubeRepository(BaseRepository):
         box_id: int,
         changed_by: int | None = None,
     ) -> int:
-        if not tube_ids:
+        if not tube_ids:  # pragma: no cover
             return 0
         placeholders = ",".join("?" * len(tube_ids))
         self.db.execute(

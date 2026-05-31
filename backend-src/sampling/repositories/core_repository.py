@@ -8,7 +8,9 @@ class CoreRepository(BaseRepository):
     def list_all(self) -> list[dict[str, Any]]:
         return self._rows(
             self.db.execute("""
-            SELECT c.*, l.name AS location_name, COUNT(t.id) AS tube_count
+            SELECT c.*, l.name AS location_name,
+                   COUNT(t.id) AS tube_count,
+                   COUNT(DISTINCT CASE WHEN t.box_id IS NOT NULL THEN t.box_id END) AS box_count
             FROM cores c
             LEFT JOIN locations l ON l.id = c.location_id
             LEFT JOIN tubes t ON t.core_id = c.id
@@ -34,7 +36,11 @@ class CoreRepository(BaseRepository):
             return None
         core["tubes"] = self._rows(
             self.db.execute(
-                "SELECT * FROM tubes WHERE core_id=? ORDER BY depth_cm ASC, created_at ASC",
+                """
+                SELECT t.*, b.barcode AS box_barcode, b.name AS box_name
+                FROM tubes t LEFT JOIN boxes b ON b.id = t.box_id
+                WHERE t.core_id=? ORDER BY t.depth_cm ASC, t.created_at ASC
+                """,
                 (core_id,),
             ).fetchall()
         )
@@ -80,10 +86,10 @@ class CoreRepository(BaseRepository):
             ),
         )
         row_id = cur.lastrowid
-        if row_id is None:
+        if row_id is None:  # pragma: no cover
             raise RuntimeError("INSERT returned no row ID")
         core = self.get_by_id(row_id)
-        if core is None:
+        if core is None:  # pragma: no cover
             raise RuntimeError(f"Row {row_id} not found after INSERT")
         self._record_history(core, changed_by)
         return core
@@ -133,7 +139,7 @@ class CoreRepository(BaseRepository):
             LEFT JOIN users u ON u.id = ch.changed_by
             LEFT JOIN locations l ON l.id = ch.location_id
             WHERE ch.core_id = ?
-            ORDER BY ch.changed_at DESC
+            ORDER BY ch.changed_at DESC, ch.id DESC
         """,
                 (core_id,),
             ).fetchall()

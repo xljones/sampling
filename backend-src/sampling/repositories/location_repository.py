@@ -8,9 +8,11 @@ class LocationRepository(BaseRepository):
     def list_all(self) -> list[dict[str, Any]]:
         return self._rows(
             self.db.execute("""
-            SELECT l.*, COUNT(b.id) AS box_count
-            FROM locations l LEFT JOIN boxes b ON b.location_id = l.id
-            GROUP BY l.id ORDER BY l.name
+            SELECT l.*,
+                (SELECT COUNT(*) FROM boxes b WHERE b.location_id = l.id) AS box_count,
+                (SELECT COUNT(*) FROM cores c WHERE c.location_id = l.id) AS core_count
+            FROM locations l
+            ORDER BY l.name
         """).fetchall()
         )
 
@@ -38,10 +40,10 @@ class LocationRepository(BaseRepository):
     def create(self, name: str) -> dict[str, Any]:
         cur = self.db.execute("INSERT INTO locations (name) VALUES (?)", (name,))
         row_id = cur.lastrowid
-        if row_id is None:
+        if row_id is None:  # pragma: no cover
             raise RuntimeError("INSERT returned no row ID")
         loc = self.get_by_id(row_id)
-        if loc is None:
+        if loc is None:  # pragma: no cover
             raise RuntimeError(f"Row {row_id} not found after INSERT")
         return loc
 

@@ -65,10 +65,10 @@ class BoxRepository(BaseRepository):
             (barcode, name, location_id, notes),
         )
         row_id = cur.lastrowid
-        if row_id is None:
+        if row_id is None:  # pragma: no cover
             raise RuntimeError("INSERT returned no row ID")
         box = self.get_by_id(row_id)
-        if box is None:
+        if box is None:  # pragma: no cover
             raise RuntimeError(f"Row {row_id} not found after INSERT")
         self._record_history(box, changed_by)
         return box
@@ -101,7 +101,7 @@ class BoxRepository(BaseRepository):
             LEFT JOIN users u ON u.id = bh.changed_by
             LEFT JOIN locations l ON l.id = bh.location_id
             WHERE bh.box_id = ?
-            ORDER BY bh.changed_at DESC
+            ORDER BY bh.changed_at DESC, bh.id DESC
         """,
                 (box_id,),
             ).fetchall()
@@ -165,14 +165,3 @@ class BoxRepository(BaseRepository):
             ).fetchall()
         )
 
-    def export_all(self) -> list[dict[str, Any]]:
-        return self._rows(
-            self.db.execute("""
-            SELECT b.barcode, b.name, l.name AS location, b.notes,
-                   COUNT(t.id) AS tube_count, b.created_at
-            FROM boxes b
-            LEFT JOIN locations l ON l.id = b.location_id
-            LEFT JOIN tubes t ON t.box_id = b.id
-            GROUP BY b.id ORDER BY b.created_at DESC
-        """).fetchall()
-        )

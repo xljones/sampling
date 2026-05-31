@@ -13,7 +13,11 @@ class UserRepository:
             "SELECT id, username, is_readonly, expires_at, created_at FROM users WHERE id=?",
             (user_id,),
         ).fetchone()
-        return dict(r) if r else None
+        if r:
+            d = dict(r)
+            d["is_readonly"] = bool(d["is_readonly"])
+            return d
+        return None
 
     def get_by_username(self, username: str) -> dict[str, Any] | None:
         r = self.db.execute(
@@ -22,13 +26,10 @@ class UserRepository:
         return dict(r) if r else None
 
     def list_all(self) -> list[dict[str, Any]]:
-        return [
-            dict(r)
-            for r in self.db.execute(
-                "SELECT id, username, is_readonly, expires_at, created_at"
-                " FROM users ORDER BY created_at"
-            ).fetchall()
-        ]
+        rows = self.db.execute(
+            "SELECT id, username, is_readonly, expires_at, created_at FROM users ORDER BY created_at"
+        ).fetchall()
+        return [{**dict(r), "is_readonly": bool(r["is_readonly"])} for r in rows]
 
     def create(
         self,
@@ -42,10 +43,10 @@ class UserRepository:
             (username, generate_password_hash(password), int(is_readonly), expires_at),
         )
         row_id = cur.lastrowid
-        if row_id is None:
+        if row_id is None:  # pragma: no cover
             raise RuntimeError("INSERT returned no row ID")
         user = self.get_by_id(row_id)
-        if user is None:
+        if user is None:  # pragma: no cover
             raise RuntimeError(f"Row {row_id} not found after INSERT")
         return user
 
