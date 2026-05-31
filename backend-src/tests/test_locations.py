@@ -78,4 +78,4 @@ def test_delete_location_with_boxes_fails(auth_client: FlaskClient) -> None:
     auth_client.post("/api/boxes", json={"barcode": "BOX001", "location_id": loc["id"]})
     r = auth_client.delete(f"/api/locations/{loc['id']}")
     assert r.status_code == 409
-    assert "box" in r.json["error"].lower()
+    assert "cannot delete" in r.json["error"].lower()

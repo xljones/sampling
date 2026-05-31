@@ -77,7 +77,8 @@ class LocationRepository(BaseRepository):
         if count_boxes + count_cores > 0:
             return (
                 False,
-                f"Cannot delete: {count_boxes + count_cores} object{'s' if count_boxes + count_cores != 1 else ''} use this location",
+                f"Cannot delete: {count_boxes + count_cores} "
+                f"object{'s' if count_boxes + count_cores != 1 else ''} use this location",
             )
         self.db.execute("UPDATE box_history SET location_id=NULL WHERE location_id=?", (loc_id,))
         self.db.execute("DELETE FROM locations WHERE id=?", (loc_id,))
