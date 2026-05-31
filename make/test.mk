@@ -8,12 +8,12 @@ format:
 
 .PHONY: lint-backend
 # lint the Python backend with ruff
-lint-backend:
+lint-backend: backend-typecheck
 	docker compose run --rm backend ruff check sampling/
 
-.PHONY: typecheck
+.PHONY: backend-typecheck
 # type-check the Python backend with mypy
-typecheck:
+backend-typecheck:
 	docker compose run --rm backend mypy sampling/
 
 .PHONY: test-backend
@@ -33,4 +33,4 @@ test-frontend:
 
 .PHONY: test
 # lint, typecheck, and test backend and frontend (mirrors CI)
-test: lint-backend typecheck test-backend lint-frontend test-frontend
+test: lint-backend test-backend lint-frontend test-frontend
