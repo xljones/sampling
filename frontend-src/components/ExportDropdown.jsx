@@ -25,15 +25,24 @@ export default function ExportDropdown({ label, disabled, options }) {
       </button>
       {open && (
         <div className="export-dropdown-menu">
-          {options.map(opt => (
-            <button
-              key={opt.label}
-              className="export-dropdown-item"
-              onClick={() => { opt.onClick(); setOpen(false); }}
-            >
-              {opt.label}
-            </button>
-          ))}
+          {options.map((opt, i) => {
+            if (opt.divider) return <hr key={i} className="export-dropdown-divider" />;
+            if (opt.type === 'checkbox') return (
+              <label key={opt.label} className="export-dropdown-checkbox">
+                <input type="checkbox" checked={opt.checked} onChange={opt.onChange} />
+                {opt.label}
+              </label>
+            );
+            return (
+              <button
+                key={opt.label}
+                className="export-dropdown-item"
+                onClick={() => { opt.onClick(); setOpen(false); }}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

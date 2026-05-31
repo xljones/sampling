@@ -44,3 +44,15 @@
   color: var(--text);
 }
 .export-dropdown-item:hover { background: var(--surface2); }
+.export-dropdown-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+.export-dropdown-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text);
+  user-select: none;
+}
+.export-dropdown-checkbox:hover { background: var(--surface2); }
