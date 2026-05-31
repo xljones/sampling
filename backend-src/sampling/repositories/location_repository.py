@@ -67,14 +67,17 @@ class LocationRepository(BaseRepository):
         return self.get_by_id(loc_id)
 
     def delete(self, loc_id: int) -> tuple[bool, str | None]:
-        """Delete a location; return (False, msg) if boxes reference it, else (True, None)."""
-        count = self.db.execute(
+        """Delete a location; return (False, msg) if objects reference it, else (True, None)."""
+        count_boxes = self.db.execute(
             "SELECT COUNT(*) FROM boxes WHERE location_id=?", (loc_id,)
         ).fetchone()[0]
-        if count > 0:
+        count_cores = self.db.execute(
+            "SELECT COUNT(*) FROM cores WHERE location_id=?", (loc_id,)
+        ).fetchone()[0]
+        if count_boxes + count_cores > 0:
             return (
                 False,
-                f"Cannot delete: {count} box{'es' if count != 1 else ''} use this location",
+                f"Cannot delete: {count_boxes + count_cores} object{'s' if count_boxes + count_cores != 1 else ''} use this location",
             )
         self.db.execute("UPDATE box_history SET location_id=NULL WHERE location_id=?", (loc_id,))
         self.db.execute("DELETE FROM locations WHERE id=?", (loc_id,))
