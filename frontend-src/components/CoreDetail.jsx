@@ -25,6 +25,7 @@ export default function CoreDetail() {
   const [history, setHistory] = useState(null);
   const [hoveredTubeId, setHoveredTubeId] = useState(null);
   const [fromTube, setFromTube] = useState(null);
+  const [withSubData, setWithSubData] = useState(true);
 
   useEffect(() => {
     const from = searchParams.get('from') ?? '';
@@ -123,8 +124,12 @@ export default function CoreDetail() {
           <ExportDropdown
             label="Export"
             options={[
-              { label: 'Comma separated values (.csv)', onClick: () => { window.location.href = `/api/export/cores/${id}`; } },
-              { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = `/api/export/cores/${id}?format=tsv`; } },
+              { type: 'checkbox', label: 'Include boxes & tubes', checked: withSubData, onChange: () => setWithSubData(v => !v) },
+              { divider: true },
+              { label: 'Comma separated values (.csv)', onClick: () => { window.location.href = withSubData ? `/api/export/cores/${id}` : `/api/export/cores/${id}?flat=1`; } },
+              { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = withSubData ? `/api/export/cores/${id}?format=tsv` : `/api/export/cores/${id}?flat=1&format=tsv`; } },
+              { label: 'JSON (.json)', onClick: () => { window.location.href = withSubData ? `/api/export/cores/${id}?format=json` : `/api/export/cores/${id}?flat=1&format=json`; } },
+              { label: 'GeoJSON (.geojson)', onClick: () => { window.location.href = `/api/export/cores/${id}?flat=1&format=geojson`; } },
             ]}
           />
           {editing && (

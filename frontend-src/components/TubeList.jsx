@@ -40,6 +40,24 @@ function exportTubesToTsv(rows) {
   downloadBlob(lines.join('\r\n'), 'tubes-{ts}.tsv', 'text/tab-separated-values');
 }
 
+function exportTubesToJson(rows) {
+  const out = rows.map(r => Object.fromEntries(TUBE_EXPORT_FIELDS.map(f => [f, r[f] ?? null])));
+  downloadBlob(JSON.stringify(out, null, 2), 'tubes-{ts}.json', 'application/json');
+}
+
+function exportTubesToGeoJson(rows) {
+  const features = rows
+    .filter(r => r.latitude != null && r.longitude != null)
+    .map(r => ({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [r.longitude, r.latitude] },
+      properties: Object.fromEntries(
+        TUBE_EXPORT_FIELDS.filter(f => f !== 'latitude' && f !== 'longitude').map(f => [f, r[f] ?? null])
+      ),
+    }));
+  downloadBlob(JSON.stringify({ type: 'FeatureCollection', features }, null, 2), 'tubes-{ts}.geojson', 'application/geo+json');
+}
+
 export default function TubeList() {
   const { user } = useAuth();
   const ro = user?.is_readonly;
@@ -137,6 +155,8 @@ export default function TubeList() {
             options={[
               { label: 'Comma separated values (.csv)', onClick: () => { if (anyFilter) exportTubesToCsv(visible); else window.location.href = '/api/export/tubes'; } },
               { label: 'Tab separated values (.tsv)', onClick: () => { if (anyFilter) exportTubesToTsv(visible); else window.location.href = '/api/export/tubes?format=tsv'; } },
+              { label: 'JSON (.json)', onClick: () => { if (anyFilter) exportTubesToJson(visible); else window.location.href = '/api/export/tubes?format=json'; } },
+              { label: 'GeoJSON (.geojson)', onClick: () => { if (anyFilter) exportTubesToGeoJson(visible); else window.location.href = '/api/export/tubes?format=geojson'; } },
             ]}
           />
           {!ro && <Link to="/tubes/new" className="btn btn-primary">+ New tube</Link>}

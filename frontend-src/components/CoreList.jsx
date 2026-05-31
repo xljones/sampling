@@ -17,11 +17,21 @@ export default function CoreList() {
   const [adding, setAdding] = useState(false);
   const [newBarcode, setNewBarcode] = useState('');
   const [creating, setCreating] = useState(false);
+  const [withSubData, setWithSubData] = useState(true);
 
   useEffect(() => { api.getCores().then(setCores); }, []);
 
   const q = filter.toLowerCase();
   const anyFilter = !!q;
+
+  function _coreExportUrl(withSubData, format, filtered) {
+    const p = new URLSearchParams();
+    if (!withSubData) p.set('flat', '1');
+    if (format && format !== 'csv') p.set('format', format);
+    if (filtered) p.set('ids', filtered.map(c => c.id).join(','));
+    const qs = p.toString();
+    return qs ? `/api/export/cores?${qs}` : '/api/export/cores';
+  }
 
   const visible = cores
     ? cores.filter(c => !q || (
@@ -57,8 +67,12 @@ export default function CoreList() {
             label={anyFilter ? `Export (${visible.length} rows)` : 'Export'}
             disabled={visible.length === 0}
             options={[
-              { label: 'Comma separated values (.csv)', onClick: () => { window.location.href = '/api/export/cores'; } },
-              { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = '/api/export/cores?format=tsv'; } },
+              { type: 'checkbox', label: 'Include boxes & tubes', checked: withSubData, onChange: () => setWithSubData(v => !v) },
+              { divider: true },
+              { label: 'Comma separated values (.csv)', onClick: () => { window.location.href = _coreExportUrl(withSubData, 'csv', anyFilter ? visible : null); } },
+              { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = _coreExportUrl(withSubData, 'tsv', anyFilter ? visible : null); } },
+              { label: 'JSON (.json)', onClick: () => { window.location.href = _coreExportUrl(withSubData, 'json', anyFilter ? visible : null); } },
+              { label: 'GeoJSON (.geojson)', onClick: () => { window.location.href = _coreExportUrl(false, 'geojson', anyFilter ? visible : null); } },
             ]}
           />
           {!ro && (

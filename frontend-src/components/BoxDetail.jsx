@@ -26,6 +26,7 @@ export default function BoxDetail() {
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState(null);
   const [fromCore, setFromCore] = useState(null);
+  const [withTubes, setWithTubes] = useState(true);
 
   useEffect(() => {
     api.getBox(id).then(b => { setBox(b); setForm({ barcode: b.barcode, name: b.name ?? '', location_id: b.location_id ?? '', notes: b.notes ?? '' }); });
@@ -138,8 +139,11 @@ export default function BoxDetail() {
           <ExportDropdown
             label="Export"
             options={[
-              { label: 'Comma separated values (.csv)', onClick: () => { window.location.href = `/api/export/boxes/${id}`; } },
-              { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = `/api/export/boxes/${id}?format=tsv`; } },
+              { type: 'checkbox', label: 'Include tubes', checked: withTubes, onChange: () => setWithTubes(v => !v) },
+              { divider: true },
+              { label: 'Comma separated values (.csv)', onClick: () => { window.location.href = withTubes ? `/api/export/boxes/${id}` : `/api/export/boxes/${id}?flat=1`; } },
+              { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = withTubes ? `/api/export/boxes/${id}?format=tsv` : `/api/export/boxes/${id}?flat=1&format=tsv`; } },
+              { label: 'JSON (.json)', onClick: () => { window.location.href = withTubes ? `/api/export/boxes/${id}?format=json` : `/api/export/boxes/${id}?flat=1&format=json`; } },
             ]}
           />
           {editing && (

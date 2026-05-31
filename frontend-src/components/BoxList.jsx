@@ -17,6 +17,7 @@ export default function BoxList() {
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ barcode: '', name: '', location_id: '', notes: '' });
   const [saving, setSaving] = useState(false);
+  const [withTubes, setWithTubes] = useState(true);
   const toast = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -42,6 +43,15 @@ export default function BoxList() {
     : boxes;
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  function _boxExportUrl(withTubes, format, filtered) {
+    const p = new URLSearchParams();
+    if (!withTubes) p.set('flat', '1');
+    if (format && format !== 'csv') p.set('format', format);
+    if (filtered) p.set('ids', filtered.map(b => b.id).join(','));
+    const qs = p.toString();
+    return qs ? `/api/export/boxes?${qs}` : '/api/export/boxes';
+  }
 
   async function handleAdd(e) {
     e.preventDefault();
@@ -73,8 +83,11 @@ export default function BoxList() {
             label={q ? `Export (${visible.length} rows)` : 'Export'}
             disabled={visible.length === 0}
             options={[
-              { label: 'Comma separated values (.csv)', onClick: () => { window.location.href = '/api/export/boxes'; } },
-              { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = '/api/export/boxes?format=tsv'; } },
+              { type: 'checkbox', label: 'Include tubes', checked: withTubes, onChange: () => setWithTubes(v => !v) },
+              { divider: true },
+              { label: 'Comma separated values (.csv)', onClick: () => { window.location.href = _boxExportUrl(withTubes, 'csv', q ? visible : null); } },
+              { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = _boxExportUrl(withTubes, 'tsv', q ? visible : null); } },
+              { label: 'JSON (.json)', onClick: () => { window.location.href = _boxExportUrl(withTubes, 'json', q ? visible : null); } },
             ]}
           />
           {!ro && <button className="btn btn-primary" onClick={() => setShowAdd(v => !v)}>+ New box</button>}

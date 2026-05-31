@@ -235,6 +235,146 @@ def test_export_single_core_not_found_returns_empty(auth_client: FlaskClient) ->
     assert len(_lines(r)) == 1  # header only
 
 
+# ── boxes flat ────────────────────────────────────────────────────────────────
+
+def test_export_boxes_flat_csv(auth_client: FlaskClient) -> None:
+    auth_client.post("/api/boxes", json={"barcode": "BOX001", "name": "Shelf A"})
+    r = auth_client.get("/api/export/boxes?flat=1")
+    assert r.status_code == 200
+    assert "text/csv" in r.content_type
+    assert re.search(rf'filename="boxes-flat-{TS_RE}\.csv"', r.headers["Content-Disposition"])
+    text = r.data.decode()
+    assert "row_type" not in text
+    assert "BOX001" in text
+
+
+def test_export_boxes_flat_excludes_tube_rows(auth_client: FlaskClient) -> None:
+    box = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001", "box_id": box["id"]})
+    text = auth_client.get("/api/export/boxes?flat=1").data.decode()
+    assert "row_type" not in text
+    assert "TUBE001" not in text
+    assert "BOX001" in text
+
+
+def test_export_single_box_flat(auth_client: FlaskClient) -> None:
+    box = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    r = auth_client.get(f"/api/export/boxes/{box['id']}?flat=1")
+    assert r.status_code == 200
+    assert "BOX001" in r.data.decode()
+    assert "box-flat-BOX001" in r.headers["Content-Disposition"]
+
+
+# ── cores flat ────────────────────────────────────────────────────────────────
+
+def test_export_cores_flat_csv(auth_client: FlaskClient) -> None:
+    auth_client.post("/api/cores", json={"barcode": "CORE001"})
+    r = auth_client.get("/api/export/cores?flat=1")
+    assert r.status_code == 200
+    assert "text/csv" in r.content_type
+    assert re.search(rf'filename="cores-flat-{TS_RE}\.csv"', r.headers["Content-Disposition"])
+    text = r.data.decode()
+    assert "row_type" not in text
+    assert "CORE001" in text
+
+
+def test_export_cores_flat_excludes_tube_rows(auth_client: FlaskClient) -> None:
+    core = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001", "core_id": core["id"]})
+    text = auth_client.get("/api/export/cores?flat=1").data.decode()
+    assert "row_type" not in text
+    assert "TUBE001" not in text
+    assert "CORE001" in text
+
+
+def test_export_single_core_flat(auth_client: FlaskClient) -> None:
+    core = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    r = auth_client.get(f"/api/export/cores/{core['id']}?flat=1")
+    assert r.status_code == 200
+    assert "CORE001" in r.data.decode()
+    assert "core-flat-CORE001" in r.headers["Content-Disposition"]
+
+
+# ── boxes ids filter (regression: filtered list exported full set) ────────────
+
+def test_export_boxes_ids_filters_to_subset(auth_client: FlaskClient) -> None:
+    box1 = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    auth_client.post("/api/boxes", json={"barcode": "BOX002"})
+    r = auth_client.get(f"/api/export/boxes?ids={box1['id']}")
+    text = r.data.decode()
+    assert "BOX001" in text
+    assert "BOX002" not in text
+
+
+def test_export_boxes_flat_ids_filters_to_subset(auth_client: FlaskClient) -> None:
+    box1 = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    auth_client.post("/api/boxes", json={"barcode": "BOX002"})
+    r = auth_client.get(f"/api/export/boxes?flat=1&ids={box1['id']}")
+    text = r.data.decode()
+    assert "BOX001" in text
+    assert "BOX002" not in text
+
+
+def test_export_boxes_ids_includes_tubes_for_matching_boxes_only(auth_client: FlaskClient) -> None:
+    box1 = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    box2 = auth_client.post("/api/boxes", json={"barcode": "BOX002"}).json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE_A", "box_id": box1["id"]})
+    auth_client.post("/api/tubes", json={"barcode": "TUBE_B", "box_id": box2["id"]})
+    r = auth_client.get(f"/api/export/boxes?ids={box1['id']}")
+    text = r.data.decode()
+    assert "TUBE_A" in text
+    assert "TUBE_B" not in text
+
+
+def test_export_boxes_ids_empty_returns_header_only(auth_client: FlaskClient) -> None:
+    auth_client.post("/api/boxes", json={"barcode": "BOX001"})
+    r = auth_client.get("/api/export/boxes?ids=")
+    assert r.status_code == 200
+    assert len(_lines(r)) > 1  # no ids param = export all
+
+
+# ── cores ids filter (regression: filtered list exported full set) ─────────────
+
+def test_export_cores_ids_filters_to_subset(auth_client: FlaskClient) -> None:
+    core1 = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    auth_client.post("/api/cores", json={"barcode": "CORE002"})
+    r = auth_client.get(f"/api/export/cores?ids={core1['id']}")
+    text = r.data.decode()
+    assert "CORE001" in text
+    assert "CORE002" not in text
+
+
+def test_export_cores_flat_ids_filters_to_subset(auth_client: FlaskClient) -> None:
+    core1 = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    auth_client.post("/api/cores", json={"barcode": "CORE002"})
+    r = auth_client.get(f"/api/export/cores?flat=1&ids={core1['id']}")
+    text = r.data.decode()
+    assert "CORE001" in text
+    assert "CORE002" not in text
+
+
+def test_export_cores_ids_includes_tubes_for_matching_cores_only(auth_client: FlaskClient) -> None:
+    core1 = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    core2 = auth_client.post("/api/cores", json={"barcode": "CORE002"}).json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE_A", "core_id": core1["id"]})
+    auth_client.post("/api/tubes", json={"barcode": "TUBE_B", "core_id": core2["id"]})
+    r = auth_client.get(f"/api/export/cores?ids={core1['id']}")
+    text = r.data.decode()
+    assert "TUBE_A" in text
+    assert "TUBE_B" not in text
+
+
+def test_export_cores_ids_multiple(auth_client: FlaskClient) -> None:
+    core1 = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    core2 = auth_client.post("/api/cores", json={"barcode": "CORE002"}).json
+    auth_client.post("/api/cores", json={"barcode": "CORE003"})
+    r = auth_client.get(f"/api/export/cores?ids={core1['id']},{core2['id']}")
+    text = r.data.decode()
+    assert "CORE001" in text
+    assert "CORE002" in text
+    assert "CORE003" not in text
+
+
 # ── _safe helper (direct unit test) ──────────────────────────────────────────
 
 def test_safe_keeps_alnum_and_allowed() -> None:
@@ -247,3 +387,277 @@ def test_safe_replaces_special_chars() -> None:
     from sampling.routes.export import _safe
     assert _safe("BOX 001") == "BOX_001"
     assert _safe("A/B:C") == "A_B_C"
+
+
+# ── _parse_ids edge cases ─────────────────────────────────────────────────────
+
+def test_export_boxes_ids_invalid_falls_back_to_all(auth_client: FlaskClient) -> None:
+    # non-integer ids → _parse_ids returns None → exports all
+    auth_client.post("/api/boxes", json={"barcode": "BOX001"})
+    r = auth_client.get("/api/export/boxes?ids=abc")
+    assert r.status_code == 200
+    assert "BOX001" in r.data.decode()
+
+
+def test_export_boxes_ids_empty_csv_returns_header_only(auth_client: FlaskClient) -> None:
+    # ids=, → _parse_ids returns [] → empty result (all builders' return [] branch)
+    auth_client.post("/api/boxes", json={"barcode": "BOX001"})
+    r = auth_client.get("/api/export/boxes?ids=,")
+    assert r.status_code == 200
+    assert len(_lines(r)) == 1  # header only
+
+
+def test_export_boxes_flat_ids_empty_returns_header_only(auth_client: FlaskClient) -> None:
+    auth_client.post("/api/boxes", json={"barcode": "BOX001"})
+    r = auth_client.get("/api/export/boxes?flat=1&ids=,")
+    assert r.status_code == 200
+    assert len(_lines(r)) == 1
+
+
+def test_export_cores_ids_empty_returns_header_only(auth_client: FlaskClient) -> None:
+    auth_client.post("/api/cores", json={"barcode": "CORE001"})
+    r = auth_client.get("/api/export/cores?ids=,")
+    assert r.status_code == 200
+    assert len(_lines(r)) == 1
+
+
+def test_export_cores_flat_ids_empty_returns_header_only(auth_client: FlaskClient) -> None:
+    auth_client.post("/api/cores", json={"barcode": "CORE001"})
+    r = auth_client.get("/api/export/cores?flat=1&ids=,")
+    assert r.status_code == 200
+    assert len(_lines(r)) == 1
+
+
+def test_export_boxes_json_ids_empty_returns_empty_array(auth_client: FlaskClient) -> None:
+    import json
+    auth_client.post("/api/boxes", json={"barcode": "BOX001"})
+    r = auth_client.get("/api/export/boxes?format=json&ids=,")
+    assert r.status_code == 200
+    assert json.loads(r.data) == []
+
+
+def test_export_cores_json_ids_empty_returns_empty_array(auth_client: FlaskClient) -> None:
+    import json
+    auth_client.post("/api/cores", json={"barcode": "CORE001"})
+    r = auth_client.get("/api/export/cores?format=json&ids=,")
+    assert r.status_code == 200
+    assert json.loads(r.data) == []
+
+
+def test_export_single_box_json_not_found_returns_empty(auth_client: FlaskClient) -> None:
+    import json
+    r = auth_client.get("/api/export/boxes/9999?format=json")
+    assert r.status_code == 200
+    assert json.loads(r.data) == []
+
+
+def test_export_single_core_json_not_found_returns_empty(auth_client: FlaskClient) -> None:
+    import json
+    r = auth_client.get("/api/export/cores/9999?format=json")
+    assert r.status_code == 200
+    assert json.loads(r.data) == []
+
+
+# ── JSON tubes ────────────────────────────────────────────────────────────────
+
+def test_export_tubes_json(auth_client: FlaskClient) -> None:
+    import json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001", "site_name": "River A"})
+    r = auth_client.get("/api/export/tubes?format=json")
+    assert r.status_code == 200
+    assert "application/json" in r.content_type
+    assert re.search(rf'filename="tubes-{TS_RE}\.json"', r.headers["Content-Disposition"])
+    data = json.loads(r.data)
+    assert isinstance(data, list)
+    assert data[0]["barcode"] == "TUBE001"
+    assert data[0]["site_name"] == "River A"
+    assert "latitude" in data[0]
+
+
+# ── JSON boxes (nested) ───────────────────────────────────────────────────────
+
+def test_export_boxes_json_nested(auth_client: FlaskClient) -> None:
+    import json
+    box = auth_client.post("/api/boxes", json={"barcode": "BOX001", "name": "Shelf A"}).json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001", "box_id": box["id"], "site_name": "Lake"})
+    r = auth_client.get("/api/export/boxes?format=json")
+    assert r.status_code == 200
+    assert "application/json" in r.content_type
+    assert re.search(rf'filename="boxes-{TS_RE}\.json"', r.headers["Content-Disposition"])
+    rows = json.loads(r.data)
+    assert len(rows) == 1
+    assert rows[0]["barcode"] == "BOX001"
+    assert rows[0]["name"] == "Shelf A"
+    assert "tubes" in rows[0]
+    assert rows[0]["tubes"][0]["barcode"] == "TUBE001"
+    assert rows[0]["tubes"][0]["site_name"] == "Lake"
+    assert "box_barcode" not in rows[0]["tubes"][0]
+
+
+def test_export_boxes_json_nested_no_tubes_key_absent_when_empty(auth_client: FlaskClient) -> None:
+    import json
+    auth_client.post("/api/boxes", json={"barcode": "BOX001"})
+    rows = json.loads(auth_client.get("/api/export/boxes?format=json").data)
+    assert rows[0]["tubes"] == []
+
+
+def test_export_boxes_flat_json(auth_client: FlaskClient) -> None:
+    import json
+    auth_client.post("/api/boxes", json={"barcode": "BOX001"})
+    r = auth_client.get("/api/export/boxes?flat=1&format=json")
+    assert r.status_code == 200
+    assert re.search(rf'filename="boxes-flat-{TS_RE}\.json"', r.headers["Content-Disposition"])
+    rows = json.loads(r.data)
+    assert rows[0]["barcode"] == "BOX001"
+    assert "tubes" not in rows[0]
+
+
+def test_export_single_box_json_nested(auth_client: FlaskClient) -> None:
+    import json
+    box = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001", "box_id": box["id"]})
+    r = auth_client.get(f"/api/export/boxes/{box['id']}?format=json")
+    assert r.status_code == 200
+    rows = json.loads(r.data)
+    assert rows[0]["barcode"] == "BOX001"
+    assert rows[0]["tubes"][0]["barcode"] == "TUBE001"
+    assert "box-BOX001" in r.headers["Content-Disposition"]
+
+
+def test_export_single_box_flat_json(auth_client: FlaskClient) -> None:
+    import json
+    box = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    r = auth_client.get(f"/api/export/boxes/{box['id']}?flat=1&format=json")
+    assert r.status_code == 200
+    rows = json.loads(r.data)
+    assert rows[0]["barcode"] == "BOX001"
+    assert "tubes" not in rows[0]
+
+
+def test_export_boxes_json_ids_filters_to_subset(auth_client: FlaskClient) -> None:
+    import json
+    box1 = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    auth_client.post("/api/boxes", json={"barcode": "BOX002"})
+    rows = json.loads(auth_client.get(f"/api/export/boxes?format=json&ids={box1['id']}").data)
+    assert len(rows) == 1
+    assert rows[0]["barcode"] == "BOX001"
+
+
+# ── JSON cores (nested) ───────────────────────────────────────────────────────
+
+def test_export_cores_json_nested(auth_client: FlaskClient) -> None:
+    import json
+    core = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    box = auth_client.post("/api/boxes", json={"barcode": "BOX001"}).json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001", "core_id": core["id"], "box_id": box["id"]})
+    r = auth_client.get("/api/export/cores?format=json")
+    assert r.status_code == 200
+    assert "application/json" in r.content_type
+    assert re.search(rf'filename="cores-{TS_RE}\.json"', r.headers["Content-Disposition"])
+    rows = json.loads(r.data)
+    assert rows[0]["barcode"] == "CORE001"
+    assert "boxes" in rows[0]
+    assert "unboxed_tubes" in rows[0]
+    assert rows[0]["boxes"][0]["barcode"] == "BOX001"
+    assert rows[0]["boxes"][0]["tubes"][0]["barcode"] == "TUBE001"
+
+
+def test_export_cores_json_unboxed_tubes(auth_client: FlaskClient) -> None:
+    import json
+    core = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001", "core_id": core["id"]})
+    rows = json.loads(auth_client.get("/api/export/cores?format=json").data)
+    assert rows[0]["unboxed_tubes"][0]["barcode"] == "TUBE001"
+    assert rows[0]["boxes"] == []
+
+
+def test_export_cores_flat_json(auth_client: FlaskClient) -> None:
+    import json
+    auth_client.post("/api/cores", json={"barcode": "CORE001"})
+    r = auth_client.get("/api/export/cores?flat=1&format=json")
+    assert r.status_code == 200
+    assert re.search(rf'filename="cores-flat-{TS_RE}\.json"', r.headers["Content-Disposition"])
+    rows = json.loads(r.data)
+    assert rows[0]["barcode"] == "CORE001"
+    assert "boxes" not in rows[0]
+
+
+def test_export_single_core_json_nested(auth_client: FlaskClient) -> None:
+    import json
+    core = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    r = auth_client.get(f"/api/export/cores/{core['id']}?format=json")
+    assert r.status_code == 200
+    rows = json.loads(r.data)
+    assert rows[0]["barcode"] == "CORE001"
+    assert "boxes" in rows[0]
+    assert "core-CORE001" in r.headers["Content-Disposition"]
+
+
+def test_export_single_core_flat_json(auth_client: FlaskClient) -> None:
+    import json
+    core = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    r = auth_client.get(f"/api/export/cores/{core['id']}?flat=1&format=json")
+    assert r.status_code == 200
+    rows = json.loads(r.data)
+    assert rows[0]["barcode"] == "CORE001"
+    assert "boxes" not in rows[0]
+
+
+def test_export_cores_json_ids_filters_to_subset(auth_client: FlaskClient) -> None:
+    import json
+    core1 = auth_client.post("/api/cores", json={"barcode": "CORE001"}).json
+    auth_client.post("/api/cores", json={"barcode": "CORE002"})
+    rows = json.loads(auth_client.get(f"/api/export/cores?format=json&ids={core1['id']}").data)
+    assert len(rows) == 1
+    assert rows[0]["barcode"] == "CORE001"
+
+
+# ── GeoJSON format ────────────────────────────────────────────────────────────
+
+def test_export_tubes_geojson(auth_client: FlaskClient) -> None:
+    import json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001", "latitude": 51.5, "longitude": -0.1})
+    auth_client.post("/api/tubes", json={"barcode": "TUBE002"})  # no coords — excluded
+    r = auth_client.get("/api/export/tubes?format=geojson")
+    assert r.status_code == 200
+    assert "geo+json" in r.content_type
+    assert re.search(rf'filename="tubes-{TS_RE}\.geojson"', r.headers["Content-Disposition"])
+    fc = json.loads(r.data)
+    assert fc["type"] == "FeatureCollection"
+    assert len(fc["features"]) == 1
+    feat = fc["features"][0]
+    assert feat["geometry"]["type"] == "Point"
+    assert feat["geometry"]["coordinates"] == [-0.1, 51.5]
+    assert feat["properties"]["barcode"] == "TUBE001"
+    assert "latitude" not in feat["properties"]
+    assert "longitude" not in feat["properties"]
+
+
+def test_export_tubes_geojson_no_coords_returns_empty_collection(auth_client: FlaskClient) -> None:
+    import json
+    auth_client.post("/api/tubes", json={"barcode": "TUBE001"})
+    r = auth_client.get("/api/export/tubes?format=geojson")
+    assert r.status_code == 200
+    fc = json.loads(r.data)
+    assert fc["features"] == []
+
+
+def test_export_cores_flat_geojson(auth_client: FlaskClient) -> None:
+    import json
+    auth_client.post("/api/cores", json={"barcode": "CORE001", "latitude": 48.8, "longitude": 2.35})
+    r = auth_client.get("/api/export/cores?flat=1&format=geojson")
+    assert r.status_code == 200
+    assert "geo+json" in r.content_type
+    assert re.search(rf'filename="cores-flat-{TS_RE}\.geojson"', r.headers["Content-Disposition"])
+    fc = json.loads(r.data)
+    assert len(fc["features"]) == 1
+    assert fc["features"][0]["properties"]["barcode"] == "CORE001"
+
+
+def test_export_single_core_flat_geojson(auth_client: FlaskClient) -> None:
+    import json
+    core = auth_client.post("/api/cores", json={"barcode": "CORE001", "latitude": 48.8, "longitude": 2.35}).json
+    r = auth_client.get(f"/api/export/cores/{core['id']}?flat=1&format=geojson")
+    assert r.status_code == 200
+    fc = json.loads(r.data)
+    assert len(fc["features"]) == 1
