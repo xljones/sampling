@@ -6,6 +6,7 @@ import { useToast } from './Toast.jsx';
 import RelativeTime from './RelativeTime.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 import CoordCard from './CoordCard.jsx';
+import ExportDropdown from './ExportDropdown.jsx';
 
 export default function CoreDetail() {
   const { user } = useAuth();
@@ -19,10 +20,17 @@ export default function CoreDetail() {
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
   const [locations, setLocations] = useState([]);
-  const [showHistory, setShowHistory] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState(new Set());
   const [history, setHistory] = useState(null);
   const [hoveredTubeId, setHoveredTubeId] = useState(null);
+  const [fromTube, setFromTube] = useState(null);
 
+  useEffect(() => {
+    const from = searchParams.get('from') ?? '';
+    const match = from.match(/^\/tubes\/(\d+)$/);
+    if (match) api.getTube(match[1]).then(setFromTube);
+  }, []);
   useEffect(() => {
     api.getCore(id).then(c => {
       setCore(c);
@@ -105,13 +113,20 @@ export default function CoreDetail() {
     <div>
       <div className="page-header">
         <div>
-          <div className="back-link"><Link to="/cores">← Cores</Link></div>
+          <div className="back-link"><Link to={searchParams.get('from') ?? '/cores'}>← {fromTube ? `Tube ${fromTube.barcode}` : 'Cores'}</Link></div>
           <h1 className="page-title">
             <span className="barcode barcode-lg">{core.barcode}</span>
             {core.name && <span className="text-muted text-base fw-400"> — {core.name}</span>}
           </h1>
         </div>
         <div className="btn-group">
+          <ExportDropdown
+            label="Export"
+            options={[
+              { label: 'Comma separated values (.csv)', onClick: () => { window.location.href = `/api/export/cores/${id}`; } },
+              { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = `/api/export/cores/${id}?format=tsv`; } },
+            ]}
+          />
           {editing && (
             <button type="submit" form="core-edit-form" className="btn btn-success" disabled={saving || !form.barcode}>
               {saving ? 'Saving…' : 'Save changes'}
@@ -227,6 +242,10 @@ export default function CoreDetail() {
         lng={editing ? form.longitude : core.longitude}
         onChange={(lat, lng) => { set('latitude', lat); set('longitude', lng); }}
         mapLabel={core.barcode}
+        extraPoints={editing ? [] : (core.tubes ?? [])
+          .filter(t => t.latitude != null && t.longitude != null)
+          .map(t => ({ lat: t.latitude, lng: t.longitude, label: t.barcode, url: `/tubes/${t.id}`, color: '#22c55e' }))
+        }
       />
 
       <div className="section-header mt-4">
@@ -259,38 +278,85 @@ export default function CoreDetail() {
         </div>
       )}
 
-      <div className="card">
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Barcode</th><th>Site</th><th>Type</th><th>Depth (cm)</th><th>Date</th><th></th></tr>
-            </thead>
-            <tbody>
-              {core.tubes?.map(t => (
-                <tr
-                  key={t.id}
-                  className={`row-clickable${hoveredTubeId === t.id ? ' row-selected' : ''}`}
-                  onClick={e => { if (!e.target.closest('a, button')) navigate(`/tubes/${t.id}?from=/cores/${id}`); }}
-                  onMouseEnter={() => setHoveredTubeId(t.id)}
-                  onMouseLeave={() => setHoveredTubeId(null)}
-                >
-                  <td><Link to={`/tubes/${t.id}?from=/cores/${id}`}><span className="barcode">{t.barcode}</span></Link></td>
-                  <td>{t.site_name || '—'}</td>
-                  <td>{t.sample_type || '—'}</td>
-                  <td>{t.depth_cm ?? '—'}</td>
-                  <td>{t.sample_date || '—'}</td>
-                  <td>
-                    <div className="row-actions">
-                      {!ro && <Link to={`/tubes/${t.id}?edit=1&from=/cores/${id}`} className="btn btn-secondary btn-sm">Edit</Link>}
+      {(core.tubes?.length ?? 0) === 0 && (
+        <div className="card"><p className="card-message">No tubes linked to this core</p></div>
+      )}
+
+      {(() => {
+        const tubes = core.tubes ?? [];
+        const toggle = key => setCollapsedGroups(s => { const n = new Set(s); n.has(key) ? n.delete(key) : n.add(key); return n; });
+        const tubeRows = group => group.map(t => (
+          <tr
+            key={t.id}
+            className={`row-clickable${hoveredTubeId === t.id ? ' row-selected' : ''}`}
+            onClick={e => { if (!e.target.closest('a, button')) navigate(`/tubes/${t.id}?from=/cores/${id}`); }}
+            onMouseEnter={() => setHoveredTubeId(t.id)}
+            onMouseLeave={() => setHoveredTubeId(null)}
+          >
+            <td><Link to={`/tubes/${t.id}?from=/cores/${id}`}><span className="barcode">{t.barcode}</span></Link></td>
+            <td>{t.site_name || '—'}</td>
+            <td>{t.sample_type || '—'}</td>
+            <td>{t.depth_cm ?? '—'}</td>
+            <td>{t.sample_date || '—'}</td>
+            <td><div className="row-actions">{!ro && <Link to={`/tubes/${t.id}?edit=1&from=/cores/${id}`} className="btn btn-secondary btn-sm">Edit</Link>}</div></td>
+          </tr>
+        ));
+
+        const boxMap = {};
+        tubes.filter(t => t.box_id != null).forEach(t => {
+          if (!boxMap[t.box_id]) boxMap[t.box_id] = { id: t.box_id, barcode: t.box_barcode, name: t.box_name, tubes: [] };
+          boxMap[t.box_id].tubes.push(t);
+        });
+        const boxes = Object.values(boxMap);
+        const unallocated = tubes.filter(t => t.box_id == null);
+
+        return (
+          <>
+            {boxes.map(box => {
+              const collapsed = collapsedGroups.has(box.id);
+              return (
+                <div key={box.id} className="card mb-2">
+                  <div className={`card-group-header${collapsed ? ' collapsed' : ''}`} onClick={() => toggle(box.id)}>
+                    <span className="toggle">{collapsed ? '▶' : '▼'}</span>
+                    <Link to={`/boxes/${box.id}?from=/cores/${id}`} onClick={e => e.stopPropagation()}><span className="barcode">{box.barcode}</span></Link>
+                    {box.name && <span className="text-muted">{box.name}</span>}
+                    <span className="text-muted" style={{ marginLeft: 'auto', fontWeight: 400 }}>{box.tubes.length} tube{box.tubes.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  {!collapsed && (
+                    <div className="table-wrap">
+                      <table>
+                        <thead><tr><th>Barcode</th><th>Site</th><th>Type</th><th>Depth (cm)</th><th>Date</th><th></th></tr></thead>
+                        <tbody>{tubeRows(box.tubes)}</tbody>
+                      </table>
                     </div>
-                  </td>
-                </tr>
-              ))}
-              {(core.tubes?.length ?? 0) === 0 && <tr><td colSpan={6} className="empty">No tubes linked to this core</td></tr>}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {unallocated.length > 0 && (() => {
+              const collapsed = collapsedGroups.has('unallocated');
+              return (
+                <div className="card mb-2">
+                  <div className={`card-group-header${collapsed ? ' collapsed' : ''}`} onClick={() => toggle('unallocated')}>
+                    <span className="toggle">{collapsed ? '▶' : '▼'}</span>
+                    <span>Unallocated</span>
+                    <span className="text-muted" style={{ marginLeft: 'auto', fontWeight: 400 }}>{unallocated.length} tube{unallocated.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  {!collapsed && (
+                    <div className="table-wrap">
+                      <table>
+                        <thead><tr><th>Barcode</th><th>Site</th><th>Type</th><th>Depth (cm)</th><th>Date</th><th></th></tr></thead>
+                        <tbody>{tubeRows(unallocated)}</tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </>
+        );
+      })()}
 
       <div className="mt-4">
         <button className="btn btn-secondary btn-sm" onClick={() => setShowHistory(v => !v)}>

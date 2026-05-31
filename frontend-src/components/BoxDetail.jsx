@@ -6,6 +6,7 @@ import { useToast } from './Toast.jsx';
 import RelativeTime from './RelativeTime.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 import LeafletMap from './LeafletMap.jsx';
+import ExportDropdown from './ExportDropdown.jsx';
 
 export default function BoxDetail() {
   const { user } = useAuth();
@@ -22,13 +23,22 @@ export default function BoxDetail() {
   const [showAssign, setShowAssign] = useState(false);
   const [assignBarcode, setAssignBarcode] = useState('');
   const [unassigned, setUnassigned] = useState([]);
-  const [showHistory, setShowHistory] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState(null);
+  const [fromCore, setFromCore] = useState(null);
 
   useEffect(() => {
     api.getBox(id).then(b => { setBox(b); setForm({ barcode: b.barcode, name: b.name ?? '', location_id: b.location_id ?? '', notes: b.notes ?? '' }); });
     api.getLocations().then(setLocations);
   }, [id]);
+  const fromPath = searchParams.get('from') ?? '';
+  const fromLocationMatch = fromPath.match(/^\/locations\/(\d+)$/);
+  const fromTubeMatch = fromPath.match(/^\/tubes\/(\d+)$/);
+
+  useEffect(() => {
+    const match = fromPath.match(/^\/cores\/(\d+)$/);
+    if (match) api.getCore(match[1]).then(setFromCore);
+  }, []);
   useEffect(() => { api.getBoxHistory(id).then(setHistory); }, [id]);
 
   useEffect(() => {
@@ -109,10 +119,29 @@ export default function BoxDetail() {
     <div>
       <div className="page-header">
         <div>
-          <div className="back-link"><Link to="/boxes">← Boxes</Link></div>
+          <div className="back-link">
+            <Link to={fromPath || '/boxes'}>
+              {(() => {
+                if (fromCore) return `← Core ${fromCore.barcode}${fromCore.name ? ` — ${fromCore.name}` : ''}`;
+                if (fromTubeMatch) {
+                  const t = box.tubes?.find(t => String(t.id) === fromTubeMatch[1]);
+                  return `← Tube ${t?.barcode ?? fromTubeMatch[1]}`;
+                }
+                if (fromLocationMatch && box.location_name) return `← Location — ${box.location_name}`;
+                return '← Boxes';
+              })()}
+            </Link>
+          </div>
           <h1 className="page-title">{box.name || <span className="barcode">{box.barcode}</span>}</h1>
         </div>
         <div className="btn-group">
+          <ExportDropdown
+            label="Export"
+            options={[
+              { label: 'Comma separated values (.csv)', onClick: () => { window.location.href = `/api/export/boxes/${id}`; } },
+              { label: 'Tab separated values (.tsv)', onClick: () => { window.location.href = `/api/export/boxes/${id}?format=tsv`; } },
+            ]}
+          />
           {editing && (
             <button type="submit" form="box-edit-form" className="btn btn-success" disabled={saving}>Save Changes</button>
           )}
@@ -173,7 +202,7 @@ export default function BoxDetail() {
         <h2 className="section-title">Tubes ({box.tubes?.length ?? 0})</h2>
         <div className="btn-group">
           {!ro && (
-            <button className="btn btn-secondary btn-sm" onClick={() => setShowAssign(v => !v)}>
+            <button className={`btn btn-secondary btn-sm${showAssign ? ' btn-active' : ''}`} onClick={() => setShowAssign(v => !v)}>
               Assign existing
             </button>
           )}
