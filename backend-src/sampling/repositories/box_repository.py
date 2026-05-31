@@ -4,7 +4,6 @@ from sampling.repositories.base import BaseRepository
 
 
 class BoxRepository(BaseRepository):
-
     def list_all(self) -> list[dict[str, Any]]:
         return self._rows(
             self.db.execute("""
@@ -164,4 +163,3 @@ class BoxRepository(BaseRepository):
                 (q, q, q),
             ).fetchall()
         )
-

@@ -13,29 +13,76 @@ from sampling.repositories.tube_repository import TubeRepository
 bp = Blueprint("export", __name__)
 
 _TUBE_FIELDS = [
-    "barcode", "box_barcode", "box_name", "sample_date", "site_name",
-    "latitude", "longitude", "sample_type", "description", "volume_ml",
-    "weight_g", "depth_cm", "created_at", "updated_at",
+    "barcode",
+    "box_barcode",
+    "box_name",
+    "sample_date",
+    "site_name",
+    "latitude",
+    "longitude",
+    "sample_type",
+    "description",
+    "volume_ml",
+    "weight_g",
+    "depth_cm",
+    "created_at",
+    "updated_at",
 ]
 
 _BOX_WITH_TUBES_FIELDS = [
     "row_type",
-    "box_barcode", "box_name", "box_location", "box_notes", "box_tube_count", "box_created_at",
-    "tube_barcode", "tube_sample_date", "tube_site_name",
-    "tube_latitude", "tube_longitude", "tube_sample_type", "tube_description",
-    "tube_volume_ml", "tube_weight_g", "tube_depth_cm", "tube_created_at", "tube_updated_at",
+    "box_barcode",
+    "box_name",
+    "box_location",
+    "box_notes",
+    "box_tube_count",
+    "box_created_at",
+    "tube_barcode",
+    "tube_sample_date",
+    "tube_site_name",
+    "tube_latitude",
+    "tube_longitude",
+    "tube_sample_type",
+    "tube_description",
+    "tube_volume_ml",
+    "tube_weight_g",
+    "tube_depth_cm",
+    "tube_created_at",
+    "tube_updated_at",
 ]
 
 _CORE_WITH_TUBES_FIELDS = [
     "row_type",
-    "core_barcode", "core_name", "core_location", "core_site_name",
-    "core_latitude", "core_longitude", "core_collection_date", "core_depth_cm",
-    "core_collector", "core_sample_type", "core_owner", "core_notes",
-    "core_tube_count", "core_box_count", "core_created_at", "core_updated_at",
-    "box_barcode", "box_name",
-    "tube_barcode", "tube_sample_date", "tube_site_name",
-    "tube_latitude", "tube_longitude", "tube_sample_type", "tube_description",
-    "tube_volume_ml", "tube_weight_g", "tube_depth_cm", "tube_created_at", "tube_updated_at",
+    "core_barcode",
+    "core_name",
+    "core_location",
+    "core_site_name",
+    "core_latitude",
+    "core_longitude",
+    "core_collection_date",
+    "core_depth_cm",
+    "core_collector",
+    "core_sample_type",
+    "core_owner",
+    "core_notes",
+    "core_tube_count",
+    "core_box_count",
+    "core_created_at",
+    "core_updated_at",
+    "box_barcode",
+    "box_name",
+    "tube_barcode",
+    "tube_sample_date",
+    "tube_site_name",
+    "tube_latitude",
+    "tube_longitude",
+    "tube_sample_type",
+    "tube_description",
+    "tube_volume_ml",
+    "tube_weight_g",
+    "tube_depth_cm",
+    "tube_created_at",
+    "tube_updated_at",
 ]
 
 
@@ -84,7 +131,10 @@ def export_core(core_id: int) -> Response:
 def _build_box_with_tubes_rows(db: Any, box_id: int | None = None) -> list[dict[str, Any]]:
     where = "WHERE b.id = ?" if box_id is not None else ""
     params: tuple = (box_id,) if box_id is not None else ()
-    boxes = [dict(r) for r in db.execute(f"""
+    boxes = [
+        dict(r)
+        for r in db.execute(
+            f"""
         SELECT b.id, b.barcode, b.name, l.name AS location, b.notes,
                COUNT(t.id) AS tube_count, b.created_at
         FROM boxes b
@@ -92,17 +142,26 @@ def _build_box_with_tubes_rows(db: Any, box_id: int | None = None) -> list[dict[
         LEFT JOIN tubes t ON t.box_id = b.id
         {where}
         GROUP BY b.id ORDER BY b.created_at DESC
-    """, params).fetchall()]
+    """,
+            params,
+        ).fetchall()
+    ]
 
     tube_where = "WHERE box_id = ?" if box_id is not None else "WHERE box_id IS NOT NULL"
     tube_params: tuple = (box_id,) if box_id is not None else ()
-    tube_rows = [dict(r) for r in db.execute(f"""
+    tube_rows = [
+        dict(r)
+        for r in db.execute(
+            f"""
         SELECT box_id, barcode, sample_date, site_name, latitude, longitude,
                sample_type, description, volume_ml, weight_g, depth_cm,
                created_at, updated_at
         FROM tubes {tube_where}
         ORDER BY depth_cm ASC, created_at ASC
-    """, tube_params).fetchall()]
+    """,
+            tube_params,
+        ).fetchall()
+    ]
 
     tubes_by_box: dict[int, list] = defaultdict(list)
     for t in tube_rows:
@@ -149,7 +208,10 @@ def _build_box_with_tubes_rows(db: Any, box_id: int | None = None) -> list[dict[
 def _build_core_with_tubes_rows(db: Any, core_id: int | None = None) -> list[dict[str, Any]]:
     where = "WHERE c.id = ?" if core_id is not None else ""
     params: tuple = (core_id,) if core_id is not None else ()
-    cores = [dict(r) for r in db.execute(f"""
+    cores = [
+        dict(r)
+        for r in db.execute(
+            f"""
         SELECT c.id, c.barcode, c.name, l.name AS location_name, c.site_name,
                c.latitude, c.longitude, c.collection_date, c.depth_cm,
                c.collector, c.sample_type, c.owner, c.notes,
@@ -161,11 +223,17 @@ def _build_core_with_tubes_rows(db: Any, core_id: int | None = None) -> list[dic
         LEFT JOIN tubes t ON t.core_id = c.id
         {where}
         GROUP BY c.id ORDER BY c.created_at DESC
-    """, params).fetchall()]
+    """,
+            params,
+        ).fetchall()
+    ]
 
     tube_where = "WHERE t.core_id = ?" if core_id is not None else "WHERE t.core_id IS NOT NULL"
     tube_params: tuple = (core_id,) if core_id is not None else ()
-    tube_rows = [dict(r) for r in db.execute(f"""
+    tube_rows = [
+        dict(r)
+        for r in db.execute(
+            f"""
         SELECT t.core_id, t.box_id, b.barcode AS box_barcode, b.name AS box_name,
                t.barcode, t.sample_date, t.site_name, t.latitude, t.longitude,
                t.sample_type, t.description, t.volume_ml, t.weight_g, t.depth_cm,
@@ -175,7 +243,10 @@ def _build_core_with_tubes_rows(db: Any, core_id: int | None = None) -> list[dic
         {tube_where}
         ORDER BY CASE WHEN t.box_id IS NULL THEN 1 ELSE 0 END,
                  t.box_id, t.depth_cm ASC, t.created_at ASC
-    """, tube_params).fetchall()]
+    """,
+            tube_params,
+        ).fetchall()
+    ]
 
     tubes_by_core: dict[int, list] = defaultdict(list)
     for t in tube_rows:
@@ -291,8 +362,11 @@ def _tsv_response(
 ) -> Response:
     buf = io.StringIO()
     writer = csv.DictWriter(
-        buf, fieldnames=fields, extrasaction="ignore",
-        delimiter="\t", lineterminator="\r\n",
+        buf,
+        fieldnames=fields,
+        extrasaction="ignore",
+        delimiter="\t",
+        lineterminator="\r\n",
     )
     writer.writeheader()
     writer.writerows(data)

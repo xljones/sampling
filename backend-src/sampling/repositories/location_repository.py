@@ -4,7 +4,6 @@ from sampling.repositories.base import BaseRepository
 
 
 class LocationRepository(BaseRepository):
-
     def list_all(self) -> list[dict[str, Any]]:
         return self._rows(
             self.db.execute("""

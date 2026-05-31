@@ -4,7 +4,6 @@ from sampling.repositories.base import BaseRepository
 
 
 class CoreRepository(BaseRepository):
-
     def list_all(self) -> list[dict[str, Any]]:
         return self._rows(
             self.db.execute("""
@@ -81,8 +80,18 @@ class CoreRepository(BaseRepository):
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
         """,
             (
-                barcode, name, location_id, latitude, longitude,
-                site_name, collection_date, depth_cm, collector, sample_type, owner, notes,
+                barcode,
+                name,
+                location_id,
+                latitude,
+                longitude,
+                site_name,
+                collection_date,
+                depth_cm,
+                collector,
+                sample_type,
+                owner,
+                notes,
             ),
         )
         row_id = cur.lastrowid
@@ -120,8 +129,18 @@ class CoreRepository(BaseRepository):
             WHERE id=?
         """,
             (
-                barcode, name, location_id, latitude, longitude,
-                site_name, collection_date, depth_cm, collector, sample_type, owner, notes,
+                barcode,
+                name,
+                location_id,
+                latitude,
+                longitude,
+                site_name,
+                collection_date,
+                depth_cm,
+                collector,
+                sample_type,
+                owner,
+                notes,
                 core_id,
             ),
         )
