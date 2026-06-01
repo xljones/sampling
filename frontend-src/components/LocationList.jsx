@@ -122,8 +122,8 @@ export default function LocationList() {
                       <td colSpan={4}>
                         <form onSubmit={handleEdit} className="inline-form">
                           <input value={editName} onChange={e => setEditName(e.target.value)} autoFocus className="input-sm" />
-                          <button className="btn btn-success btn-sm" disabled={saving || !editName.trim()}>Save</button>
-                          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditId(null)}>Cancel</button>
+                          <button className="btn btn-success" disabled={saving || !editName.trim()}>Save</button>
+                          <button type="button" className="btn btn-secondary" onClick={() => setEditId(null)}>Cancel</button>
                         </form>
                       </td>
                     ) : (
