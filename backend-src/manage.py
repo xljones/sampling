@@ -297,6 +297,53 @@ def cmd_delete_user(args: list[str]) -> None:
     print(f"User '{username}' deleted.")
 
 
+def cmd_db_restore(args: list[str]) -> None:
+    import os
+    import sqlite3 as _sqlite3
+
+    if len(args) != 1:
+        print("Usage: python manage.py db-restore <backup-file>")
+        sys.exit(1)
+
+    db_path = os.environ.get("DB_PATH", "data/samples.db")
+    backup_path = Path(args[0])
+    if not backup_path.is_absolute():
+        backup_path = Path(db_path).parent / args[0]
+
+    if not backup_path.exists():
+        print(f"Error: backup file not found: {backup_path}")
+        sys.exit(1)
+
+    confirm = input(f"Restore from '{backup_path}'? This will overwrite the current database. Type YES to confirm: ")
+    if confirm.strip() != "YES":
+        print("Aborted.")
+        sys.exit(0)
+
+    sql = backup_path.read_text()
+    Path(db_path).unlink(missing_ok=True)
+    con = _sqlite3.connect(db_path)
+    con.executescript(sql)
+    con.close()
+    print(f"Database restored from {backup_path}")
+
+
+def cmd_db_backup(_: list[str]) -> None:
+    import datetime
+    import os
+    import sqlite3 as _sqlite3
+
+    db_path = os.environ.get("DB_PATH", "data/samples.db")
+    ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_path = str(Path(db_path).parent / f"db-backup-{ts}.sql")
+
+    con = _sqlite3.connect(db_path)
+    with open(backup_path, "w") as f:
+        for line in con.iterdump():
+            f.write(line + "\n")
+    con.close()
+    print(f"Backup written to {backup_path}")
+
+
 def cmd_reset_db(args: list[str]) -> None:
     msg = "This will drop ALL tables including users. Type YES to confirm: "
     confirm = input(msg)
@@ -322,6 +369,8 @@ COMMANDS: dict[str, Callable[[list[str]], None]] = {
     "delete-user": cmd_delete_user,
     "seed":        cmd_seed,
     "reset-db":    cmd_reset_db,
+    "db-backup":   cmd_db_backup,
+    "db-restore":  cmd_db_restore,
 }
 
 if __name__ == "__main__":

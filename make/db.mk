@@ -52,6 +52,24 @@ else
 	docker compose run --rm -it backend python manage.py reset-db
 endif
 
+.PHONY: db-backup
+# dump the database to data/db-backup-<timestamp>.sql
+db-backup:
+ifdef PYTHONANYWHERE_SITE
+	venv/bin/python backend-src/manage.py db-backup
+else
+	docker compose run --rm backend python manage.py db-backup
+endif
+
+.PHONY: db-restore
+# restore the database from a backup: make db-restore file=db-backup-<timestamp>.sql
+db-restore:
+ifdef PYTHONANYWHERE_SITE
+	venv/bin/python backend-src/manage.py db-restore $(file)
+else
+	docker compose run --rm -it backend python manage.py db-restore $(file)
+endif
+
 .PHONY: seed
 # populate the database with sample data (~15 boxes, ~53 tubes)
 seed:
