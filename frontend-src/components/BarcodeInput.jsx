@@ -34,7 +34,7 @@ export default function BarcodeInput({ value, onChange, onSubmit, placeholder = 
           onClick={() => setCameraOpen(v => !v)}
           title="Open camera scanner"
         >
-          📷
+          <img src="/camera.svg" width="16" height="16" alt="" />
         </button>
       </div>
       {cameraOpen && (
