@@ -43,6 +43,18 @@ def auth_client(client: FlaskClient) -> FlaskClient:
 
 
 @pytest.fixture
+def readonly_client(client: FlaskClient) -> FlaskClient:
+    from sampling.db import get_db
+    from sampling.repositories.user_repository import UserRepository
+
+    with get_db() as db:
+        UserRepository(db).create("readonlyuser", "testpass", is_readonly=True)
+
+    client.post("/api/auth/login", json={"username": "readonlyuser", "password": "testpass"})
+    return client
+
+
+@pytest.fixture
 def admin_client(client: FlaskClient) -> FlaskClient:
     from sampling.db import get_db
     from sampling.repositories.user_repository import UserRepository

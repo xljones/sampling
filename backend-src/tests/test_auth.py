@@ -70,6 +70,11 @@ def test_login_preserves_stored_username(client: FlaskClient, app: Flask) -> Non
     assert r.json["username"] == "Scarlett"
 
 
+def test_logout_readonly_user(readonly_client: FlaskClient) -> None:
+    assert readonly_client.post("/api/auth/logout").status_code == 204
+    assert readonly_client.get("/api/auth/me").status_code == 401
+
+
 def test_change_password_success(auth_client: FlaskClient) -> None:
     r = auth_client.put("/api/auth/password", json={
         "current_password": "testpass", "new_password": "newpass123"

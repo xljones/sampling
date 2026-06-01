@@ -68,7 +68,7 @@ def create_app() -> Flask:
         if (
             current_user.is_readonly
             and request.method not in ("GET", "HEAD", "OPTIONS")
-            and request.path != "/api/auth/password"
+            and request.path not in ("/api/auth/password", "/api/auth/logout")
         ):
             return jsonify(error="Read-only access"), 403
         return None
