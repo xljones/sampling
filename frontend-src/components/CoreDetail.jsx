@@ -32,7 +32,7 @@ export default function CoreDetail() {
     const from = searchParams.get('from') ?? '';
     const match = from.match(/^\/tubes\/(\d+)$/);
     if (match) api.getTube(match[1]).then(setFromTube);
-  }, []);
+  }, [searchParams]);
   useEffect(() => {
     api.getCore(id).then(c => {
       setCore(c);

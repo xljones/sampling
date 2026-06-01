@@ -40,7 +40,7 @@ export default function BoxDetail() {
   useEffect(() => {
     const match = fromPath.match(/^\/cores\/(\d+)$/);
     if (match) api.getCore(match[1]).then(setFromCore);
-  }, []);
+  }, [fromPath]);
   useEffect(() => { api.getBoxHistory(id).then(setHistory); }, [id]);
 
   useEffect(() => {
