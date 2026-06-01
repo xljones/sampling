@@ -1,3 +1,12 @@
+.PHONY: migrate
+# run any pending database migrations
+migrate:
+ifdef PYTHONANYWHERE_SITE
+	venv/bin/python backend-src/manage.py migrate
+else
+	docker compose run --rm backend python manage.py migrate
+endif
+
 .PHONY: create-user
 # create a normal user: make create-user username=<name> password=<pass>
 create-user:

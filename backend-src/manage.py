@@ -344,6 +344,12 @@ def cmd_db_backup(_: list[str]) -> None:
     print(f"Backup written to {backup_path}")
 
 
+def cmd_migrate(_: list[str]) -> None:
+    from sampling.db import run_migrations
+    run_migrations()
+    print("Migrations complete.")
+
+
 def cmd_reset_db(args: list[str]) -> None:
     msg = "This will drop ALL tables including users. Type YES to confirm: "
     confirm = input(msg)
@@ -367,6 +373,7 @@ COMMANDS: dict[str, Callable[[list[str]], None]] = {
     "list-users":  cmd_list_users,
     "rename-user": cmd_rename_user,
     "delete-user": cmd_delete_user,
+    "migrate":     cmd_migrate,
     "seed":        cmd_seed,
     "reset-db":    cmd_reset_db,
     "db-backup":   cmd_db_backup,
