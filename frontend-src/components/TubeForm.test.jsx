@@ -30,6 +30,16 @@ vi.mock('./BarcodeInput.jsx', () => ({
     />
   ),
 }));
+vi.mock('./ComboInput.jsx', () => ({
+  default: ({ value, onChange, placeholder }) => (
+    <input
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      data-testid={placeholder?.includes('box') ? 'box-barcode-input' : 'core-barcode-input'}
+    />
+  ),
+}));
 
 function renderNew(path = '/tubes/new') {
   return render(
@@ -43,20 +53,11 @@ function renderNew(path = '/tubes/new') {
 }
 
 describe('TubeForm — box scan mode', () => {
-  it('defaults to scan mode — shows barcode input, not dropdown', async () => {
+  it('shows box barcode input', async () => {
     renderNew();
     await waitFor(() => {
       expect(screen.getByTestId('box-barcode-input')).toBeInTheDocument();
-      expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
     });
-  });
-
-  it('switches to dropdown when "Choose from list" is clicked', async () => {
-    renderNew();
-    await waitFor(() => screen.getByTestId('box-barcode-input'));
-    fireEvent.click(screen.getAllByText('Choose from list')[0]);
-    expect(screen.getByRole('combobox')).toBeInTheDocument();
-    expect(screen.queryByTestId('box-barcode-input')).not.toBeInTheDocument();
   });
 
   it('shows match confirmation for known box barcode', async () => {

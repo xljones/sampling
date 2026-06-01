@@ -41,14 +41,16 @@ def test_pythonanywhere_stats_success(admin_client: FlaskClient, monkeypatch) ->
 
     cpu = {"daily_cpu_limit_seconds": 100, "daily_cpu_total_usage_seconds": 42.0, "next_reset_time": "2026-06-02T00:00:00"}
     webapps = [{"id": 1, "domain_name": "user.pythonanywhere.com", "enabled": True, "python_version": "3.12"}]
+    schedule = [{"id": 1, "enabled": True, "interval": "daily", "hour": 2, "minute": 0, "command": "python foo.py", "description": "Nightly job"}]
 
-    with patch("sampling.routes.admin.urllib.request.urlopen", side_effect=_mock_urlopen([cpu, webapps])):
+    with patch("sampling.routes.admin.urllib.request.urlopen", side_effect=_mock_urlopen([cpu, webapps, schedule])):
         r = admin_client.get("/api/admin/pythonanywhere")
 
     assert r.status_code == 200
     assert r.json["configured"] is True
     assert r.json["cpu"]["daily_cpu_limit_seconds"] == 100
     assert r.json["webapps"][0]["domain_name"] == "user.pythonanywhere.com"
+    assert r.json["schedule"][0]["command"] == "python foo.py"
 
 
 def test_pythonanywhere_stats_http_error(admin_client: FlaskClient, monkeypatch) -> None:
