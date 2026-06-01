@@ -9,6 +9,8 @@ services:
       - ./backend-src:/app
       - ./pyproject.toml:/app/pyproject.toml
       - ./data:/app/data
+    env_file:
+      - .env
     environment:
       DB_PATH: /app/data/samples.db
       FLASK_DEBUG: "1"
