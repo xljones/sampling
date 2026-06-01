@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
-import { useToast } from './Toast.jsx';
-import BarcodeInput from './BarcodeInput.jsx';
 import ExportDropdown from './ExportDropdown.jsx';
 import { SkeletonRows } from './Skeleton.jsx';
 
@@ -12,23 +10,11 @@ export default function CoreList() {
   const { user } = useAuth();
   const ro = user?.is_readonly;
   const navigate = useNavigate();
-  const toast = useToast();
-  const [searchParams] = useSearchParams();
   const [cores, setCores] = useState(null);
   const [filter, setFilter] = useState('');
-  const [adding, setAdding] = useState(false);
-  const [newBarcode, setNewBarcode] = useState('');
-  const [creating, setCreating] = useState(false);
   const [withSubData, setWithSubData] = useState(true);
 
   useEffect(() => { api.getCores().then(setCores); }, []);
-  useEffect(() => {
-    if (searchParams.get('add') === '1') {
-      setAdding(true);
-      const barcode = searchParams.get('barcode');
-      if (barcode) setNewBarcode(barcode);
-    }
-  }, [searchParams]);
 
   const q = filter.toLowerCase();
   const anyFilter = !!q;
@@ -52,21 +38,6 @@ export default function CoreList() {
       ))
     : [];
 
-  async function handleCreate(e) {
-    e.preventDefault();
-    if (!newBarcode.trim()) return;
-    setCreating(true);
-    try {
-      const core = await api.createCore({ barcode: newBarcode.trim() });
-      toast(`Core ${core.barcode} created`);
-      navigate(`/cores/${core.id}`);
-    } catch (err) {
-      toast(err.message, 'error');
-    } finally {
-      setCreating(false);
-    }
-  }
-
   return (
     <div>
       <div className="page-header">
@@ -85,35 +56,9 @@ export default function CoreList() {
               { label: 'Excel (.xlsx)', note: 'Cores, boxes & tubes', onClick: () => { window.location.href = _coreExportUrl(false, 'xlsx', anyFilter ? visible : null); } },
             ]}
           />
-          {!ro && (
-            <button className="btn btn-primary" onClick={() => setAdding(v => !v)}>
-              {adding ? 'Cancel' : '+ New core'}
-            </button>
-          )}
+          {!ro && <Link to="/cores/new" className="btn btn-primary">+ New core</Link>}
         </div>
       </div>
-
-      {adding && (
-        <div className="card card-body mw-md mb-4">
-          <form onSubmit={handleCreate}>
-            <label className="mb-2 fw-600">New core barcode</label>
-            <BarcodeInput
-              value={newBarcode}
-              onChange={setNewBarcode}
-              placeholder="Scan or type barcode"
-              autoFocus
-            />
-            <div className="btn-group mt-3">
-              <button className="btn btn-success" disabled={creating || !newBarcode.trim()}>
-                {creating ? 'Creating…' : 'Create core'}
-              </button>
-              <button type="button" className="btn btn-secondary" onClick={() => setAdding(false)}>
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
       <div className="mb-4">
         <input

@@ -55,7 +55,7 @@ export default function ScanPage() {
           {error}
           <div className="btn-group mt-3">
             <Link to={`/boxes?add=1&barcode=${encodeURIComponent(barcode.trim())}`} className="btn btn-secondary btn-sm">Register as box</Link>
-            <Link to={`/cores?add=1&barcode=${encodeURIComponent(barcode.trim())}`} className="btn btn-secondary btn-sm">Register as core</Link>
+            <Link to={`/cores/new?barcode=${encodeURIComponent(barcode.trim())}`} className="btn btn-secondary btn-sm">Register as core</Link>
             <Link to={`/tubes/new?barcode=${encodeURIComponent(barcode.trim())}`} className="btn btn-secondary btn-sm">Register as tube</Link>
           </div>
         </div>

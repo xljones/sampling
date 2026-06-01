@@ -13,6 +13,7 @@ import TubeForm from './components/TubeForm.jsx';
 import ScanPage from './components/ScanPage.jsx';
 import CoreList from './components/CoreList.jsx';
 import CoreDetail from './components/CoreDetail.jsx';
+import CoreForm from './components/CoreForm.jsx';
 import LocationList from './components/LocationList.jsx';
 import LocationDetail from './components/LocationDetail.jsx';
 import UserList from './components/UserList.jsx';
@@ -115,6 +116,7 @@ function AppShell() {
           <Route path="/tubes/new" element={<TubeForm mode="create" />} />
           <Route path="/tubes/:id" element={<TubeDetail />} />
           <Route path="/cores" element={<CoreList />} />
+          <Route path="/cores/new" element={<CoreForm />} />
           <Route path="/cores/:id" element={<CoreDetail />} />
           <Route path="/locations" element={<LocationList />} />
           <Route path="/locations/:id" element={<LocationDetail />} />
