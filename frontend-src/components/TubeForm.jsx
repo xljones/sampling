@@ -3,8 +3,9 @@ import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { api } from '../api.js';
 import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
+import ComboInput from './ComboInput.jsx';
 import CoordCard from './CoordCard.jsx';
-import { InputMode, FormMode } from '../constants.js';
+import { FormMode } from '../constants.js';
 
 const EMPTY = {
   barcode: '', box_id: '', core_id: '', sample_date: '', site_name: '',
@@ -21,8 +22,6 @@ export default function TubeForm({ mode }) {
   const [boxes, setBoxes] = useState([]);
   const [cores, setCores] = useState([]);
   const [saving, setSaving] = useState(false);
-  const [boxMode, setBoxMode] = useState(InputMode.SCAN);
-  const [coreMode, setCoreMode] = useState(InputMode.SCAN);
   const [boxBarcode, setBoxBarcode] = useState('');
   const [coreBarcode, setCoreBarcode] = useState('');
   const [creatingBox, setCreatingBox] = useState(false);
@@ -43,18 +42,6 @@ export default function TubeForm({ mode }) {
     setCoreBarcode(v);
     const match = cores.find(c => c.barcode.toLowerCase() === v.toLowerCase());
     set('core_id', match ? match.id : '');
-  }
-
-  function switchToScan() {
-    const selected = boxes.find(b => String(b.id) === String(form.box_id));
-    setBoxBarcode(selected?.barcode ?? '');
-    setBoxMode(InputMode.SCAN);
-  }
-
-  function switchCoreToScan() {
-    const selected = cores.find(c => String(c.id) === String(form.core_id));
-    setCoreBarcode(selected?.barcode ?? '');
-    setCoreMode(InputMode.SCAN);
   }
 
   async function handleCreateBox() {
@@ -169,77 +156,43 @@ export default function TubeForm({ mode }) {
             </div>
 
             <div className="field">
-              <label className="field-label-row">
-                Box
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => boxMode === InputMode.SELECT ? switchToScan() : setBoxMode(InputMode.SELECT)}
-                >
-                  {boxMode === InputMode.SELECT ? 'Scan barcode' : 'Choose from list'}
-                </button>
-              </label>
-              {boxMode === InputMode.SELECT ? (
-                <select value={form.box_id} onChange={e => set('box_id', e.target.value)}>
-                  <option value="">— Unassigned —</option>
-                  {boxes.map(b => <option key={b.id} value={b.id}>{b.barcode}{b.name ? ` — ${b.name}` : ''}</option>)}
-                </select>
-              ) : (
-                <>
-                  <BarcodeInput
-                    value={boxBarcode}
-                    onChange={handleBoxBarcodeChange}
-                    placeholder="Scan or type box barcode"
-                  />
-                  {boxMatch && (
-                    <p className="form-hint accent">
-                      ✓ {boxMatch.barcode}{boxMatch.name ? ` — ${boxMatch.name}` : ''}
-                    </p>
-                  )}
-                  {boxNotFound && (
-                    <p className="form-hint muted">
-                      Box not found.{' '}
-                      <button
-                        type="button"
-                        className="btn btn-secondary btn-sm"
-                        onClick={handleCreateBox}
-                        disabled={creatingBox}
-                      >
-                        {creatingBox ? 'Creating…' : `Create "${boxBarcode}"`}
-                      </button>
-                    </p>
-                  )}
-                </>
+              <label>Box</label>
+              <ComboInput
+                value={boxBarcode}
+                onChange={handleBoxBarcodeChange}
+                options={boxes}
+                placeholder="Scan or type box barcode"
+              />
+              {boxMatch && (
+                <p className="form-hint accent">
+                  ✓ {boxMatch.barcode}{boxMatch.name ? ` — ${boxMatch.name}` : ''}
+                </p>
+              )}
+              {boxNotFound && (
+                <p className="form-hint muted">
+                  Box not found.{' '}
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={handleCreateBox}
+                    disabled={creatingBox}
+                  >
+                    {creatingBox ? 'Creating…' : `Create "${boxBarcode}"`}
+                  </button>
+                </p>
               )}
             </div>
 
             <div className="field">
-              <label className="field-label-row">
-                Core
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => coreMode === InputMode.SELECT ? switchCoreToScan() : setCoreMode(InputMode.SELECT)}
-                >
-                  {coreMode === InputMode.SELECT ? 'Scan barcode' : 'Choose from list'}
-                </button>
-              </label>
-              {coreMode === InputMode.SELECT ? (
-                <select value={form.core_id} onChange={e => set('core_id', e.target.value)}>
-                  <option value="">— None —</option>
-                  {cores.map(c => <option key={c.id} value={c.id}>{c.barcode}{c.name ? ` — ${c.name}` : ''}</option>)}
-                </select>
-              ) : (
-                <>
-                  <BarcodeInput
-                    value={coreBarcode}
-                    onChange={handleCoreBarcodeChange}
-                    placeholder="Scan or type core barcode"
-                  />
-                  {coreMatch && <p className="form-hint accent">✓ {coreMatch.barcode}{coreMatch.name ? ` — ${coreMatch.name}` : ''}</p>}
-                  {coreNotFound && <p className="form-hint muted">Core not found.</p>}
-                </>
-              )}
+              <label>Core</label>
+              <ComboInput
+                value={coreBarcode}
+                onChange={handleCoreBarcodeChange}
+                options={cores}
+                placeholder="Scan or type core barcode"
+              />
+              {coreMatch && <p className="form-hint accent">✓ {coreMatch.barcode}{coreMatch.name ? ` — ${coreMatch.name}` : ''}</p>}
+              {coreNotFound && <p className="form-hint muted">Core not found.</p>}
             </div>
 
             <div className="field">

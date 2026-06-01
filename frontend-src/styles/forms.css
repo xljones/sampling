@@ -31,6 +31,17 @@
 .form-hint.accent { color: var(--accent); }
 .form-hint.muted { color: var(--text2); }
 .form-error { color: var(--danger); font-size: 13px; margin-bottom: 12px; }
+.combo-wrap { position: relative; }
+.combo-dropdown {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); list-style: none; max-height: 200px; overflow-y: auto; margin-top: 2px;
+}
+.combo-option {
+  display: block; width: 100%; padding: 6px 10px; text-align: left;
+  background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text);
+}
+.combo-option:hover, .combo-option:focus { background: var(--surface2); outline: none; }
 .filter-bar { margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .assign-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .assign-match { margin-top: 10px; display: flex; align-items: center; gap: 12px; }
