@@ -33,6 +33,7 @@ def pythonanywhere_stats() -> ResponseReturnValue:
     try:
         cpu = _pa_get(username, token, "/cpu/")
         webapps = _pa_get(username, token, "/webapps/")
+        schedule = _pa_get(username, token, "/schedule/")
     except urllib.error.HTTPError as e:
         return jsonify(configured=True, error=f"PythonAnywhere API error: {e.code} {e.reason}"), 502
     except Exception as e:
@@ -42,4 +43,5 @@ def pythonanywhere_stats() -> ResponseReturnValue:
         configured=True,
         cpu=cpu,
         webapps=webapps,
+        schedule=schedule,
     ), 200

@@ -88,11 +88,11 @@ export default function PythonAnywhereStats() {
     );
   }
 
-  const { cpu, webapps } = stats;
+  const { cpu, webapps, schedule } = stats;
 
   return (
     <div className="card card-body mb-6">
-      <h2 className="section-title">PythonAnywhere</h2>
+      <h2 className="section-title mb-4">PythonAnywhere</h2>
 
       <div className="form-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
         <div>
@@ -123,6 +123,35 @@ export default function PythonAnywhereStats() {
           </div>
         )}
       </div>
+
+      {schedule && schedule.length > 0 && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <div className="scan-field-label mb-2">Scheduled tasks</div>
+          {schedule.map(task => (
+            <div key={task.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+              <span
+                style={{
+                  display: 'inline-block', width: 8, height: 8, borderRadius: '50%', marginTop: 4,
+                  background: task.enabled ? '#27ae60' : '#e74c3c', flexShrink: 0,
+                }}
+              />
+              <div>
+                <span className="text-sm">{task.description || task.command}</span>
+                <div className="text-sm text-muted" style={{ marginTop: 2 }}>
+                  {task.interval === 'daily'
+                    ? `Daily at ${String(task.hour).padStart(2, '0')}:${String(task.minute).padStart(2, '0')} UTC`
+                    : `Hourly at :${String(task.minute).padStart(2, '0')}`}
+                </div>
+                {task.description && (
+                  <div className="text-sm text-muted" style={{ fontFamily: 'monospace', marginTop: 2 }}>
+                    {task.command}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
