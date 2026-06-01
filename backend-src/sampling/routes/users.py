@@ -13,11 +13,11 @@ bp = Blueprint("users", __name__)
 
 @bp.get("/api/users")
 @login_required
-def list_users() -> Response:
+def list_users() -> ResponseReturnValue:
     if not current_user.is_admin:
         return jsonify(error="Admin access required"), 403
     with get_db() as db:
-        return jsonify(UserRepository(db).list_all())
+        return jsonify(UserRepository(db).list_all()), 200
 
 
 @bp.post("/api/users")
