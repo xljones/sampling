@@ -1,30 +1,50 @@
 # Deployment — PythonAnywhere
 
+The app is served from a single PythonAnywhere web app. Flask serves the built React frontend (`dist/`) and the JSON API.
+
+The **`deploy` branch** mirrors `main` and includes the pre-built `dist/` directory. CI rebuilds and force-pushes it on every push to `main`.
+
 ## First-time setup
 
 ### 1. Clone the repo
 
-Open a **Bash console** on PythonAnywhere and clone the **`deploy` branch**, which always contains the latest built frontend:
+Open a **Bash console** on PythonAnywhere and clone the `deploy` branch into your home directory:
 
 ```bash
 git clone --branch deploy https://github.com/xljones/sampling.git
 cd sampling
 ```
 
-The `deploy` branch mirrors `main` and includes the pre-built `dist/` directory. It is rebuilt and force-pushed automatically by CI on every push to `main`.
-
-### 2. Set up the Python environment
+### 2. Install dependencies
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+make deploy-pa
 ```
 
-### 3. Create your user account
+This resets to the latest `origin/deploy`, creates `venv/` if missing, and installs `requirements.txt`. It also runs after every code update — see [Updating a deployment](#updating-a-deployment).
+
+### 3. Create your `.env` file
 
 ```bash
-make create-user username=<username> password=<password>
+cat > .env <<EOF
+SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
+FLASK_DEBUG=0
+EOF
+```
+
+`.env` is gitignored and will not be overwritten by `make deploy-pa`.
+
+**Optional — admin panel PythonAnywhere stats.** If you want the admin panel to show live PythonAnywhere CPU / web app / scheduled task info, add a [PythonAnywhere API token](https://www.pythonanywhere.com/account/#api_token) and your PythonAnywhere username:
+
+```bash
+echo "PA_API_TOKEN=<your-token>" >> .env
+echo "PA_USERNAME=<your-username>" >> .env
+```
+
+### 4. Create your first user
+
+```bash
+make create-admin username=<username> password=<password>
 ```
 
 To list existing users at any time:
@@ -32,15 +52,6 @@ To list existing users at any time:
 ```bash
 make list-users
 ```
-
-### 4. Create the `.env` file
-
-```bash
-echo "SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_hex(32))')" > .env
-echo "FLASK_DEBUG=0" >> .env
-```
-
-This file is gitignored and will not be overwritten by `make deploy-pa`.
 
 ### 5. Configure the web app
 
@@ -52,13 +63,13 @@ In the **PythonAnywhere Web tab**:
 | Working directory | `/home/<you>/sampling` |
 | Virtualenv | `/home/<you>/sampling/venv` |
 
-**WSGI configuration file** — replace the entire contents with the contents of `pa_wsgi.py` from the repo.
+**WSGI configuration file** — replace the entire contents with the contents of `pa_wsgi.py` from the repo. (It loads `.env`, adds `backend-src/` to `sys.path`, and imports `application` from `wsgi.py`.)
 
 ### 6. Reload
 
 Hit **Reload** in the Web tab. The app will be live at `https://<you>.pythonanywhere.com`.
 
-The database is created automatically at `~/sampling/data/samples.db` on first request.
+The database is created automatically at `~/sampling/data/samples.db` on first request, and migrations run on every app startup.
 
 ---
 
@@ -78,11 +89,19 @@ Database migrations run automatically on the next request after reload.
 
 ## Database management
 
-All commands below work on both PythonAnywhere and locally — they auto-detect the environment.
+All commands below work on both PythonAnywhere and locally — they auto-detect the environment based on the `PYTHONANYWHERE_SITE` env var that PythonAnywhere injects into every console and web process.
 
 ```bash
-make seed         # populate with sample data (~15 boxes, ~53 tubes)
-make reset-db     # delete all boxes, cores, tubes, locations, and history (users kept)
-make create-user username=x password=y
+make migrate                                       # apply pending migrations
+make seed                                          # populate sample data
+make reset-db                                      # drop all tables — including users (interactive confirm)
+
+make db-backup                                     # write data/db-backup-<timestamp>.sql
+make db-restore file=db-backup-<timestamp>.sql     # restore from backup (interactive confirm)
+
+make create-user  username=x password=y            # normal user
+make create-admin username=x password=y            # admin user
+make rename-user  username=x new_username=y
+make delete-user  username=x                       # interactive confirm
 make list-users
 ```
