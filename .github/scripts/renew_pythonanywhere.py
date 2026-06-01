@@ -1,7 +1,9 @@
 import os
+import re
 import sys
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime, timedelta, timezone
 import time
 
 USERNAME = os.environ.get('PA_USERNAME')
@@ -13,6 +15,19 @@ if not USERNAME or not PASSWORD:
 
 LOGIN_URL = "https://www.pythonanywhere.com/login/"
 DASHBOARD_URL = f"https://www.pythonanywhere.com/user/{USERNAME}/webapps/"
+
+
+def _parse_expiry_date(html: str) -> str | None:
+    # PythonAnywhere renders the expiry date as an ISO date in the dashboard HTML.
+    # Look for a date near expiry/disabled keywords; fall back to any YYYY-MM-DD found.
+    for pattern, flags in [
+        (r'(?:expir|disabled?\s+on)[^<]{0,60}(\d{4}-\d{2}-\d{2})', re.IGNORECASE),
+        (r'(\d{4}-\d{2}-\d{2})', 0),
+    ]:
+        m = re.search(pattern, html, flags)
+        if m:
+            return m.group(1)
+    return None
 
 
 def renew():
@@ -91,7 +106,10 @@ def renew():
         result.raise_for_status()
 
         if result.status_code == 200 and "webapps" in result.url.lower():
-            print("Web app extended successfully")
+            expiry = _parse_expiry_date(result.text)
+            if not expiry:
+                expiry = (datetime.now(timezone.utc) + timedelta(days=30)).strftime('%Y-%m-%d')
+            print(f"Web app extended successfully — extended until: {expiry}")
             return True
 
         print(f"Extension failed — status {result.status_code}, url {result.url}")
