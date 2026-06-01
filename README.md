@@ -1,6 +1,8 @@
-# Sediment Sample Catalogue
+# Dirt Nap
 
-[![CI](https://github.com/xljones/sampling/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/xljones/sampling/actions/workflows/ci.yml)
+> *The samples are at rest.*
+
+[![CI](https://github.com/xljones/dirtnap/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/xljones/dirtnap/actions/workflows/ci.yml)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 A web app for cataloguing sediment samples. **Cores** are sediment column samples taken in the field; **tubes** are sub-samples taken from a core (or standalone field samples) and stored in **boxes**. All entities are identified by barcodes.
@@ -61,7 +63,7 @@ backend-src/           Python backend
   app.py               Local dev entry point
   manage.py            CLI (create-user, migrate, seed, db-backup, db-restore, …)
   wsgi.py              WSGI entry point (used by pa_wsgi.py)
-  sampling/
+  dirtnap/
     __init__.py        App factory (Flask-Login, before_request auth/expiry/readonly guard)
     db.py              Connection + migration runner
     migrations/        Versioned SQL files

@@ -1,4 +1,4 @@
-# Deployment — PythonAnywhere
+# Deployment — Dirt Nap on PythonAnywhere
 
 The app is served from a single PythonAnywhere web app. Flask serves the built React frontend (`dist/`) and the JSON API.
 
@@ -11,8 +11,8 @@ The **`deploy` branch** mirrors `main` and includes the pre-built `dist/` direct
 Open a **Bash console** on PythonAnywhere and clone the `deploy` branch into your home directory:
 
 ```bash
-git clone --branch deploy https://github.com/xljones/sampling.git
-cd sampling
+git clone --branch deploy https://github.com/xljones/dirtnap.git
+cd dirtnap
 ```
 
 ### 2. Install dependencies
@@ -59,9 +59,9 @@ In the **PythonAnywhere Web tab**:
 
 | Setting | Value |
 |---|---|
-| Source code | `/home/<you>/sampling` |
-| Working directory | `/home/<you>/sampling` |
-| Virtualenv | `/home/<you>/sampling/venv` |
+| Source code | `/home/<you>/dirtnap` |
+| Working directory | `/home/<you>/dirtnap` |
+| Virtualenv | `/home/<you>/dirtnap/venv` |
 
 **WSGI configuration file** — replace the entire contents with the contents of `pa_wsgi.py` from the repo. (It loads `.env`, adds `backend-src/` to `sys.path`, and imports `application` from `wsgi.py`.)
 
@@ -69,13 +69,13 @@ In the **PythonAnywhere Web tab**:
 
 Hit **Reload** in the Web tab. The app will be live at `https://<you>.pythonanywhere.com`.
 
-The database is created automatically at `~/sampling/data/samples.db` on first request, and migrations run on every app startup.
+The database is created automatically at `~/dirtnap/data/samples.db` on first request, and migrations run on every app startup.
 
 ---
 
 ## Updating a deployment
 
-From a **PythonAnywhere Bash console** inside `~/sampling`:
+From a **PythonAnywhere Bash console** inside `~/dirtnap`:
 
 ```bash
 make deploy-pa

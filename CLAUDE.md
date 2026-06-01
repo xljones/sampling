@@ -1,4 +1,6 @@
-# Sediment Sample Catalogue — Claude Context
+# Dirt Nap — Claude Context
+
+> A web app for cataloguing sediment samples. *The samples are at rest.*
 
 ## Tech stack
 
@@ -18,7 +20,7 @@
 DDD-inspired layering — routes never write SQL directly.
 
 ```
-sampling/
+dirtnap/
   __init__.py        create_app() factory; Flask-Login setup, before_request auth guard
   db.py              get_db(), run_migrations() — migration runner reads migrations/*.sql
   migrations/        Numbered SQL files (001_initial.sql, …)
