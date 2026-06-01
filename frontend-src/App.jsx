@@ -33,7 +33,7 @@ function Nav() {
       <NavLink to="/cores">Cores</NavLink>
       <NavLink to="/boxes">Boxes</NavLink>
       <NavLink to="/tubes">Tubes</NavLink>
-      <NavLink to="/locations">Locations</NavLink>
+      <NavLink to="/locations">Storage locations</NavLink>
       <div className="mt-auto">
         <div className="sidebar-user">
           <div className="meta">{user?.username}</div>
@@ -63,7 +63,7 @@ function BottomNav() {
           <div className="bottom-nav-backdrop" onClick={closeMore} />
           <div className="bottom-nav-more">
             <NavLink to="/cores" className="sidebar-nav-btn" onClick={closeMore}>Cores</NavLink>
-            <NavLink to="/locations" className="sidebar-nav-btn" onClick={closeMore}>Locations</NavLink>
+            <NavLink to="/locations" className="sidebar-nav-btn" onClick={closeMore}>Storage locations</NavLink>
             <div className="sidebar-user">
               <div className="text-sm fw-600">{user?.username}</div>
               {user?.is_readonly && <div className="meta mt-2">read-only</div>}

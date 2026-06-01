@@ -17,7 +17,7 @@ export default function LocationDetail() {
       <div className="page-header">
         <div>
           <div className="back-link">
-            <Link to="/locations">← Locations</Link>
+            <Link to="/locations">← Storage locations</Link>
           </div>
           <h1 className="page-title">{loc.name}</h1>
         </div>
@@ -40,7 +40,7 @@ export default function LocationDetail() {
                 </tr>
               ))}
               {loc.cores.length === 0 && (
-                <tr><td colSpan={4} className="empty">No cores at this location</td></tr>
+                <tr><td colSpan={4} className="empty">No cores at this storage location</td></tr>
               )}
             </tbody>
           </table>
@@ -64,7 +64,7 @@ export default function LocationDetail() {
                 </tr>
               ))}
               {loc.boxes.length === 0 && (
-                <tr><td colSpan={4} className="empty">No boxes at this location</td></tr>
+                <tr><td colSpan={4} className="empty">No boxes at this storage location</td></tr>
               )}
             </tbody>
           </table>

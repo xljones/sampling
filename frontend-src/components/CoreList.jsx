@@ -65,7 +65,7 @@ export default function CoreList() {
           type="search"
           value={filter}
           onChange={e => setFilter(e.target.value)}
-          placeholder="Filter by barcode, name, site, location, type…"
+          placeholder="Filter by barcode, name, site, storage location, type…"
           className="search-input"
         />
       </div>
@@ -83,7 +83,7 @@ export default function CoreList() {
                     <th>Source site</th>
                     <th>Collected</th>
                     <th>Type</th>
-                    <th>Storage</th>
+                    <th>Storage location</th>
                     <th>Tubes</th>
                     <th>Boxes</th>
                     <th></th>

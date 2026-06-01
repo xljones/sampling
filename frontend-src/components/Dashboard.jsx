@@ -94,7 +94,7 @@ export default function Dashboard() {
       <div className="card mb-6">
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Barcode</th><th>Name</th><th className="col-mobile-hide">Location</th><th>Tubes</th></tr></thead>
+            <thead><tr><th>Barcode</th><th>Name</th><th className="col-mobile-hide">Storage location</th><th>Tubes</th></tr></thead>
             <tbody>
               {boxes === null
                 ? <SkeletonRows cols={['90px', '40%', '30%', '40px']} rows={3} />

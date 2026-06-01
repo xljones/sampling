@@ -129,7 +129,7 @@ export default function BoxDetail() {
                   const t = box.tubes?.find(t => String(t.id) === fromTubeMatch[1]);
                   return `← Tube ${t?.barcode ?? fromTubeMatch[1]}`;
                 }
-                if (fromLocationMatch && box.location_name) return `← Location — ${box.location_name}`;
+                if (fromLocationMatch && box.location_name) return `← Storage location — ${box.location_name}`;
                 return '← Boxes';
               })()}
             </Link>
@@ -176,10 +176,10 @@ export default function BoxDetail() {
                 : <span>{box.name || '—'}</span>}
             </div>
             <div className="field">
-              <label>Location</label>
+              <label>Storage location</label>
               {editing ? (
                 <select value={form.location_id} onChange={e => set('location_id', e.target.value)}>
-                  <option value="">— No location —</option>
+                  <option value="">— No storage location —</option>
                   {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                 </select>
               ) : (

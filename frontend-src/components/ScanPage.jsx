@@ -73,7 +73,7 @@ export default function ScanPage() {
           {result.type === 'box' && (
             <div className="scan-result-grid">
               <Field label="Name" value={result.data.name} />
-              <Field label="Location" value={result.data.location} />
+              <Field label="Storage location" value={result.data.location} />
               <Field label="Notes" value={result.data.notes} />
               <Field label="Created" value={<RelativeTime value={result.data.created_at} />} />
             </div>
@@ -99,7 +99,7 @@ export default function ScanPage() {
               <Field label="Site" value={result.data.site_name} />
               <Field label="Type" value={result.data.sample_type} />
               <Field label="Collector" value={result.data.collector} />
-              <Field label="Storage" value={result.data.location_name} />
+              <Field label="Storage location" value={result.data.location_name} />
               <Field label="Date" value={result.data.collection_date} />
             </div>
           )}

@@ -107,9 +107,9 @@ export default function BoxList() {
                 <input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Core A Box 1" />
               </div>
               <div className="field">
-                <label>Location</label>
+                <label>Storage location</label>
                 <select value={form.location_id} onChange={e => set('location_id', e.target.value)}>
-                  <option value="">— No location —</option>
+                  <option value="">— No storage location —</option>
                   {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                 </select>
               </div>
@@ -131,7 +131,7 @@ export default function BoxList() {
           type="search"
           value={filter}
           onChange={e => setFilter(e.target.value)}
-          placeholder="Filter by barcode, name, location…"
+          placeholder="Filter by barcode, name, storage location…"
           className="search-input"
         />
       </div>
@@ -139,7 +139,7 @@ export default function BoxList() {
       <div className="card">
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Barcode</th><th>Name</th><th>Location</th><th>Tubes</th><th className="col-mobile-hide">Updated (UTC)</th><th></th></tr></thead>
+            <thead><tr><th>Barcode</th><th>Name</th><th>Storage location</th><th>Tubes</th><th className="col-mobile-hide">Updated (UTC)</th><th></th></tr></thead>
             <tbody>
               {boxes === null
                 ? <SkeletonRows cols={['90px', '40%', '30%', '50px', '100px', null]} />

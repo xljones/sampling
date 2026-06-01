@@ -75,8 +75,8 @@ export default function LocationList() {
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Locations</h1>
-        {!ro && <button className="btn btn-primary" onClick={() => setShowAdd(v => !v)}>+ New location</button>}
+        <h1 className="page-title">Storage locations</h1>
+        {!ro && <button className="btn btn-primary" onClick={() => setShowAdd(v => !v)}>+ New storage location</button>}
       </div>
 
       {showAdd && (
@@ -85,7 +85,7 @@ export default function LocationList() {
             <input
               value={newName}
               onChange={e => setNewName(e.target.value)}
-              placeholder="Location name, e.g. Oslo – Cold Store"
+              placeholder="Storage location name, e.g. Oslo – Cold Store"
               autoFocus
               className="barcode-input"
             />
@@ -144,7 +144,7 @@ export default function LocationList() {
                   </tr>
                 ))
               }
-              {locations !== null && visible.length === 0 && <tr><td colSpan={4} className="empty">{q ? 'No matches' : 'No locations yet'}</td></tr>}
+              {locations !== null && visible.length === 0 && <tr><td colSpan={4} className="empty">{q ? 'No matches' : 'No storage locations yet'}</td></tr>}
             </tbody>
           </table>
         </div>
