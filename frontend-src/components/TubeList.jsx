@@ -6,6 +6,7 @@ import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 import ExportDropdown from './ExportDropdown.jsx';
 import { SkeletonRows } from './Skeleton.jsx';
+import { InputMode } from '../constants.js';
 
 const TUBE_EXPORT_FIELDS = [
   'barcode', 'box_barcode', 'box_name', 'sample_date', 'site_name',
@@ -70,7 +71,7 @@ export default function TubeList() {
   const [boxes, setBoxes] = useState([]);
   const [assignBarcode, setAssignBarcode] = useState('');
   const [assignBoxId, setAssignBoxId] = useState('');
-  const [assignMode, setAssignMode] = useState('scan');
+  const [assignMode, setAssignMode] = useState(InputMode.SCAN);
   const [assigning, setAssigning] = useState(false);
 
   const navigate = useNavigate();
@@ -112,7 +113,7 @@ export default function TubeList() {
     setSelected(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
   }
 
-  const boxMatch = assignMode === 'scan'
+  const boxMatch = assignMode === InputMode.SCAN
     ? (assignBarcode ? boxes.find(b => b.barcode.toLowerCase() === assignBarcode.toLowerCase()) : null)
     : (assignBoxId ? boxes.find(b => String(b.id) === assignBoxId) : null);
 
@@ -179,7 +180,7 @@ export default function TubeList() {
         <div className="card card-body mb-4 assign-bar">
           <span className="text-sm fw-600">{selected.size} tube{selected.size !== 1 ? 's' : ''} selected</span>
           <div className="assign-input-group">
-            {assignMode === 'scan' ? (
+            {assignMode === InputMode.SCAN ? (
               <>
                 <BarcodeInput
                   value={assignBarcode}
@@ -203,11 +204,11 @@ export default function TubeList() {
             <button
               className="btn btn-secondary btn-sm flex-shrink-0"
               onClick={() => {
-                if (assignMode === 'scan') { setAssignMode('select'); setAssignBarcode(''); }
-                else { setAssignMode('scan'); setAssignBoxId(''); }
+                if (assignMode === InputMode.SCAN) { setAssignMode(InputMode.SELECT); setAssignBarcode(''); }
+                else { setAssignMode(InputMode.SCAN); setAssignBoxId(''); }
               }}
             >
-              {assignMode === 'scan' ? 'Choose from list' : 'Scan barcode'}
+              {assignMode === InputMode.SCAN ? 'Choose from list' : 'Scan barcode'}
             </button>
             {boxMatch && (
               <button className="btn btn-success btn-sm flex-shrink-0" onClick={handleBulkAssign} disabled={assigning}>
@@ -215,7 +216,7 @@ export default function TubeList() {
               </button>
             )}
           </div>
-          <button className="btn btn-secondary btn-sm" onClick={() => { setSelected(new Set()); setAssignBarcode(''); setAssignBoxId(''); setAssignMode('scan'); }}>
+          <button className="btn btn-secondary btn-sm" onClick={() => { setSelected(new Set()); setAssignBarcode(''); setAssignBoxId(''); setAssignMode(InputMode.SCAN); }}>
             Clear selection
           </button>
         </div>

@@ -2,6 +2,7 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import TubeForm from './TubeForm';
+import { FormMode } from '../constants.js';
 
 vi.mock('../api.js', () => ({
   api: {
@@ -34,8 +35,8 @@ function renderNew(path = '/tubes/new') {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
-        <Route path="/tubes/new" element={<TubeForm mode="create" />} />
-        <Route path="/tubes/:id/edit" element={<TubeForm mode="edit" />} />
+        <Route path="/tubes/new" element={<TubeForm mode={FormMode.CREATE} />} />
+        <Route path="/tubes/:id/edit" element={<TubeForm mode={FormMode.EDIT} />} />
       </Routes>
     </MemoryRouter>
   );

@@ -7,6 +7,7 @@ import RelativeTime from './RelativeTime.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 import CoordCard from './CoordCard.jsx';
 import { SkeletonPage } from './Skeleton.jsx';
+import { InputMode } from '../constants.js';
 
 export default function TubeDetail() {
   const { user } = useAuth();
@@ -21,8 +22,8 @@ export default function TubeDetail() {
   const [saving, setSaving] = useState(false);
   const [boxes, setBoxes] = useState([]);
   const [cores, setCores] = useState([]);
-  const [boxMode, setBoxMode] = useState('scan');
-  const [coreMode, setCoreMode] = useState('scan');
+  const [boxMode, setBoxMode] = useState(InputMode.SCAN);
+  const [coreMode, setCoreMode] = useState(InputMode.SCAN);
   const [boxBarcode, setBoxBarcode] = useState('');
   const [coreBarcode, setCoreBarcode] = useState('');
   const [creatingBox, setCreatingBox] = useState(false);
@@ -69,8 +70,8 @@ export default function TubeDetail() {
     });
     setBoxBarcode(tube.box_barcode ?? '');
     setCoreBarcode(tube.core_barcode ?? '');
-    setBoxMode('scan');
-    setCoreMode('scan');
+    setBoxMode(InputMode.SCAN);
+    setCoreMode(InputMode.SCAN);
     setEditing(true);
   }
 
@@ -93,13 +94,13 @@ export default function TubeDetail() {
   function switchToScan() {
     const selected = boxes.find(b => String(b.id) === String(form.box_id));
     setBoxBarcode(selected?.barcode ?? '');
-    setBoxMode('scan');
+    setBoxMode(InputMode.SCAN);
   }
 
   function switchCoreToScan() {
     const selected = cores.find(c => String(c.id) === String(form.core_id));
     setCoreBarcode(selected?.barcode ?? '');
-    setCoreMode('scan');
+    setCoreMode(InputMode.SCAN);
   }
 
   async function handleCreateBox() {
@@ -249,14 +250,14 @@ export default function TubeDetail() {
                   <button
                     type="button"
                     className="btn btn-secondary btn-sm"
-                    onClick={() => boxMode === 'select' ? switchToScan() : setBoxMode('select')}
+                    onClick={() => boxMode === InputMode.SELECT ? switchToScan() : setBoxMode(InputMode.SELECT)}
                   >
-                    {boxMode === 'select' ? 'Scan barcode' : 'Choose from list'}
+                    {boxMode === InputMode.SELECT ? 'Scan barcode' : 'Choose from list'}
                   </button>
                 )}
               </label>
               {editing ? (
-                boxMode === 'select' ? (
+                boxMode === InputMode.SELECT ? (
                   <select value={form.box_id} onChange={e => set('box_id', e.target.value)}>
                     <option value="">— Unassigned —</option>
                     {boxes.map(b => <option key={b.id} value={b.id}>{b.barcode}{b.name ? ` — ${b.name}` : ''}</option>)}
@@ -300,15 +301,15 @@ export default function TubeDetail() {
                   <button
                     type="button"
                     className="btn btn-secondary btn-sm"
-                    onClick={() => coreMode === 'select' ? switchCoreToScan() : setCoreMode('select')}
+                    onClick={() => coreMode === InputMode.SELECT ? switchCoreToScan() : setCoreMode(InputMode.SELECT)}
                   >
-                    {coreMode === 'select' ? 'Scan barcode' : 'Choose from list'}
+                    {coreMode === InputMode.SELECT ? 'Scan barcode' : 'Choose from list'}
                   </button>
                 )}
               </label>
               {editing ? (
                 <>
-                  {coreMode === 'select' ? (
+                  {coreMode === InputMode.SELECT ? (
                     <select value={form.core_id} onChange={e => set('core_id', e.target.value)}>
                       <option value="">— None —</option>
                       {cores.map(c => <option key={c.id} value={c.id}>{c.barcode}{c.name ? ` — ${c.name}` : ''}</option>)}

@@ -10,6 +10,7 @@ import BoxDetail from './components/BoxDetail.jsx';
 import TubeList from './components/TubeList.jsx';
 import TubeDetail from './components/TubeDetail.jsx';
 import TubeForm from './components/TubeForm.jsx';
+import { FormMode } from './constants.js';
 import ScanPage from './components/ScanPage.jsx';
 import CoreList from './components/CoreList.jsx';
 import CoreDetail from './components/CoreDetail.jsx';
@@ -119,7 +120,7 @@ function AppShell() {
           <Route path="/boxes" element={<BoxList />} />
           <Route path="/boxes/:id" element={<BoxDetail />} />
           <Route path="/tubes" element={<TubeList />} />
-          <Route path="/tubes/new" element={<TubeForm mode="create" />} />
+          <Route path="/tubes/new" element={<TubeForm mode={FormMode.CREATE} />} />
           <Route path="/tubes/:id" element={<TubeDetail />} />
           <Route path="/cores" element={<CoreList />} />
           <Route path="/cores/new" element={<CoreForm />} />
