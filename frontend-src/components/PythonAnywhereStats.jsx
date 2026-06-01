@@ -109,15 +109,22 @@ export default function PythonAnywhereStats() {
           <div>
             <div className="scan-field-label mb-2">Web apps</div>
             {webapps.map(app => (
-              <div key={app.id} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <span
-                  style={{
-                    display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
-                    background: app.enabled ? '#27ae60' : '#e74c3c', flexShrink: 0,
-                  }}
-                />
-                <span className="text-sm">{app.domain_name}</span>
-                <span className="text-sm text-muted">Python {app.python_version}</span>
+              <div key={app.id} style={{ marginBottom: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span
+                    style={{
+                      display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
+                      background: app.enabled ? '#27ae60' : '#e74c3c', flexShrink: 0,
+                    }}
+                  />
+                  <span className="text-sm">{app.domain_name}</span>
+                  <span className="text-sm text-muted">Python {app.python_version}</span>
+                </div>
+                {app.expiry_date && (
+                  <div className="text-sm text-muted" style={{ marginTop: 3, paddingLeft: 16 }}>
+                    Expires {app.expiry_date}
+                  </div>
+                )}
               </div>
             ))}
           </div>
