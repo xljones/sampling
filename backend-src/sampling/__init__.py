@@ -17,7 +17,7 @@ login_manager = LoginManager()
 def create_app() -> Flask:
     from sampling.db import get_db, run_migrations
     from sampling.repositories.user_repository import UserRepository
-    from sampling.routes import auth, boxes, cores, export, locations, scan, tubes, users
+    from sampling.routes import admin, auth, boxes, cores, export, locations, scan, tubes, users
 
     run_migrations()
 
@@ -73,7 +73,17 @@ def create_app() -> Flask:
             return jsonify(error="Read-only access"), 403
         return None
 
-    for bp in (auth.bp, boxes.bp, cores.bp, tubes.bp, scan.bp, export.bp, locations.bp, users.bp):
+    for bp in (
+        admin.bp,
+        auth.bp,
+        boxes.bp,
+        cores.bp,
+        tubes.bp,
+        scan.bp,
+        export.bp,
+        locations.bp,
+        users.bp,
+    ):
         app.register_blueprint(bp)
 
     @app.get("/", defaults={"path": ""})

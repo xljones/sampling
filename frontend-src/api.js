@@ -45,6 +45,9 @@ export const api = {
   getTubeHistory: (id)             => req('GET',    `/tubes/${id}/history`),
   revertTube:     (id, versionId)  => req('POST',   `/tubes/${id}/revert/${versionId}`),
 
+  // Admin
+  getPythonAnywhereStats: () => req('GET', '/admin/pythonanywhere'),
+
   // Users
   getUsers:    ()      => req('GET',    '/users'),
   createUser:  (body)  => req('POST',   '/users', body),
