@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
@@ -13,6 +13,7 @@ export default function CoreList() {
   const ro = user?.is_readonly;
   const navigate = useNavigate();
   const toast = useToast();
+  const [searchParams] = useSearchParams();
   const [cores, setCores] = useState(null);
   const [filter, setFilter] = useState('');
   const [adding, setAdding] = useState(false);
@@ -21,6 +22,13 @@ export default function CoreList() {
   const [withSubData, setWithSubData] = useState(true);
 
   useEffect(() => { api.getCores().then(setCores); }, []);
+  useEffect(() => {
+    if (searchParams.get('add') === '1') {
+      setAdding(true);
+      const barcode = searchParams.get('barcode');
+      if (barcode) setNewBarcode(barcode);
+    }
+  }, [searchParams]);
 
   const q = filter.toLowerCase();
   const anyFilter = !!q;

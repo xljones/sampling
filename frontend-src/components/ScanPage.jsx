@@ -33,7 +33,7 @@ export default function ScanPage() {
       </div>
 
       <div className="card card-body mw-md mb-6">
-        <p className="text-muted mb-3">Scan or type any barcode to look up a box or tube.</p>
+        <p className="text-muted mb-3">Scan or type any barcode to look up a box, core, or tube.</p>
         <BarcodeInput
           value={barcode}
           onChange={setBarcode}
@@ -55,6 +55,7 @@ export default function ScanPage() {
           {error}
           <div className="btn-group mt-3">
             <Link to={`/boxes?add=1&barcode=${encodeURIComponent(barcode.trim())}`} className="btn btn-secondary btn-sm">Register as box</Link>
+            <Link to={`/cores?add=1&barcode=${encodeURIComponent(barcode.trim())}`} className="btn btn-secondary btn-sm">Register as core</Link>
             <Link to={`/tubes/new?barcode=${encodeURIComponent(barcode.trim())}`} className="btn btn-secondary btn-sm">Register as tube</Link>
           </div>
         </div>
