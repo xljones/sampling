@@ -40,3 +40,15 @@ def auth_client(client: FlaskClient) -> FlaskClient:
 
     client.post("/api/auth/login", json={"username": "testuser", "password": "testpass"})
     return client
+
+
+@pytest.fixture
+def admin_client(client: FlaskClient) -> FlaskClient:
+    from sampling.db import get_db
+    from sampling.repositories.user_repository import UserRepository
+
+    with get_db() as db:
+        UserRepository(db).create("adminuser", "testpass", is_admin=True)
+
+    client.post("/api/auth/login", json={"username": "adminuser", "password": "testpass"})
+    return client

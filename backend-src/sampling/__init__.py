@@ -45,6 +45,7 @@ def create_app() -> Flask:
                 username=row["username"],
                 created_at=row.get("created_at"),
                 is_readonly=bool(row.get("is_readonly")),
+                is_admin=bool(row.get("is_admin")),
                 expires_at=row.get("expires_at"),
             )
         return None

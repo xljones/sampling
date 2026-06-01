@@ -16,6 +16,7 @@ def _user_dict(row: dict[str, Any]) -> dict[str, Any]:
         "id": row["id"],
         "username": row["username"],
         "is_readonly": bool(row.get("is_readonly")),
+        "is_admin": bool(row.get("is_admin")),
         "expires_at": row.get("expires_at"),
     }
 
@@ -25,6 +26,7 @@ def _user_obj(row: dict[str, Any]) -> User:
         id=row["id"],
         username=row["username"],
         is_readonly=bool(row.get("is_readonly")),
+        is_admin=bool(row.get("is_admin")),
         expires_at=row.get("expires_at"),
     )
 
@@ -60,6 +62,7 @@ def me() -> Response:
         id=current_user.id,
         username=current_user.username,
         is_readonly=bool(current_user.is_readonly),
+        is_admin=bool(current_user.is_admin),
         expires_at=current_user.expires_at,
     )
 

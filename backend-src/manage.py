@@ -8,8 +8,10 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 
 def cmd_create_user(args: list[str]) -> None:
+    is_admin = "--admin" in args
+    args = [a for a in args if a != "--admin"]
     if len(args) != 2:
-        print("Usage: python manage.py create-user <username> <password>")
+        print("Usage: python manage.py create-user <username> <password> [--admin]")
         sys.exit(1)
     username, password = args
     from sampling.db import get_db
@@ -19,22 +21,23 @@ def cmd_create_user(args: list[str]) -> None:
         if repo.get_by_username(username):
             print(f"Error: user '{username}' already exists")
             sys.exit(1)
-        repo.create(username, password)
-    print(f"User '{username}' created.")
+        repo.create(username, password, is_admin=is_admin)
+    kind = "admin" if is_admin else "normal"
+    print(f"{kind.capitalize()} user '{username}' created.")
 
 
 def cmd_list_users(_: list[str]) -> None:
     from sampling.db import get_db
     with get_db() as db:
         users = db.execute(
-            "SELECT id, username, is_readonly, expires_at, created_at FROM users ORDER BY id"
+            "SELECT id, username, is_readonly, is_admin, expires_at, created_at FROM users ORDER BY id"
         ).fetchall()
     if not users:
         print("No users.")
     for u in users:
-        kind = "read-only" if u[2] else "normal"
-        expiry = f"  expires {u[3]}" if u[3] else ""
-        print(f"  [{u[0]}] {u[1]}  ({kind}{expiry})  created {u[4]}")
+        kind = "admin" if u[3] else ("read-only" if u[2] else "normal")
+        expiry = f"  expires {u[4]}" if u[4] else ""
+        print(f"  [{u[0]}] {u[1]}  ({kind}{expiry})  created {u[5]}")
 
 
 def cmd_seed(_: list[str]) -> None:

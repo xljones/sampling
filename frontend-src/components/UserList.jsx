@@ -5,17 +5,22 @@ import { useToast } from './Toast.jsx';
 import RelativeTime from './RelativeTime.jsx';
 
 function statusLabel(u) {
-  if (!u.is_readonly) return null;
   if (!u.expires_at) return null;
   const exp = new Date(u.expires_at);
   return exp < new Date() ? 'expired' : `expires ${exp.toISOString().slice(0, 10)}`;
+}
+
+function userBadge(u) {
+  if (u.is_admin) return { cls: 'user-badge-admin', label: 'Admin' };
+  if (u.is_readonly) return { cls: 'user-badge-readonly', label: 'Read-only' };
+  return { cls: 'user-badge-normal', label: 'Normal' };
 }
 
 export default function UserList() {
   const { user: me } = useAuth();
   const [users, setUsers] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ username: '', password: '', ttl_days: '' });
+  const [form, setForm] = useState({ username: '', password: '', ttl_days: '', is_readonly: true });
   const [saving, setSaving] = useState(false);
   const toast = useToast();
 
@@ -27,13 +32,18 @@ export default function UserList() {
     e.preventDefault();
     setSaving(true);
     try {
-      const body = { username: form.username, password: form.password };
+      const body = {
+        username: form.username,
+        password: form.password,
+        is_readonly: form.is_readonly,
+      };
       if (form.ttl_days) body.ttl_days = parseInt(form.ttl_days, 10);
       const created = await api.createUser(body);
       setUsers(us => [...us, created]);
-      setForm({ username: '', password: '', ttl_days: '' });
+      setForm({ username: '', password: '', ttl_days: '', is_readonly: true });
       setShowAdd(false);
-      toast(`Read-only user "${created.username}" created`);
+      const kind = created.is_readonly ? 'Read-only' : 'Normal';
+      toast(`${kind} user "${created.username}" created`);
     } catch (err) {
       toast(err.message, 'error');
     } finally {
@@ -42,7 +52,7 @@ export default function UserList() {
   }
 
   async function handleDelete(u) {
-    if (!confirm(`Delete read-only user "${u.username}"?`)) return;
+    if (!confirm(`Delete user "${u.username}"?`)) return;
     try {
       await api.deleteUser(u.id);
       setUsers(us => us.filter(x => x.id !== u.id));
@@ -56,7 +66,7 @@ export default function UserList() {
     <div>
       <div className="page-header">
         <h1 className="page-title">Users</h1>
-        <button className="btn btn-primary" onClick={() => setShowAdd(v => !v)}>+ New read-only user</button>
+        <button className="btn btn-primary" onClick={() => setShowAdd(v => !v)}>+ New user</button>
       </div>
 
       {showAdd && (
@@ -70,6 +80,13 @@ export default function UserList() {
               <div className="field">
                 <label>Password *</label>
                 <input type="password" value={form.password} onChange={e => set('password', e.target.value)} />
+              </div>
+              <div className="field">
+                <label>User type</label>
+                <select value={form.is_readonly ? 'readonly' : 'normal'} onChange={e => set('is_readonly', e.target.value === 'readonly')}>
+                  <option value="readonly">Read-only</option>
+                  <option value="normal">Normal</option>
+                </select>
               </div>
               <div className="field">
                 <label>Expires after (days)</label>
@@ -100,6 +117,7 @@ export default function UserList() {
               {users.map(u => {
                 const expiry = statusLabel(u);
                 const isExpired = expiry === 'expired';
+                const { cls, label } = userBadge(u);
                 return (
                   <tr key={u.id}>
                     <td>
@@ -107,16 +125,14 @@ export default function UserList() {
                       {u.id === me?.id && <span className="tag-you">(you)</span>}
                     </td>
                     <td>
-                      <span className={`user-badge ${u.is_readonly ? 'user-badge-readonly' : 'user-badge-admin'}`}>
-                        {u.is_readonly ? 'Read-only' : 'Normal'}
-                      </span>
+                      <span className={`user-badge ${cls}`}>{label}</span>
                     </td>
                     <td className={isExpired ? 'text-danger text-sm' : 'text-muted text-sm'}>
                       {expiry || '—'}
                     </td>
                     <td className="meta"><RelativeTime value={u.created_at} /></td>
                     <td className="col-shrink">
-                      {!!u.is_readonly && u.id !== me?.id && (
+                      {!u.is_admin && u.id !== me?.id && (
                         <button className="btn btn-danger btn-sm" onClick={() => handleDelete(u)}>Delete</button>
                       )}
                     </td>

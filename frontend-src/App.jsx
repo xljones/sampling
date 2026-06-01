@@ -37,9 +37,10 @@ function Nav() {
       <div className="mt-auto">
         <div className="sidebar-user">
           <div className="meta">{user?.username}</div>
+          {user?.is_admin && <div className="meta dim">admin</div>}
           {user?.is_readonly && <div className="meta dim">read-only</div>}
         </div>
-        {!user?.is_readonly && <NavLink to="/users" className="sidebar-nav-btn">Users</NavLink>}
+        {user?.is_admin && <NavLink to="/users" className="sidebar-nav-btn">Users</NavLink>}
         <NavLink to="/account" className="sidebar-nav-btn">Change password</NavLink>
         <button className="sidebar-nav-btn text-danger" onClick={logout}>Sign out</button>
         <div className="sidebar-grass-wrap">
@@ -66,9 +67,10 @@ function BottomNav() {
             <NavLink to="/locations" className="sidebar-nav-btn" onClick={closeMore}>Storage locations</NavLink>
             <div className="sidebar-user">
               <div className="text-sm fw-600">{user?.username}</div>
+              {user?.is_admin && <div className="meta mt-2">admin</div>}
               {user?.is_readonly && <div className="meta mt-2">read-only</div>}
             </div>
-            {!user?.is_readonly && (
+            {user?.is_admin && (
               <NavLink to="/users" className="sidebar-nav-btn" onClick={closeMore}>Users</NavLink>
             )}
             <NavLink to="/account" className="sidebar-nav-btn" onClick={closeMore}>Change password</NavLink>
@@ -120,7 +122,7 @@ function AppShell() {
           <Route path="/cores/:id" element={<CoreDetail />} />
           <Route path="/locations" element={<LocationList />} />
           <Route path="/locations/:id" element={<LocationDetail />} />
-          {!user.is_readonly && <Route path="/users" element={<UserList />} />}
+          {user.is_admin && <Route path="/users" element={<UserList />} />}
           <Route path="/account" element={<AccountPage />} />
         </Routes>
       </main>

@@ -10,6 +10,7 @@ class User(UserMixin):
     username: str
     created_at: str | None = None
     is_readonly: bool = False
+    is_admin: bool = False
     expires_at: str | None = None
 
     @property

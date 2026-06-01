@@ -1,10 +1,19 @@
 .PHONY: create-user
-# create a user: make create-user username=<name> password=<pass>
+# create a normal user: make create-user username=<name> password=<pass>
 create-user:
 ifdef PYTHONANYWHERE_SITE
 	venv/bin/python backend-src/manage.py create-user $(username) $(password)
 else
 	docker compose run --rm backend python manage.py create-user $(username) $(password)
+endif
+
+.PHONY: create-admin
+# create an admin user: make create-admin username=<name> password=<pass>
+create-admin:
+ifdef PYTHONANYWHERE_SITE
+	venv/bin/python backend-src/manage.py create-user $(username) $(password) --admin
+else
+	docker compose run --rm backend python manage.py create-user $(username) $(password) --admin
 endif
 
 .PHONY: rename-user

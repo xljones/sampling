@@ -14,6 +14,8 @@ bp = Blueprint("users", __name__)
 @bp.get("/api/users")
 @login_required
 def list_users() -> Response:
+    if not current_user.is_admin:
+        return jsonify(error="Admin access required"), 403
     with get_db() as db:
         return jsonify(UserRepository(db).list_all())
 
@@ -21,10 +23,13 @@ def list_users() -> Response:
 @bp.post("/api/users")
 @login_required
 def create_user() -> ResponseReturnValue:
+    if not current_user.is_admin:
+        return jsonify(error="Admin access required"), 403
     d = request.json or {}
     username = (d.get("username") or "").strip()
     password = d.get("password") or ""
     ttl_days = d.get("ttl_days")
+    is_readonly = bool(d.get("is_readonly", True))
     if not username or not password:
         return jsonify(error="username and password are required"), 400
     expires_at = None
@@ -39,7 +44,7 @@ def create_user() -> ResponseReturnValue:
     try:
         with get_db() as db:
             user = UserRepository(db).create(
-                username, password, is_readonly=True, expires_at=expires_at
+                username, password, is_readonly=is_readonly, expires_at=expires_at
             )
         return jsonify(user), 201
     except sqlite3.IntegrityError:
@@ -49,6 +54,8 @@ def create_user() -> ResponseReturnValue:
 @bp.delete("/api/users/<int:user_id>")
 @login_required
 def delete_user(user_id: int) -> ResponseReturnValue:
+    if not current_user.is_admin:
+        return jsonify(error="Admin access required"), 403
     if user_id == current_user.id:
         return jsonify(error="Cannot delete your own account"), 400
     with get_db() as db:
@@ -56,7 +63,7 @@ def delete_user(user_id: int) -> ResponseReturnValue:
         target = repo.get_by_id(user_id)
         if not target:
             return jsonify(error="Not found"), 404
-        if not target["is_readonly"]:
-            return jsonify(error="Normal user accounts cannot be deleted via the API"), 403
+        if target["is_admin"]:
+            return jsonify(error="Admin accounts cannot be deleted via the API"), 403
         repo.delete(user_id)
     return "", 204
