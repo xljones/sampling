@@ -137,15 +137,17 @@ export default function PythonAnywhereStats() {
         <div style={{ marginTop: '1.5rem' }}>
           <div className="scan-field-label mb-2">Scheduled tasks</div>
           {schedule.map(task => (
-            <div key={task.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
-              <span
-                style={{
-                  display: 'inline-block', width: 8, height: 8, borderRadius: '50%', marginTop: 4,
-                  background: task.enabled ? '#27ae60' : '#e74c3c', flexShrink: 0,
-                }}
-              />
-              <div>
+            <div key={task.id} style={{ marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span
+                  style={{
+                    display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
+                    background: task.enabled ? '#27ae60' : '#e74c3c', flexShrink: 0,
+                  }}
+                />
                 <span className="text-sm">{task.description || task.command}</span>
+              </div>
+              <div style={{ paddingLeft: 16 }}>
                 <div className="text-sm text-muted" style={{ marginTop: 2 }}>
                   {task.interval === 'daily'
                     ? `Daily at ${String(task.hour).padStart(2, '0')}:${String(task.minute).padStart(2, '0')} UTC`
