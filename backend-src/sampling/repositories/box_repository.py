@@ -67,7 +67,12 @@ class BoxRepository(BaseRepository):
             return None
         box["tubes"] = self._rows(
             self.db.execute(
-                "SELECT * FROM tubes WHERE box_id=? ORDER BY depth_cm ASC, created_at ASC",
+                """
+                SELECT t.*, c.latitude AS core_latitude, c.longitude AS core_longitude
+                FROM tubes t
+                LEFT JOIN cores c ON c.id = t.core_id
+                WHERE t.box_id=? ORDER BY t.depth_cm ASC, t.created_at ASC
+                """,
                 (box_id,),
             ).fetchall()
         )
