@@ -11,7 +11,8 @@ class UserRepository:
     def get_by_id(self, user_id: int) -> dict[str, Any] | None:
         """Return a user by their primary key (excluding password_hash), or None if not found."""
         r = self.db.execute(
-            "SELECT id, username, is_readonly, is_admin, expires_at, created_at FROM users WHERE id=?",
+            "SELECT id, username, is_readonly, is_admin, "
+            "expires_at, created_at FROM users WHERE id=?",
             (user_id,),
         ).fetchone()
         if r:
@@ -49,7 +50,8 @@ class UserRepository:
     ) -> dict[str, Any]:
         """Insert a new user with a hashed password and return the created user (no hash)."""
         cur = self.db.execute(
-            "INSERT INTO users (username, password_hash, is_readonly, is_admin, expires_at) VALUES (?,?,?,?,?)",
+            "INSERT INTO users (username, password_hash, is_readonly, "
+            "is_admin, expires_at) VALUES (?,?,?,?,?)",
             (
                 username,
                 generate_password_hash(password),
