@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api.js';
-import RelativeTime from './RelativeTime.jsx';
+
+const fmt = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+
+function resetIn(isoString) {
+  const ms = new Date(isoString) - Date.now();
+  const mins = Math.round(ms / 60_000);
+  if (mins < 60) return fmt.format(mins, 'minute');
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return fmt.format(hours, 'hour');
+  return fmt.format(Math.round(hours / 24), 'day');
+}
 
 function SkeletonCard() {
   return (
@@ -90,7 +100,7 @@ export default function PythonAnywhereStats() {
           <CpuBar used={cpu.daily_cpu_total_usage_seconds} limit={cpu.daily_cpu_limit_seconds} />
           {cpu.next_reset_time && (
             <p className="text-sm text-muted mt-2">
-              Resets <RelativeTime value={cpu.next_reset_time} />
+              Resets {resetIn(cpu.next_reset_time)}
             </p>
           )}
         </div>
