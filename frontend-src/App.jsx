@@ -36,9 +36,11 @@ function Nav() {
       <NavLink to="/locations">Storage locations</NavLink>
       <div className="mt-auto">
         <div className="sidebar-user">
-          <div className="meta">{user?.username}</div>
-          {user?.is_admin && <div className="meta dim">admin</div>}
-          {user?.is_readonly && <div className="meta dim">read-only</div>}
+          <div className="sidebar-user-row">
+            <div className="meta">{user?.username}</div>
+            {user?.is_admin && <span className="user-badge user-badge-admin">Admin</span>}
+            {user?.is_readonly && <span className="user-badge user-badge-readonly">Read-only</span>}
+          </div>
         </div>
         {user?.is_admin && <NavLink to="/admin" className="sidebar-nav-btn">Admin</NavLink>}
         <NavLink to="/account" className="sidebar-nav-btn">Change password</NavLink>
@@ -66,9 +68,11 @@ function BottomNav() {
             <NavLink to="/cores" className="sidebar-nav-btn" onClick={closeMore}>Cores</NavLink>
             <NavLink to="/locations" className="sidebar-nav-btn" onClick={closeMore}>Storage locations</NavLink>
             <div className="sidebar-user">
-              <div className="text-sm fw-600">{user?.username}</div>
-              {user?.is_admin && <div className="meta mt-2">admin</div>}
-              {user?.is_readonly && <div className="meta mt-2">read-only</div>}
+              <div className="sidebar-user-row">
+                <div className="text-sm fw-600">{user?.username}</div>
+                {user?.is_admin && <span className="user-badge user-badge-admin">Admin</span>}
+                {user?.is_readonly && <span className="user-badge user-badge-readonly">Read-only</span>}
+              </div>
             </div>
             {user?.is_admin && (
               <NavLink to="/admin" className="sidebar-nav-btn" onClick={closeMore}>Admin</NavLink>

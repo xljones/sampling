@@ -50,6 +50,7 @@
 }
 .sidebar-nav-btn:hover { background: var(--surface2); }
 .sidebar-user { padding: 12px 16px; border-top: 1px solid var(--border); }
+.sidebar-user-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .sidebar-version { display: flex; align-items: center; min-height: 36px; border-top: 1px solid var(--border); margin-top: 4px; padding: 0 16px; font-size: 11px; color: var(--text2); opacity: 0.6; }
 .sidebar-tagline { font-size: 11px; color: var(--text2); padding: 0 16px 12px; margin-top: -8px; opacity: 0.7; }
 .sidebar-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
