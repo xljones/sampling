@@ -109,7 +109,7 @@ export default function PythonAnywhereStats() {
           <div>
             <div className="scan-field-label mb-2">Web apps</div>
             {webapps.map(app => (
-              <div key={app.id} style={{ marginBottom: 6 }}>
+              <div key={app.id} style={{ marginBottom: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span
                     style={{
@@ -118,13 +118,15 @@ export default function PythonAnywhereStats() {
                     }}
                   />
                   <span className="text-sm">{app.domain_name}</span>
-                  <span className="text-sm text-muted">Python {app.python_version}</span>
                 </div>
-                {app.expiry && (
-                  <div className="text-sm text-muted" style={{ marginTop: 3, paddingLeft: 16 }}>
-                    Expires {app.expiry}
-                  </div>
-                )}
+                <div style={{ paddingLeft: 16, marginTop: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span className="text-sm text-muted">Python {app.python_version}</span>
+                  {app.expiry && (
+                    <span className="text-sm text-muted">
+                      Expires {app.expiry} ({resetIn(app.expiry)})
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
           </div>
