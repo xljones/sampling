@@ -120,9 +120,9 @@ export default function PythonAnywhereStats() {
                   <span className="text-sm">{app.domain_name}</span>
                   <span className="text-sm text-muted">Python {app.python_version}</span>
                 </div>
-                {app.expiry_date && (
+                {app.expiry && (
                   <div className="text-sm text-muted" style={{ marginTop: 3, paddingLeft: 16 }}>
-                    Expires {app.expiry_date}
+                    Expires {app.expiry}
                   </div>
                 )}
               </div>
