@@ -112,14 +112,6 @@ export default function TubeList() {
     setSelected(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
   }
 
-  async function handleDelete(id) {
-    if (!confirm('Delete this tube?')) return;
-    await api.deleteTube(id);
-    setTubes(t => t.filter(x => x.id !== id));
-    setSelected(s => { const n = new Set(s); n.delete(id); return n; });
-    toast('Tube deleted');
-  }
-
   const boxMatch = assignMode === 'scan'
     ? (assignBarcode ? boxes.find(b => b.barcode.toLowerCase() === assignBarcode.toLowerCase()) : null)
     : (assignBoxId ? boxes.find(b => String(b.id) === assignBoxId) : null);

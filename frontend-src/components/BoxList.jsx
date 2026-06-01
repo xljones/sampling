@@ -68,13 +68,6 @@ export default function BoxList() {
     }
   }
 
-  async function handleDelete(id) {
-    if (!confirm('Delete this box? Tubes inside will become unassigned.')) return;
-    await api.deleteBox(id);
-    setBoxes(b => b.filter(x => x.id !== id));
-    toast('Box deleted');
-  }
-
   return (
     <div>
       <div className="page-header">
