@@ -1,5 +1,5 @@
 import os
-from sampling import create_app
+from dirtnap import create_app
 
 app = create_app()
 

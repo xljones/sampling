@@ -4,9 +4,9 @@ from flask import Blueprint, Response, jsonify, request
 from flask.typing import ResponseReturnValue
 from flask_login import current_user, login_required, login_user, logout_user
 
-from sampling.db import get_db
-from sampling.domain.user import User
-from sampling.repositories.user_repository import UserRepository
+from dirtnap.db import get_db
+from dirtnap.domain.user import User
+from dirtnap.repositories.user_repository import UserRepository
 
 bp = Blueprint("auth", __name__)
 

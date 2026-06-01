@@ -5,8 +5,8 @@ from flask import Blueprint, Response, jsonify, request
 from flask.typing import ResponseReturnValue
 from flask_login import current_user, login_required
 
-from sampling.db import get_db
-from sampling.repositories.tube_repository import TubeRepository
+from dirtnap.db import get_db
+from dirtnap.repositories.tube_repository import TubeRepository
 
 bp = Blueprint("tubes", __name__)
 

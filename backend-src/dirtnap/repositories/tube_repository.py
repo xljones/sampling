@@ -1,6 +1,6 @@
 from typing import Any
 
-from sampling.repositories.base import BaseRepository
+from dirtnap.repositories.base import BaseRepository
 
 
 class TubeRepository(BaseRepository):

@@ -1,7 +1,7 @@
 from flask.testing import FlaskClient
 
-from sampling.db import get_db
-from sampling.repositories.user_repository import UserRepository
+from dirtnap.db import get_db
+from dirtnap.repositories.user_repository import UserRepository
 
 
 def test_list_users_requires_auth(client: FlaskClient) -> None:
@@ -113,7 +113,7 @@ def test_user_repository_rename() -> None:
     os.close(db_fd)
     os.environ["DB_PATH"] = db_path
     try:
-        from sampling.db import run_migrations, get_db
+        from dirtnap.db import run_migrations, get_db
         run_migrations()
         with get_db() as db:
             user = UserRepository(db).create("original", "pass")

@@ -5,8 +5,8 @@ from flask import Blueprint, Response, jsonify, request
 from flask.typing import ResponseReturnValue
 from flask_login import current_user, login_required
 
-from sampling.db import get_db
-from sampling.repositories.box_repository import BoxRepository
+from dirtnap.db import get_db
+from dirtnap.repositories.box_repository import BoxRepository
 
 bp = Blueprint("boxes", __name__)
 

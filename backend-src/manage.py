@@ -14,8 +14,8 @@ def cmd_create_user(args: list[str]) -> None:
         print("Usage: python manage.py create-user <username> <password> [--admin]")
         sys.exit(1)
     username, password = args
-    from sampling.db import get_db
-    from sampling.repositories.user_repository import UserRepository
+    from dirtnap.db import get_db
+    from dirtnap.repositories.user_repository import UserRepository
     with get_db() as db:
         repo = UserRepository(db)
         if repo.get_by_username(username):
@@ -27,7 +27,7 @@ def cmd_create_user(args: list[str]) -> None:
 
 
 def cmd_list_users(_: list[str]) -> None:
-    from sampling.db import get_db
+    from dirtnap.db import get_db
     with get_db() as db:
         users = db.execute(
             "SELECT id, username, is_readonly, is_admin, expires_at, created_at FROM users ORDER BY id"
@@ -41,10 +41,10 @@ def cmd_list_users(_: list[str]) -> None:
 
 
 def cmd_seed(_: list[str]) -> None:
-    from sampling.db import get_db, run_migrations
-    from sampling.repositories.box_repository import BoxRepository
-    from sampling.repositories.core_repository import CoreRepository
-    from sampling.repositories.tube_repository import TubeRepository
+    from dirtnap.db import get_db, run_migrations
+    from dirtnap.repositories.box_repository import BoxRepository
+    from dirtnap.repositories.core_repository import CoreRepository
+    from dirtnap.repositories.tube_repository import TubeRepository
 
     run_migrations()
 
@@ -259,8 +259,8 @@ def cmd_rename_user(args: list[str]) -> None:
         print("Usage: python manage.py rename-user <username> <new-username>")
         sys.exit(1)
     username, new_username = args
-    from sampling.db import get_db
-    from sampling.repositories.user_repository import UserRepository
+    from dirtnap.db import get_db
+    from dirtnap.repositories.user_repository import UserRepository
     with get_db() as db:
         repo = UserRepository(db)
         user = repo.get_by_username(username)
@@ -279,8 +279,8 @@ def cmd_delete_user(args: list[str]) -> None:
         print("Usage: python manage.py delete-user <username>")
         sys.exit(1)
     username = args[0]
-    from sampling.db import get_db
-    from sampling.repositories.user_repository import UserRepository
+    from dirtnap.db import get_db
+    from dirtnap.repositories.user_repository import UserRepository
     with get_db() as db:
         repo = UserRepository(db)
         if not repo.get_by_username(username):
@@ -345,7 +345,7 @@ def cmd_db_backup(_: list[str]) -> None:
 
 
 def cmd_migrate(_: list[str]) -> None:
-    from sampling.db import run_migrations
+    from dirtnap.db import run_migrations
     run_migrations()
     print("Migrations complete.")
 
@@ -356,7 +356,7 @@ def cmd_reset_db(args: list[str]) -> None:
     if confirm.strip() != "YES":
         print("Aborted.")
         sys.exit(0)
-    from sampling.db import get_db
+    from dirtnap.db import get_db
     with get_db() as db:
         tables = [
             "tube_history", "box_history", "core_history",

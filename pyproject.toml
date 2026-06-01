@@ -1,5 +1,5 @@
 [project]
-name = "sampling"
+name = "dirtnap"
 version = "1.0.0"
 
 [tool.ruff]
@@ -16,4 +16,4 @@ check_untyped_defs = true
 
 [tool.pytest.ini_options]
 # no testpaths — paths differ between Docker (tests/) and CI (backend-src/tests/)
-addopts = "--cov=sampling --cov-fail-under=100 --cov-report=term-missing"
+addopts = "--cov=dirtnap --cov-fail-under=100 --cov-report=term-missing"

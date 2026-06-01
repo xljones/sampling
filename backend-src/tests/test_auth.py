@@ -1,8 +1,8 @@
 from flask import Flask
 from flask.testing import FlaskClient
 
-from sampling.db import get_db
-from sampling.repositories.user_repository import UserRepository
+from dirtnap.db import get_db
+from dirtnap.repositories.user_repository import UserRepository
 
 
 def test_login_success(client: FlaskClient, app: Flask) -> None:

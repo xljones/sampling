@@ -5,8 +5,8 @@ from flask import Blueprint, jsonify, request
 from flask.typing import ResponseReturnValue
 from flask_login import current_user, login_required
 
-from sampling.db import get_db
-from sampling.repositories.user_repository import UserRepository
+from dirtnap.db import get_db
+from dirtnap.repositories.user_repository import UserRepository
 
 bp = Blueprint("users", __name__)
 

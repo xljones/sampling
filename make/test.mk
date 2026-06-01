@@ -4,17 +4,17 @@
 .PHONY: format
 # format the Python backend with ruff
 format:
-	docker compose run --rm backend ruff format sampling/
+	docker compose run --rm backend ruff format dirtnap/
 
 .PHONY: lint-backend
 # lint the Python backend with ruff
 lint-backend: backend-typecheck
-	docker compose run --rm backend ruff check sampling/
+	docker compose run --rm backend ruff check dirtnap/
 
 .PHONY: backend-typecheck
 # type-check the Python backend with mypy
 backend-typecheck:
-	docker compose run --rm backend mypy sampling/
+	docker compose run --rm backend mypy dirtnap/
 
 .PHONY: test-backend
 # run Python backend tests with pytest (coverage config in pyproject.toml)

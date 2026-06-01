@@ -3,9 +3,9 @@ from typing import Any
 from flask import Response, request
 from flask_login import login_required
 
-from sampling.db import get_db
-from sampling.repositories.box_repository import BoxRepository
-from sampling.repositories.tube_repository import TubeRepository
+from dirtnap.db import get_db
+from dirtnap.repositories.box_repository import BoxRepository
+from dirtnap.repositories.tube_repository import TubeRepository
 
 from ._blueprint import bp
 from ._responses import _safe, json_response, parse_ids, respond, xlsx_response

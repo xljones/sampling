@@ -43,7 +43,7 @@ def test_pythonanywhere_stats_success(admin_client: FlaskClient, monkeypatch) ->
     webapps = [{"id": 1, "domain_name": "user.pythonanywhere.com", "enabled": True, "python_version": "3.12"}]
     schedule = [{"id": 1, "enabled": True, "interval": "daily", "hour": 2, "minute": 0, "command": "python foo.py", "description": "Nightly job"}]
 
-    with patch("sampling.routes.admin.urllib.request.urlopen", side_effect=_mock_urlopen([cpu, webapps, schedule])):
+    with patch("dirtnap.routes.admin.urllib.request.urlopen", side_effect=_mock_urlopen([cpu, webapps, schedule])):
         r = admin_client.get("/api/admin/pythonanywhere")
 
     assert r.status_code == 200
@@ -58,7 +58,7 @@ def test_pythonanywhere_stats_http_error(admin_client: FlaskClient, monkeypatch)
     monkeypatch.setenv("PA_USERNAME", "user")
 
     exc = urllib.error.HTTPError(url="", code=401, msg="Unauthorized", hdrs=None, fp=None)
-    with patch("sampling.routes.admin.urllib.request.urlopen", side_effect=exc):
+    with patch("dirtnap.routes.admin.urllib.request.urlopen", side_effect=exc):
         r = admin_client.get("/api/admin/pythonanywhere")
 
     assert r.status_code == 502
@@ -70,7 +70,7 @@ def test_pythonanywhere_stats_connection_error(admin_client: FlaskClient, monkey
     monkeypatch.setenv("PA_API_TOKEN", "tok")
     monkeypatch.setenv("PA_USERNAME", "user")
 
-    with patch("sampling.routes.admin.urllib.request.urlopen", side_effect=OSError("timeout")):
+    with patch("dirtnap.routes.admin.urllib.request.urlopen", side_effect=OSError("timeout")):
         r = admin_client.get("/api/admin/pythonanywhere")
 
     assert r.status_code == 502

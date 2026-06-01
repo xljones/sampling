@@ -5,8 +5,8 @@ from flask import Blueprint, Response, jsonify, request
 from flask.typing import ResponseReturnValue
 from flask_login import current_user, login_required
 
-from sampling.db import get_db
-from sampling.repositories.core_repository import CoreRepository
+from dirtnap.db import get_db
+from dirtnap.repositories.core_repository import CoreRepository
 
 bp = Blueprint("cores", __name__)
 

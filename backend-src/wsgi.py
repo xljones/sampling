@@ -5,7 +5,7 @@ In the PythonAnywhere web tab, set the WSGI configuration file to this file,
 or paste the following into the auto-generated WSGI file:
 
     import sys
-    sys.path.insert(0, '/home/<your-username>/sampling/backend-src')
+    sys.path.insert(0, '/home/<your-username>/dirtnap/backend-src')
     from wsgi import application
 """
 import sys
@@ -21,6 +21,6 @@ if str(_here) not in sys.path:
 os.environ.setdefault("DB_PATH", str(_root / "data" / "samples.db"))
 os.environ["FLASK_DEBUG"] = "0"
 
-from sampling import create_app
+from dirtnap import create_app
 
 application = create_app()

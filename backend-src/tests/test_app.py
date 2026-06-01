@@ -1,4 +1,4 @@
-"""Tests for sampling/__init__.py: middleware, frontend serving, app factory."""
+"""Tests for dirtnap/__init__.py: middleware, frontend serving, app factory."""
 import os
 import tempfile
 from datetime import datetime, timedelta, timezone
@@ -9,17 +9,17 @@ import pytest
 from flask import Flask
 from flask.testing import FlaskClient
 
-from sampling.db import get_db
-from sampling.repositories.user_repository import UserRepository
+from dirtnap.db import get_db
+from dirtnap.repositories.user_repository import UserRepository
 
 
 # ── domain model ─────────────────────────────────────────────────────────────
 
 def test_domain_models_importable() -> None:
-    from sampling.domain.box import Box
-    from sampling.domain.core import Core
-    from sampling.domain.location import Location
-    from sampling.domain.tube import Tube
+    from dirtnap.domain.box import Box
+    from dirtnap.domain.core import Core
+    from dirtnap.domain.location import Location
+    from dirtnap.domain.tube import Tube
 
     assert Box(id=1, barcode="B001").barcode == "B001"
     assert Core(id=1, barcode="C001").barcode == "C001"
@@ -28,23 +28,23 @@ def test_domain_models_importable() -> None:
 
 
 def test_user_is_active_no_expiry() -> None:
-    from sampling.domain.user import User
+    from dirtnap.domain.user import User
     assert User(id=1, username="u").is_active is True
 
 
 def test_user_is_active_future_expiry() -> None:
-    from sampling.domain.user import User
+    from dirtnap.domain.user import User
     future = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
     assert User(id=1, username="u", expires_at=future).is_active is True
 
 
 def test_user_is_active_past_expiry() -> None:
-    from sampling.domain.user import User
+    from dirtnap.domain.user import User
     assert User(id=1, username="u", expires_at="2000-01-01T00:00:00+00:00").is_active is False
 
 
 def test_user_is_active_invalid_format() -> None:
-    from sampling.domain.user import User
+    from dirtnap.domain.user import User
     assert User(id=1, username="u", expires_at="not-a-date").is_active is True
 
 
@@ -57,7 +57,7 @@ def test_create_app_requires_secret_key_in_production(tmp_path: Path) -> None:
     env["FLASK_DEBUG"] = "0"
     env["DB_PATH"] = db_path
     with patch.dict(os.environ, env, clear=True):
-        from sampling import create_app
+        from dirtnap import create_app
         with pytest.raises(RuntimeError, match="SECRET_KEY"):
             create_app()
 
@@ -112,8 +112,8 @@ def test_enforce_auth_readonly_allows_password_change(client: FlaskClient) -> No
 
 def test_serve_frontend_root(client: FlaskClient, tmp_path: Path, monkeypatch) -> None:
     (tmp_path / "index.html").write_text("<h1>App</h1>")
-    import sampling
-    monkeypatch.setattr(sampling, "_DIST_DIR", str(tmp_path))
+    import dirtnap
+    monkeypatch.setattr(dirtnap, "_DIST_DIR", str(tmp_path))
     r = client.get("/")
     assert r.status_code == 200
     assert b"App" in r.data
@@ -122,8 +122,8 @@ def test_serve_frontend_root(client: FlaskClient, tmp_path: Path, monkeypatch) -
 def test_serve_frontend_existing_file(client: FlaskClient, tmp_path: Path, monkeypatch) -> None:
     (tmp_path / "index.html").write_text("<h1>App</h1>")
     (tmp_path / "app.js").write_text("var x = 1;")
-    import sampling
-    monkeypatch.setattr(sampling, "_DIST_DIR", str(tmp_path))
+    import dirtnap
+    monkeypatch.setattr(dirtnap, "_DIST_DIR", str(tmp_path))
     r = client.get("/app.js")
     assert r.status_code == 200
     assert b"var x" in r.data
@@ -133,8 +133,8 @@ def test_serve_frontend_missing_path_returns_index(
     client: FlaskClient, tmp_path: Path, monkeypatch
 ) -> None:
     (tmp_path / "index.html").write_text("<h1>Fallback</h1>")
-    import sampling
-    monkeypatch.setattr(sampling, "_DIST_DIR", str(tmp_path))
+    import dirtnap
+    monkeypatch.setattr(dirtnap, "_DIST_DIR", str(tmp_path))
     r = client.get("/some/deep/path")
     assert r.status_code == 200
     assert b"Fallback" in r.data
@@ -153,5 +153,5 @@ def test_load_user_returns_none_for_deleted_user(client: FlaskClient) -> None:
 
 def test_run_migrations_idempotent(auth_client: FlaskClient) -> None:
     """Calling run_migrations a second time skips already-applied migrations."""
-    from sampling.db import run_migrations
+    from dirtnap.db import run_migrations
     run_migrations()  # migrations already applied in fixture; this exercises the 'continue' branch

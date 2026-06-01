@@ -1,5 +1,5 @@
 # ── PythonAnywhere deployment ────────────────────────────────────────────────
-# Run from a PythonAnywhere Bash console inside ~/sampling
+# Run from a PythonAnywhere Bash console inside ~/dirtnap
 
 .PHONY: deploy-pa
 # pull latest deploy branch (includes built dist/), create venv if needed, install deps

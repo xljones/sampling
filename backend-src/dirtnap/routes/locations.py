@@ -4,8 +4,8 @@ from flask import Blueprint, Response, jsonify, request
 from flask.typing import ResponseReturnValue
 from flask_login import login_required
 
-from sampling.db import get_db
-from sampling.repositories.location_repository import LocationRepository
+from dirtnap.db import get_db
+from dirtnap.repositories.location_repository import LocationRepository
 
 bp = Blueprint("locations", __name__)
 

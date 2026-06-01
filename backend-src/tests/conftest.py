@@ -14,7 +14,7 @@ def app() -> Generator[Flask, None, None]:
     os.environ["DB_PATH"] = db_path
 
     # Import after setting DB_PATH so the app picks up the temp database.
-    from sampling import create_app
+    from dirtnap import create_app
 
     application = create_app()
     application.config["TESTING"] = True
@@ -32,8 +32,8 @@ def client(app: Flask) -> FlaskClient:
 
 @pytest.fixture
 def auth_client(client: FlaskClient) -> FlaskClient:
-    from sampling.db import get_db
-    from sampling.repositories.user_repository import UserRepository
+    from dirtnap.db import get_db
+    from dirtnap.repositories.user_repository import UserRepository
 
     with get_db() as db:
         UserRepository(db).create("testuser", "testpass")
@@ -44,8 +44,8 @@ def auth_client(client: FlaskClient) -> FlaskClient:
 
 @pytest.fixture
 def readonly_client(client: FlaskClient) -> FlaskClient:
-    from sampling.db import get_db
-    from sampling.repositories.user_repository import UserRepository
+    from dirtnap.db import get_db
+    from dirtnap.repositories.user_repository import UserRepository
 
     with get_db() as db:
         UserRepository(db).create("readonlyuser", "testpass", is_readonly=True)
@@ -56,8 +56,8 @@ def readonly_client(client: FlaskClient) -> FlaskClient:
 
 @pytest.fixture
 def admin_client(client: FlaskClient) -> FlaskClient:
-    from sampling.db import get_db
-    from sampling.repositories.user_repository import UserRepository
+    from dirtnap.db import get_db
+    from dirtnap.repositories.user_repository import UserRepository
 
     with get_db() as db:
         UserRepository(db).create("adminuser", "testpass", is_admin=True)

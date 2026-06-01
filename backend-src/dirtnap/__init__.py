@@ -7,7 +7,7 @@ from flask.typing import ResponseReturnValue
 from flask_cors import CORS
 from flask_login import LoginManager, current_user, logout_user
 
-from sampling.domain.user import User
+from dirtnap.domain.user import User
 
 _DIST_DIR = str(Path(__file__).parent.parent.parent / "dist")
 
@@ -15,9 +15,9 @@ login_manager = LoginManager()
 
 
 def create_app() -> Flask:
-    from sampling.db import get_db, run_migrations
-    from sampling.repositories.user_repository import UserRepository
-    from sampling.routes import admin, auth, boxes, cores, export, locations, scan, tubes, users
+    from dirtnap.db import get_db, run_migrations
+    from dirtnap.repositories.user_repository import UserRepository
+    from dirtnap.routes import admin, auth, boxes, cores, export, locations, scan, tubes, users
 
     run_migrations()
 
