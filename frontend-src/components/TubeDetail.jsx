@@ -6,6 +6,7 @@ import { useToast } from './Toast.jsx';
 import RelativeTime from './RelativeTime.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 import CoordCard from './CoordCard.jsx';
+import { SkeletonPage } from './Skeleton.jsx';
 
 export default function TubeDetail() {
   const { user } = useAuth();
@@ -174,7 +175,7 @@ export default function TubeDetail() {
     toast('Tube reverted');
   }
 
-  if (!tube) return <p className="loading">Loading…</p>;
+  if (!tube) return <SkeletonPage />;
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 

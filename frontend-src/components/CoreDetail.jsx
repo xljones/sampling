@@ -7,6 +7,7 @@ import RelativeTime from './RelativeTime.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 import CoordCard from './CoordCard.jsx';
 import ExportDropdown from './ExportDropdown.jsx';
+import { SkeletonPage } from './Skeleton.jsx';
 
 export default function CoreDetail() {
   const { user } = useAuth();
@@ -106,7 +107,7 @@ export default function CoreDetail() {
     toast('Core reverted');
   }
 
-  if (!core) return <p className="loading">Loading…</p>;
+  if (!core) return <SkeletonPage />;
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 

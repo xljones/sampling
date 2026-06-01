@@ -5,6 +5,7 @@ import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 import ExportDropdown from './ExportDropdown.jsx';
+import { SkeletonRows } from './Skeleton.jsx';
 
 const TUBE_EXPORT_FIELDS = [
   'barcode', 'box_barcode', 'box_name', 'sample_date', 'site_name',
@@ -61,7 +62,7 @@ function exportTubesToGeoJson(rows) {
 export default function TubeList() {
   const { user } = useAuth();
   const ro = user?.is_readonly;
-  const [tubes, setTubes] = useState([]);
+  const [tubes, setTubes] = useState(null);
   const [filter, setFilter] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
   const toast = useToast();
@@ -80,7 +81,7 @@ export default function TubeList() {
 
   const q = filter.toLowerCase();
   const anyFilter = !!q || unassignedOnly;
-  const visible = tubes
+  const visible = (tubes ?? [])
     .filter(t => !unassignedOnly || !t.box_id)
     .filter(t => !q || (
       t.barcode.toLowerCase().includes(q) ||
@@ -243,31 +244,36 @@ export default function TubeList() {
               </tr>
             </thead>
             <tbody>
-              {visible.map(t => (
-                <tr
-                  key={t.id}
-                  className={`row-clickable${selected.has(t.id) ? ' row-selected' : ''}`}
-                  onClick={e => { if (!e.target.closest('a, button, input')) navigate(`/tubes/${t.id}`); }}
-                >
-                  {!ro && (
-                    <td className="col-checkbox" onClick={e => e.stopPropagation()}>
-                      <input type="checkbox" checked={selected.has(t.id)} onChange={() => toggleOne(t.id)} />
-                    </td>
-                  )}
-                  <td><Link to={`/tubes/${t.id}`}><span className="barcode">{t.barcode}</span></Link></td>
-                  <td>{t.box_barcode ? <Link to={`/boxes/${t.box_id}`}><span className="barcode">{t.box_barcode}</span></Link> : <span className="text-muted">—</span>}</td>
-                  <td>{t.site_name || '—'}</td>
-                  <td>{t.sample_type || '—'}</td>
-                  <td className="col-mobile-hide">{t.depth_cm ?? '—'}</td>
-                  <td className="col-mobile-hide">{t.sample_date || '—'}</td>
-                  <td className="col-shrink">
-                    <div className="row-actions">
-                      {!ro && <Link to={`/tubes/${t.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {visible.length === 0 && <tr><td colSpan={ro ? 7 : 8} className="empty">{filter ? 'No matches' : 'No tubes yet'}</td></tr>}
+              {tubes === null
+                ? <SkeletonRows cols={['90px', '80px', '35%', '25%', '50px', '90px', null]} />
+                : <>
+                    {visible.map(t => (
+                      <tr
+                        key={t.id}
+                        className={`row-clickable${selected.has(t.id) ? ' row-selected' : ''}`}
+                        onClick={e => { if (!e.target.closest('a, button, input')) navigate(`/tubes/${t.id}`); }}
+                      >
+                        {!ro && (
+                          <td className="col-checkbox" onClick={e => e.stopPropagation()}>
+                            <input type="checkbox" checked={selected.has(t.id)} onChange={() => toggleOne(t.id)} />
+                          </td>
+                        )}
+                        <td><Link to={`/tubes/${t.id}`}><span className="barcode">{t.barcode}</span></Link></td>
+                        <td>{t.box_barcode ? <Link to={`/boxes/${t.box_id}`}><span className="barcode">{t.box_barcode}</span></Link> : <span className="text-muted">—</span>}</td>
+                        <td>{t.site_name || '—'}</td>
+                        <td>{t.sample_type || '—'}</td>
+                        <td className="col-mobile-hide">{t.depth_cm ?? '—'}</td>
+                        <td className="col-mobile-hide">{t.sample_date || '—'}</td>
+                        <td className="col-shrink">
+                          <div className="row-actions">
+                            {!ro && <Link to={`/tubes/${t.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {visible.length === 0 && <tr><td colSpan={ro ? 7 : 8} className="empty">{filter ? 'No matches' : 'No tubes yet'}</td></tr>}
+                  </>
+              }
             </tbody>
           </table>
         </div>

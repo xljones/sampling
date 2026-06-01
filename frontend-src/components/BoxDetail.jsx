@@ -7,6 +7,7 @@ import RelativeTime from './RelativeTime.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 import LeafletMap from './LeafletMap.jsx';
 import ExportDropdown from './ExportDropdown.jsx';
+import { SkeletonPage } from './Skeleton.jsx';
 
 export default function BoxDetail() {
   const { user } = useAuth();
@@ -114,7 +115,7 @@ export default function BoxDetail() {
     toast('Box reverted');
   }
 
-  if (!box) return <p className="loading">Loading…</p>;
+  if (!box) return <SkeletonPage />;
 
   return (
     <div>

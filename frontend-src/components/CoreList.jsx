@@ -5,6 +5,7 @@ import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 import ExportDropdown from './ExportDropdown.jsx';
+import { SkeletonRows } from './Skeleton.jsx';
 
 
 export default function CoreList() {
@@ -117,53 +118,59 @@ export default function CoreList() {
       </div>
 
       <div className="card">
-        {cores === null && <p className="card-message">Loading…</p>}
-        {cores?.length === 0 && <p className="card-message">No cores yet.</p>}
-        {cores?.length > 0 && (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Barcode</th>
-                  <th>Name</th>
-                  <th>Source site</th>
-                  <th>Collected</th>
-                  <th>Type</th>
-                  <th>Storage</th>
-                  <th>Tubes</th>
-                  <th>Boxes</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {visible.map(c => (
-                  <tr key={c.id} className="row-clickable" onClick={() => navigate(`/cores/${c.id}`)}>
-                    <td>
-                      <Link to={`/cores/${c.id}`} onClick={e => e.stopPropagation()}>
-                        <span className="barcode">{c.barcode}</span>
-                      </Link>
-                    </td>
-                    <td>{c.name || '—'}</td>
-                    <td>{c.site_name || '—'}</td>
-                    <td>{c.collection_date || '—'}</td>
-                    <td>{c.sample_type || '—'}</td>
-                    <td>{c.location_name || '—'}</td>
-                    <td>{c.tube_count}</td>
-                    <td>{c.box_count || '—'}</td>
-                    <td>
-                      <div className="row-actions">
-                        {!ro && <Link to={`/cores/${c.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>}
-                      </div>
-                    </td>
+        {cores !== null && cores.length === 0
+          ? <p className="card-message">No cores yet.</p>
+          : (
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Barcode</th>
+                    <th>Name</th>
+                    <th>Source site</th>
+                    <th>Collected</th>
+                    <th>Type</th>
+                    <th>Storage</th>
+                    <th>Tubes</th>
+                    <th>Boxes</th>
+                    <th></th>
                   </tr>
-                ))}
-                {visible.length === 0 && q && (
-                  <tr><td colSpan={9} className="empty">No matches</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {cores === null
+                    ? <SkeletonRows cols={['90px', '30%', '25%', '90px', '20%', '25%', '40px', '40px', null]} />
+                    : <>
+                        {visible.map(c => (
+                          <tr key={c.id} className="row-clickable" onClick={() => navigate(`/cores/${c.id}`)}>
+                            <td>
+                              <Link to={`/cores/${c.id}`} onClick={e => e.stopPropagation()}>
+                                <span className="barcode">{c.barcode}</span>
+                              </Link>
+                            </td>
+                            <td>{c.name || '—'}</td>
+                            <td>{c.site_name || '—'}</td>
+                            <td>{c.collection_date || '—'}</td>
+                            <td>{c.sample_type || '—'}</td>
+                            <td>{c.location_name || '—'}</td>
+                            <td>{c.tube_count}</td>
+                            <td>{c.box_count || '—'}</td>
+                            <td>
+                              <div className="row-actions">
+                                {!ro && <Link to={`/cores/${c.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {visible.length === 0 && q && (
+                          <tr><td colSpan={9} className="empty">No matches</td></tr>
+                        )}
+                      </>
+                  }
+                </tbody>
+              </table>
+            </div>
+          )
+        }
       </div>
     </div>
   );

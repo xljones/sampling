@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
+import { SkeletonPage } from './Skeleton.jsx';
 
 export default function LocationDetail() {
   const { id } = useParams();
@@ -9,7 +10,7 @@ export default function LocationDetail() {
 
   useEffect(() => { api.getLocation(id).then(setLoc); }, [id]);
 
-  if (!loc) return <p className="loading">Loading…</p>;
+  if (!loc) return <SkeletonPage />;
 
   return (
     <div>

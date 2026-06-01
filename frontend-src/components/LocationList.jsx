@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 import { useToast } from './Toast.jsx';
+import { SkeletonRows } from './Skeleton.jsx';
 
 export default function LocationList() {
   const { user } = useAuth();
   const ro = user?.is_readonly;
-  const [locations, setLocations] = useState([]);
+  const [locations, setLocations] = useState(null);
   const [filter, setFilter] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState('');
@@ -20,7 +21,7 @@ export default function LocationList() {
   useEffect(() => { api.getLocations().then(setLocations); }, []);
 
   const q = filter.toLowerCase();
-  const visible = q ? locations.filter(l => l.name.toLowerCase().includes(q)) : locations;
+  const visible = locations ? (q ? locations.filter(l => l.name.toLowerCase().includes(q)) : locations) : [];
 
   async function handleAdd(e) {
     e.preventDefault();
@@ -109,38 +110,41 @@ export default function LocationList() {
           <table>
             <thead><tr><th>Name</th><th>Boxes</th><th>Cores</th><th></th></tr></thead>
             <tbody>
-              {visible.map(loc => (
-                <tr
-                  key={loc.id}
-                  className={editId === loc.id ? '' : 'row-clickable'}
-                  onClick={e => { if (editId === loc.id || e.target.closest('a, button, input, form')) return; navigate(`/locations/${loc.id}`); }}
-                >
-                  {editId === loc.id ? (
-                    <td colSpan={4}>
-                      <form onSubmit={handleEdit} className="inline-form">
-                        <input value={editName} onChange={e => setEditName(e.target.value)} autoFocus className="input-sm" />
-                        <button className="btn btn-success btn-sm" disabled={saving || !editName.trim()}>Save</button>
-                        <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditId(null)}>Cancel</button>
-                      </form>
-                    </td>
-                  ) : (
-                    <>
-                      <td>{loc.name}</td>
-                      <td className="text-muted">{loc.box_count}</td>
-                      <td className="text-muted">{loc.core_count}</td>
-                      <td className="col-shrink">
-                        {!ro && (
-                          <div className="row-actions">
-                            <button className="btn btn-secondary btn-sm" onClick={() => startEdit(loc)}>Rename</button>
-                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(loc)}>Delete</button>
-                          </div>
-                        )}
+              {locations === null
+                ? <SkeletonRows cols={['40%', '60px', '60px', null]} />
+                : visible.map(loc => (
+                  <tr
+                    key={loc.id}
+                    className={editId === loc.id ? '' : 'row-clickable'}
+                    onClick={e => { if (editId === loc.id || e.target.closest('a, button, input, form')) return; navigate(`/locations/${loc.id}`); }}
+                  >
+                    {editId === loc.id ? (
+                      <td colSpan={4}>
+                        <form onSubmit={handleEdit} className="inline-form">
+                          <input value={editName} onChange={e => setEditName(e.target.value)} autoFocus className="input-sm" />
+                          <button className="btn btn-success btn-sm" disabled={saving || !editName.trim()}>Save</button>
+                          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditId(null)}>Cancel</button>
+                        </form>
                       </td>
-                    </>
-                  )}
-                </tr>
-              ))}
-              {visible.length === 0 && <tr><td colSpan={4} className="empty">{q ? 'No matches' : 'No locations yet'}</td></tr>}
+                    ) : (
+                      <>
+                        <td>{loc.name}</td>
+                        <td className="text-muted">{loc.box_count}</td>
+                        <td className="text-muted">{loc.core_count}</td>
+                        <td className="col-shrink">
+                          {!ro && (
+                            <div className="row-actions">
+                              <button className="btn btn-secondary btn-sm" onClick={() => startEdit(loc)}>Rename</button>
+                              <button className="btn btn-danger btn-sm" onClick={() => handleDelete(loc)}>Delete</button>
+                            </div>
+                          )}
+                        </td>
+                      </>
+                    )}
+                  </tr>
+                ))
+              }
+              {locations !== null && visible.length === 0 && <tr><td colSpan={4} className="empty">{q ? 'No matches' : 'No locations yet'}</td></tr>}
             </tbody>
           </table>
         </div>

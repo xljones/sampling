@@ -6,12 +6,13 @@ import { useToast } from './Toast.jsx';
 import RelativeTime from './RelativeTime.jsx';
 import BarcodeInput from './BarcodeInput.jsx';
 import ExportDropdown from './ExportDropdown.jsx';
+import { SkeletonRows } from './Skeleton.jsx';
 
 
 export default function BoxList() {
   const { user } = useAuth();
   const ro = user?.is_readonly;
-  const [boxes, setBoxes] = useState([]);
+  const [boxes, setBoxes] = useState(null);
   const [locations, setLocations] = useState([]);
   const [filter, setFilter] = useState('');
   const [showAdd, setShowAdd] = useState(false);
@@ -34,13 +35,13 @@ export default function BoxList() {
 
   const q = filter.toLowerCase();
   const visible = q
-    ? boxes.filter(b =>
+    ? (boxes ?? []).filter(b =>
         b.barcode.toLowerCase().includes(q) ||
         (b.name ?? '').toLowerCase().includes(q) ||
         (b.location_name ?? '').toLowerCase().includes(q) ||
         (b.notes ?? '').toLowerCase().includes(q)
       )
-    : boxes;
+    : (boxes ?? []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -147,25 +148,28 @@ export default function BoxList() {
           <table>
             <thead><tr><th>Barcode</th><th>Name</th><th>Location</th><th>Tubes</th><th className="col-mobile-hide">Updated (UTC)</th><th></th></tr></thead>
             <tbody>
-              {visible.map(b => (
-                <tr
-                  key={b.id}
-                  className="row-clickable"
-                  onClick={e => { if (!e.target.closest('a, button, input')) navigate(`/boxes/${b.id}`); }}
-                >
-                  <td><Link to={`/boxes/${b.id}`}><span className="barcode">{b.barcode}</span></Link></td>
-                  <td>{b.name || '—'}</td>
-                  <td>{b.location_name || '—'}</td>
-                  <td>{b.tube_count}</td>
-                  <td className="col-mobile-hide text-muted"><RelativeTime value={b.updated_at} /></td>
-                  <td className="col-shrink">
-                    <div className="row-actions">
-                      {!ro && <Link to={`/boxes/${b.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {visible.length === 0 && <tr><td colSpan={6} className="empty">{filter ? 'No matches' : 'No boxes yet — create one above'}</td></tr>}
+              {boxes === null
+                ? <SkeletonRows cols={['90px', '40%', '30%', '50px', '100px', null]} />
+                : visible.map(b => (
+                  <tr
+                    key={b.id}
+                    className="row-clickable"
+                    onClick={e => { if (!e.target.closest('a, button, input')) navigate(`/boxes/${b.id}`); }}
+                  >
+                    <td><Link to={`/boxes/${b.id}`}><span className="barcode">{b.barcode}</span></Link></td>
+                    <td>{b.name || '—'}</td>
+                    <td>{b.location_name || '—'}</td>
+                    <td>{b.tube_count}</td>
+                    <td className="col-mobile-hide text-muted"><RelativeTime value={b.updated_at} /></td>
+                    <td className="col-shrink">
+                      <div className="row-actions">
+                        {!ro && <Link to={`/boxes/${b.id}?edit=1`} className="btn btn-secondary btn-sm">Edit</Link>}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              }
+              {boxes !== null && visible.length === 0 && <tr><td colSpan={6} className="empty">{filter ? 'No matches' : 'No boxes yet — create one above'}</td></tr>}
             </tbody>
           </table>
         </div>
